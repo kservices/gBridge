@@ -1,0 +1,116 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "707980203f0e823e13625eae44b79700",
+    "content-hash": "19b2fc170caf36b5059c89ddce191e92",
+    "packages": [
+        {
+            "name": "bluerhinos/phpmqtt",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bluerhinos/phpMQTT.git",
+                "reference": "6c15cef0b1b2cb4c438e526c78d805b69a733f9d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bluerhinos/phpMQTT/zipball/6c15cef0b1b2cb4c438e526c78d805b69a733f9d",
+                "reference": "6c15cef0b1b2cb4c438e526c78d805b69a733f9d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bluerhinos\\": "./"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD"
+            ],
+            "authors": [
+                {
+                    "name": "Andrew Milsted",
+                    "email": "andrew@bluerhinos.co.uk"
+                }
+            ],
+            "description": "Simple MQTT Class",
+            "time": "2017-10-16 21:14:36"
+        },
+        {
+            "name": "catfan/medoo",
+            "version": "v1.5.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/catfan/Medoo.git",
+                "reference": "f77a93f72864e892c99d1033b8733e5da8fb0b3b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/catfan/Medoo/zipball/f77a93f72864e892c99d1033b8733e5da8fb0b3b",
+                "reference": "f77a93f72864e892c99d1033b8733e5da8fb0b3b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": ">=5.4"
+            },
+            "suggest": {
+                "ext-pdo_dblib": "For MSSQL or Sybase database on Linux/UNIX platform",
+                "ext-pdo_mysql": "For MySQL or MariaDB database",
+                "ext-pdo_oci": "For Oracle database",
+                "ext-pdo_oci8": "For Oracle version 8 database",
+                "ext-pdo_pqsql": "For PostgreSQL database",
+                "ext-pdo_sqlite": "For SQLite database",
+                "ext-pdo_sqlsrv": "For MSSQL database"
+            },
+            "type": "framework",
+            "autoload": {
+                "psr-4": {
+                    "Medoo\\": "/src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Angel Lai",
+                    "email": "angel@catfan.me"
+                }
+            ],
+            "description": "The lightest PHP database framework to accelerate development",
+            "homepage": "https://medoo.in",
+            "keywords": [
+                "database",
+                "lightweight",
+                "mariadb",
+                "mssql",
+                "mysql",
+                "oracle",
+                "php framework",
+                "postgresql",
+                "sql",
+                "sqlite"
+            ],
+            "time": "2018-03-26 17:54:24"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "bluerhinos/phpmqtt": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

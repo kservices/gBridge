@@ -1,0 +1,15 @@
+{
+    "name": "peterkappelt/gbridge-api",
+    "description": "Kappelt gBridge API",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Peter Kappelt",
+            "email": "kappelt.peter@gmail.com"
+        }
+    ],
+    "require": {
+        "bluerhinos/phpmqtt": "@dev",
+        "catfan/Medoo": "^1.5"
+    }
+}
