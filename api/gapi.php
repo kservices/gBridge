@@ -99,7 +99,7 @@
         if($devices['error']){
             errorResponse($requestid, ErrorCode::unknownError, true);
         }
-
+        
         foreach($devices['devices'] as $device){
             $trait_googlenames = array_map(function($trait){return $trait['gname'];}, $device['traits']); 
             $response['payload']['devices'][] = [
@@ -116,7 +116,7 @@
                 ]
             ];
         }
-        
+
         echo json_encode($response);
     }
 

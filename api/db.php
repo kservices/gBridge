@@ -34,7 +34,8 @@ function db_init(){
             'database_name' => $mysql_database,
             'server' => $mysql_server,
             'username' => $mysql_user,
-            'password' => $mysql_password
+            'password' => $mysql_password,
+            'charset' => 'utf8'
         ]);
 
         $ret['db'] = $db;

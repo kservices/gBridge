@@ -24,7 +24,7 @@ function mqttHandleExecCmd($userid, $deviceIds, $execCmd){
 
     $success = true;
     foreach($deviceIds as $deviceId){
-        $success &= mqttPublishRaw('gBridge/' . "$userid/$deviceId/$topicSuffix", $message);
+        $success &= mqttPublishRaw('gBridge/' . "u$userid/d$deviceId/$topicSuffix", $message);
     }
 
     return $success;
