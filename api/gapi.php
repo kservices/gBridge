@@ -1,5 +1,6 @@
 <?php
-    require_once('mqtt.php');
+    require_once('config.php');
+    require_once('vendor/autoload.php');
     require_once('db.php');    
 
     //response is always JSON
@@ -132,18 +133,52 @@
             errorResponse($requestid, ErrorCode::protocolError, true);
         }
 
-        $success = true;
+        $success = false;
         $handledDeviceIds = [];
+
+        global $redis_connection;
+        $redis;
+        try{
+        $redis = new Predis\Client($redis_connection, [
+            'prefix' => 'gbridge:',
+        ]);
+        }catch(Exception $e){
+            error_log('gBridge Critical: Redis connection could not be established - ' . $e->getMessage());
+            $success = false;
+        }
 
         foreach($input['payload']['commands'] as $command){
             $deviceIds = array_map(function($device){return $device['id'];}, $command['devices']);
             $handledDeviceIds = array_merge($handledDeviceIds, $deviceIds);
             foreach($command['execution'] as $exec){
-                ob_start();
-                var_dump($exec);
-                $result = ob_get_clean();
-                error_log('EXEC: ' . $result);
-                $success &= mqttHandleExecCmd($userid, $deviceIds, $exec);
+                
+                //This code is executed for each device block
+
+                $trait;             //trait that is requested
+                $value;             //value that this trait gets
+
+                if($exec['command'] === 'action.devices.commands.OnOff'){
+                    $trait = 'onoff';
+                    $value = $exec['params']['on'] ? "1":"0";
+                }elseif($exec['command'] === 'action.devices.commands.BrightnessAbsolute'){
+                    $trait = 'brightness';
+                    $value = $exec['params']['brightness'];
+                }else{
+                    //unknown execute-command
+                    $success = false;
+                    continue;
+                }
+
+                try{
+                    foreach($deviceIds as $deviceid){
+                        $redis->publish("u$userid:d$deviceid:$trait",
+                                        $value);
+                    }
+                    $success = true;
+                }catch(Exception $e){
+                    error_log('gBridge Critical: Redis Exception - ' . $e->getMessage());
+                    $success = false;
+                }
             }
         }
 

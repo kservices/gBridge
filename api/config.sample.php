@@ -6,12 +6,9 @@
     //It usually consists of your project name and some Hex-Number, for example "kappelt-smarthome-eb8cd"
     $google_projectid = 'kappelt-smarthome-eb8cd';
 
-    //MQTT broker settings
-    $mqtt_server = 'mqtt1.int.kappelt.net';
-    $mqtt_port = 1883;
-    //leave username and password empty if it is not required
-    $mqtt_username = '';
-    $mqtt_password = '';
+    //Connection parameters for the redis server
+    //Look at the Predis-Documentation for information about other supported parameters: https://github.com/nrk/predis/wiki/Connection-Parameters
+    $redis_connection = 'tcp://redis1.int.kappelt.net:6379';
 
     //MySQL-Server that contains the main database
     $mysql_database = 'gbridge';
