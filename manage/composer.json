@@ -1,9 +1,14 @@
 {
-    "name": "laravel/laravel",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "name": "peterkappelt/gbridge-manage",
+    "description": "Kappelt gBridge Management Interface",
     "license": "MIT",
     "type": "project",
+    "authors": [
+        {
+            "name": "Peter Kappelt",
+            "email": "kappelt.peter@gmail.com"
+        }
+    ],
     "require": {
         "php": ">=7.0.0",
         "fideloper/proxy": "~3.3",

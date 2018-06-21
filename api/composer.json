@@ -9,7 +9,6 @@
         }
     ],
     "require": {
-        "bluerhinos/phpmqtt": "@dev",
         "catfan/Medoo": "^1.5",
         "predis/predis": "^1.1"
     }
