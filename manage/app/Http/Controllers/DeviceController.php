@@ -9,27 +9,16 @@ use App\Device;
 use App\DeviceType;
 use App\TraitType;
 
+use Illuminate\Support\Facades\Redis;
+
 class DeviceController extends Controller
 {
     /**
-     * Send a request to Google, in order to refresh the customer's device list
-     * @todo this shouldn't be done here, since it is slow...
+     * Send a request to the worker, in order to request Google to refresh the customer's device list
      */
     public function googleRequestSync(){
-        if(env('HOMEGRAPH_APIKEY', null)){
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://homegraph.googleapis.com/v1/devices:requestSync?key=' . env('HOMEGRAPH_APIKEY', ''));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, '{agent_user_id: "' . Auth::user()->user_id . '"}');
-            curl_setopt($ch, CURLOPT_POST, 1);
-            $headers = array();
-            $headers[] = "Content-Type: application/json";
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_exec($ch);
-            curl_close($ch);
-        }else{
-            error_log('Please specify your Google Homegraph API-Key in .env!');
-        }
+        $userid = Auth::user()->user_id;
+        Redis::publish("gbridge:u$userid:d0:requestsync", "0");
     }
 
     /**
