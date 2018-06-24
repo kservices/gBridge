@@ -97,21 +97,21 @@ class GapiController extends Controller
         $accesskey = Accesskey::where('google_key', str_replace('Bearer ', '', $accesskey))->get();
 
         if(count($accesskey) < 1){
-            return errorResponse($requestid, ErrorCode::authFailure);
+            return $this->errorResponse($requestid, ErrorCode::authFailure);
         }
         $accesskey = $accesskey[0];
         $user = $accesskey->user;
 
         //See https://developers.google.com/actions/smarthome/create-app for information about the JSON request format
         if(!isset($request['inputs'])){
-            return errorResponse($requestid, ErrorCode::protocolError);
+            return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
         $input = $request['inputs'][0];
 
         if(!isset($input['intent'])){
             error_log("Intent is undefined!");
-            return errorResponse($requestid, ErrorCode::protocolError);
+            return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
         if($input['intent'] === 'action.devices.SYNC'){
@@ -126,7 +126,7 @@ class GapiController extends Controller
         }else{
             //unknown intent
             error_log('Unknown intent: "' . $input['intent'] . '"');
-            return errorResponse($requestid, ErrorCode::protocolError);
+            return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
     }
 
@@ -183,7 +183,7 @@ class GapiController extends Controller
         $userid = $user->user_id;
 
         if(!isset($input['payload']['devices'])){
-            return errorResponse($requestid, ErrorCode::protocolError);
+            return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
         foreach($input['payload']['devices'] as $device){
@@ -193,7 +193,7 @@ class GapiController extends Controller
             if(count($device) > 0){
                 $traits = $device[0]->traits;
             }
-            
+
             $response['payload']['devices'][$deviceId] = [];
             if(count($traits) > 0){
                 $response['payload']['devices'][$deviceId]['online'] = true;
@@ -241,7 +241,7 @@ class GapiController extends Controller
      */
     function handleExecute($user, $requestid, $input){
         if(!isset($input['payload']['commands'])){
-            return errorResponse($requestid, ErrorCode::protocolError);
+            return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
         $success = true;
