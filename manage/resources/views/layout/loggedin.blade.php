@@ -16,7 +16,7 @@
 
 		<nav class="nav-extended blue">
 			<div class="nav-wrapper">
-				<a href="{{ url('/') }}" class="brand-logo" style="height: 64px; padding: 7px 20px 7px 20px;"><img src="{{ asset('img/kappelt-logo.png') }}" alt="Kappelt Logo" class="responsive-img"  style="height: 100%;"> Kappelt gBridge</a>
+				<a href="{{ url('/') }}" class="brand-logo" style="padding: 7px 20px 7px 20px;">gBridge</a>
 				<a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
 				<ul id="nav-mobile" class="right hide-on-med-and-down">
 					<li class="{{ (Request::is('device*') ||  Request::is('accesskey*')) ? 'active':'' }}"><a href="{{ route('device.index') }}">Management</a></li>

@@ -49,7 +49,7 @@
 								@else
 								<p>
 								@endif
-								<b>Accesskey #u{{Auth::user()->user_id}}a{{$accesskey->accesskey_id}}.</b><br>
+								<b title="Identifier u{{Auth::user()->user_id}}a{{$accesskey->accesskey_id}}">Accesskey No. {{ $loop->iteration }}</b><br>
 								Valid until {{ $accesskey->valid_until }} CE(S)T.
 								</p>
 
@@ -57,10 +57,10 @@
 								Accesskey: <input type="text" value="&lt;hidden&gt;" readonly><br>
 								<b>This key has been used to register an Google Home account at {{ $accesskey->used_at }} CE(S)T</b>
 								@elseif($accesskey->status === 'EXPIRED')
-								Accesskey: <input type="text" value="{{ $accesskey->password }}" readonly>
+								Accesskey: <input style="font-family: monospace;" type="text" value="{{ $accesskey->password }}" readonly>
 								<b>This accesskey has expired. You may delete this key and create a new one.</b>
 								@elseif($accesskey->status === 'READY')
-								Accesskey: <input type="text" value="{{ $accesskey->password }}" readonly>
+								Accesskey: <input style="font-family: monospace;" type="text" value="{{ $accesskey->password }}" readonly>
 								<b>This key is ready to be used.</b>
 								@else
 								The status of this accesskey is unknown.
