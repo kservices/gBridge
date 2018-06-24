@@ -151,7 +151,7 @@ mqtt.on('message', function(topic, message){
         console.log(`MQTT client error: Unsupported trait "${devicetrait}" for user ${userid}`);
         return;
     }
-    console.log(`gbridge:u${userid}:d${deviceid} ${message}`);
+
     redis_cache.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
 });
 //MQTT topic format is here gBridge/u<userid>/d<deviceid>/<trait>/set
