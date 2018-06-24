@@ -52,7 +52,7 @@
         &nbsp;
     </div>
     <div class="row">
-        <div class="col m12 l8 offset-l2">
+        <div class="col s12 m12 l8 offset-l2">
             <div class="card blue-grey lighten-4 black-text">
                 <form class="form-horizontal" method="POST" accept-charset="UTF-8" action="{{ route('password.email') }}">
                     {{ csrf_field() }}

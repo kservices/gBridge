@@ -17,10 +17,15 @@ use App\Device;
 
 Auth::routes();
 
-//redirect those to device, to default
-Route::get('/', function () {
-    return redirect('device');
-});
+if(env('KSERVICES_HOSTED', false)){
+    Route::get('/', function () {
+        return redirect('https://about.gbridge.kappelt.net');
+    });
+}else{
+    Route::get('/', function () {
+        return redirect('device');
+    });
+}
 Route::get('/home', function(){
     return redirect('device');
 });
@@ -39,3 +44,8 @@ Route::resource('accesskey', 'AccesskeyController', [
 Route::get('profile', 'UserProfileController@index')->name('profile.index')->middleware('auth');
 Route::post('profile/updatepwd', 'UserProfileController@updatepwd')->name('profile.updatepwd')->middleware('auth');
 Route::get('profile/verify/{verify_token}', 'UserProfileController@verify')->name('profile.verify');                   //auth is not necessary for verifying the account
+
+//Google Actions api
+Route::get('gapi/auth', 'GapiController@auth')->name('gapi.auth');
+Route::post('gapi/auth', 'GapiController@checkauth')->name('gapi.checkauth');
+Route::any('gapi', 'GapiController@apicall')->name('gapi.apicall');
