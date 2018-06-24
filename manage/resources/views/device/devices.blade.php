@@ -49,7 +49,7 @@
 			</table>
 		@else
 			{{-- See https://github.com/Dogfalo/materialize/issues/2340 for dialogs --}}
-			<div class="card-panel blue white-text">
+			<div class="card-panel green white-text">
 				No devices created yet.<br>
 				Let's add one by pressing the Button above!
 			</div>

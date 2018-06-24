@@ -78,7 +78,7 @@
 			</table>
 		@else
 			{{-- See https://github.com/Dogfalo/materialize/issues/2340 for dialogs --}}
-			<div class="card-panel blue white-text">
+			<div class="card-panel green white-text">
 				No accesskey created yet.<br>
 				Create one by pressing the button above!
 			</div>
