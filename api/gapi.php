@@ -39,7 +39,7 @@
             handleSync($handle, $userid, $request['requestId']);
         }elseif($input['intent'] === 'action.devices.QUERY'){
             //query-intent
-            errorResponse($request['requestId'], ErrorCode::unknownError, true);
+            handleQuery($handle, $userid, $request['requestId'], $input);
         }elseif($input['intent'] === 'action.devices.EXECUTE'){
             //execute-intent
             handleExecute($handle, $userid, $request['requestId'], $input);
@@ -122,6 +122,82 @@
     }
 
     /**
+     * Handle the Query-Intent
+     * @param handle DB-Handle
+     * @param userid The ID of the user that shall be synced.
+     * @param requestid The request id
+     * @param input the data that shall be handled
+     */
+    function handleQuery($handle, $userid, $requestid, $input){
+        $response = [
+            'requestId' => $requestid,
+            'payload' => [
+                'devices' => []
+            ]
+        ];
+
+        if(!isset($input['payload']['devices'])){
+            errorResponse($requestid, ErrorCode::protocolError, true);
+        }
+
+        global $redis_connection;
+        $redis;
+        try{
+            $redis = new Predis\Client($redis_connection, [
+                'prefix' => 'gbridge:',
+            ]);
+        }catch(Exception $e){
+            error_log('gBridge Critical: Redis connection could not be established - ' . $e->getMessage());
+            $success = false;
+        }
+
+        foreach($input['payload']['devices'] as $device){
+            $deviceId = $device['id'];
+            $traits = db_getTraitsOfDevice($handle, $deviceId);
+            if($traits['error']){
+                errorResponse($requestid, ErrorCode::deviceOffline, true);
+            }
+
+            $response['payload']['devices'][$deviceId] = [];
+            if(count($traits['traits']) > 0){
+                $response['payload']['devices'][$deviceId]['online'] = true;
+            }else{
+                $response['payload']['devices'][$deviceId]['online'] = false;
+            }
+
+            foreach($traits['traits'] as $trait){
+                $traitname = strtolower($trait['shortname']);
+
+                $value = $redis->hget("u$userid:d$deviceId", $traitname);
+                
+                //Special handling/ conversion for certain traits.
+                //Setting default values if not set by user before
+                if($traitname == 'onoff'){
+                    if(is_null($value)){
+                        $value = false;
+                    }else{
+                        $value = $value ? true:false;
+                    }
+                    $traitname = 'on';
+                }elseif($traitname == 'brightness'){
+                    if(is_null($value)){
+                        $value = 0;
+                    }else{
+                        $value = intval($value);
+                    }
+                }else{
+                    error_log("Unknown trait:\"$traitname\" for user $userid in query");
+                    $response['payload']['devices'][$deviceId]['online'] = false;
+                }
+
+                $response['payload']['devices'][$deviceId][$traitname] = $value;
+            }
+        }
+
+        echo json_encode($response);
+    }
+
+    /**
      * Handle the Execute-Intent
      * @param handle DB-Handle
      * @param userid The ID of the user that shall be synced.
@@ -139,9 +215,9 @@
         global $redis_connection;
         $redis;
         try{
-        $redis = new Predis\Client($redis_connection, [
-            'prefix' => 'gbridge:',
-        ]);
+            $redis = new Predis\Client($redis_connection, [
+                'prefix' => 'gbridge:',
+            ]);
         }catch(Exception $e){
             error_log('gBridge Critical: Redis connection could not be established - ' . $e->getMessage());
             $success = false;

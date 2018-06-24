@@ -230,7 +230,8 @@ function db_getTraitsOfDevice($handle, $deviceid){
             ], [
                 'trait.trait_id',
                 'trait.config',
-                'trait_type.gname'
+                'trait_type.gname',
+                'trait_type.shortname'
             ], [
                 'trait.device_id' => $deviceid
         ]);
@@ -295,24 +296,5 @@ function db_getDevicesOfUser($handle, $userid){
 
     return $ret;
 }
-
-/*
-$var = db_init();
-$data = $var['db']->select('google_accesskey', 
-    [
-        '[>]user' => 'user_id'
-    ], [
-        'google_accesskey.accesskey_id',
-        'google_accesskey.user_id', 
-        'user.email', 
-        'google_accesskey.password', 
-        'google_accesskey.password_used',
-        'google_accesskey.generated_at',
-        'google_accesskey.google_key'
-    ], [
-        'user.email' => 'kappelt.peter+gbridge2@gmail.com'
-    ]);
-
-*/
 
 ?>
