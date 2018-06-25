@@ -27,7 +27,8 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started" href="firstSteps/gettingStarted.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -76,9 +77,10 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">First steps:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firstSteps/gettingStarted.html">Getting Started</a></li>
 </ul>
 
             
@@ -145,10 +147,28 @@
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p><em>Kappelt gBridge</em> allows you to control (almost) every smart home device with Google Assistant. It provides a bridge between Google Assistant and MQTT.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p><em>Kappelt gBridge</em> is an open source application. However, I provide an inexpensive hosted appliance of gBridge.
+<strong>This is a great way of supporting my work</strong> - and you don’t have to care about installation, debugging and maintenance.</p>
+<p class="last">Interested? Have a look at <a class="reference external" href="https://about.gbridge.kappelt.net">https://about.gbridge.kappelt.net</a>.</p>
+</div>
+<p>It acts like a smart home device provider, that is listed in the Google Home app. But there are no real devices by Kappelt gBridge - there are virtual devices defined by you in your user account’s dashboard.
+When you interact with a virtual device you’ve defined (“Hey Google, turn on the lights in the living room”), gBridge will publish an MQTT message.</p>
+<p>This MQTT message can finally be handled by most smart home applications and might be further processed there.</p>
+<p>All set? <a class="reference internal" href="firstSteps/gettingStarted.html"><span class="doc">Let’s get started</span></a></p>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">First steps:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firstSteps/gettingStarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="firstSteps/gettingStarted.html#register-a-new-account">Register a new account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="firstSteps/gettingStarted.html#a-first-device">A first device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="firstSteps/gettingStarted.html#connect-google-assistant">Connect Google Assistant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="firstSteps/gettingStarted.html#test-it">Test it</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -159,6 +179,13 @@
           </div>
           <footer>
   
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="firstSteps/gettingStarted.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
 
   <hr/>
 
@@ -168,10 +195,11 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x0000000005A1DD68> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x0000000005CD4390> 
 
 <br>
-Learn more about Kappelt gBridge? See <a href="https://gbridge.kappelt.net" target="_blank">https://gbridge.kappelt.net</a>
+<a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>
+Learn more about Kappelt gBridge? See <a href="https://about.gbridge.kappelt.net" target="_blank">https://about.gbridge.kappelt.net</a>
 
  
 
