@@ -12,8 +12,11 @@
 
 	<title>@if(!empty($site_title)) {{ $site_title . ' | '}}@endif Kappelt gBridge</title>
 
-	<link rel="stylesheet" charset="utf-8" href="https://fonts.googleapis.com/icon?family=Material+Icons"> {!! MaterializeCSS::include_secure_css() !!}
-	<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script> {!! MaterializeCSS::include_secure_js() !!}
+	<link rel="stylesheet" charset="utf-8" href="https://fonts.googleapis.com/icon?family=Material+Icons"> 
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
 
 	<script>
 		$(document).ready(function () {
