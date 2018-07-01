@@ -7,8 +7,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="Kappelt kBridge: Control anything with Google Assistant">
 	<meta name="author" content="Kappelt kServices">
-	<!--<link rel="icon" href="">-->
 	<meta name="csrf-token" content="{{ csrf_token() }}">
+
+	<link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="{{ asset('img/kappelt-196.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/kappelt-180.png') }}">
 
 	<title>@if(!empty($site_title)) {{ $site_title . ' | '}}@endif Kappelt gBridge</title>
 

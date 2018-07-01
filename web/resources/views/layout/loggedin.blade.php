@@ -16,7 +16,7 @@
 
 		<nav class="nav-extended blue">
 			<div class="nav-wrapper">
-				<a href="{{ url('/') }}" class="brand-logo" style="padding: 7px 20px 7px 20px;">gBridge</a>
+				<a href="{{ route('device.index') }}" class="brand-logo" style="padding: 7px 20px 7px 20px;">gBridge</a>
 				<a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
 				<ul id="nav-mobile" class="right hide-on-med-and-down">
 					<li class="{{ Request::is('device*') ? 'active':'' }}"><a href="{{ route('device.index') }}">Devices</a></li>

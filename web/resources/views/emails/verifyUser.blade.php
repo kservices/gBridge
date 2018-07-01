@@ -1,15 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Welcome to Kappelt gBridge</title>
-</head>
- 
-<body>
+@extends('emails.email')
+
+@section('mail_content')
 <h2>Welcome to Kappelt gBridge, {{ $user->email }}!</h2>
-<br/>
+<br>
 Please click on the below link to verify your email account
-<br/>
+<br><br>
 <a href="{{ route('profile.verify', $user->verify_token) }}">Verify Email</a>
-</body>
- 
-</html>
+@endsection
+
+@section('mail_reason')
+You are receiving this mail because you've registered at Kappelt gBridge.
+@endsection
