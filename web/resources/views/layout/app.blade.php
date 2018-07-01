@@ -49,25 +49,28 @@
 	<footer class="blue page-footer">
 		<div class="container">
 			<div class="row">
-				<div class="col m2 s6" style="height: 100%">
+				<div class="col m2 s6">
 					<img src="{{ asset('img/kappelt-logo.png') }}" alt="Kappelt Logo" class="responsive-img" style="max-width: 100%;">
 				</div>
-				<div class="col m6 s6">
+				<div class="col m4 s6">
 					<h5 class="white-text">Kappelt gBridge</h5>
 				</div>
-				<div class="col m4 s12">
+				<div class="col m6 s12">
 					<h5 class="white-text">Links</h5>
 					<ul>
-						<li>
-							<a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/privacy">Privacy Policy</a>
-						</li>
-						<li>
-							<a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/imprint">Imprint</a>
-						</li>
-						<li>
-							<a class="grey-text text-lighten-3" href="https://github.com/kservices/gBridge">gBridge on Github</a>
-						</li>
-					</ul>
+                        <li>
+                            <a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/toc">Terms and Conditions/ Allgemeine Geschäftsbedingungen</a>
+                        </li>
+                        <li>
+                            <a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/privacy">Privacy Policy/ Datenschutzerklärung</a>
+                        </li>
+                        <li>
+                            <a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/imprint">Imprint/ Impressum</a>
+                        </li>
+                        <li>
+                            <a class="grey-text text-lighten-3" href="https://github.com/kservices/gBridge">gBridge on Github</a>
+                        </li>
+                    </ul>
 				</div>
 				@if(!env('KSERVICES_HOSTED', false))
 				<div class="col s12">

@@ -17,6 +17,7 @@ class CreateUsersTable extends Migration
             $table->increments('user_id');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('mqtt_password', 128)->nullable();
             $table->string('verify_token')->nullable();
             $table->rememberToken();
             $table->timestamps();

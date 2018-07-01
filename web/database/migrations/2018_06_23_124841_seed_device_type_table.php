@@ -42,6 +42,9 @@ class SeedDeviceTypeTable extends Migration
      */
     public function down()
     {
+        DB::table('device')->where('devicetype_id', 1)->delete();
+        DB::table('device')->where('devicetype_id', 2)->delete();
+        DB::table('device')->where('devicetype_id', 3)->delete();
         DB::table('device_type')->where('devicetype_id', 1)->delete();
         DB::table('device_type')->where('devicetype_id', 2)->delete();
         DB::table('device_type')->where('devicetype_id', 3)->delete();

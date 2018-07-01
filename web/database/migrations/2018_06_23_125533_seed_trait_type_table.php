@@ -36,6 +36,8 @@ class SeedTraitTypeTable extends Migration
      */
     public function down()
     {
+        DB::table('trait')->where('traittype_id', 1)->delete();
+        DB::table('trait')->where('traittype_id', 2)->delete();
         DB::table('trait_type')->where('traittype_id', 1)->delete();
         DB::table('trait_type')->where('traittype_id', 2)->delete();
     }

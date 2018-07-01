@@ -43,6 +43,7 @@ Route::resource('accesskey', 'AccesskeyController', [
 //User profile management
 Route::get('profile', 'UserProfileController@index')->name('profile.index')->middleware('auth');
 Route::post('profile/updatepwd', 'UserProfileController@updatepwd')->name('profile.updatepwd')->middleware('auth');
+Route::post('profile/updatemqtt', 'UserProfileController@updatemqtt')->name('profile.updatemqtt')->middleware('auth');
 Route::get('profile/verify/{verify_token}', 'UserProfileController@verify')->name('profile.verify');                   //auth is not necessary for verifying the account
 
 //Google Actions api

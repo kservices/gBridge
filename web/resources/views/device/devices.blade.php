@@ -56,7 +56,8 @@
 			{{-- See https://github.com/Dogfalo/materialize/issues/2340 for dialogs --}}
 			<div class="card-panel green white-text">
 				No devices created yet.<br>
-				Let's add one by pressing the Button above!
+				Let's add one by pressing the Button above!<br>
+				Need help? Visit <a class="grey-text text-lighten-2" href="https://doc.gbridge.kappelt.net/html/firstSteps/gettingStarted.html" target="_blank">https://doc.gbridge.kappelt.net</a> for documentation and a quickstart guide.
 			</div>
 		@endif
 	</div>
