@@ -211,21 +211,26 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Hostname:</th><td class="field-body">mqtt.gbridge.kappelt.net</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">1883</td>
+<tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">8883</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Username:</th><td class="field-body">Shown in your account’s dashboard under “My Account”</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Password:</th><td class="field-body">Shown in your account’s dashboard under “My Account”</td>
+<tr class="field-even field"><th class="field-name">Password:</th><td class="field-body">Needs to be set once in your account’s dashboard</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">Not yet supported</td>
+<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.3 is required</td>
 </tr>
 </tbody>
 </table>
+<p><strong>About TLS:</strong> The Server uses an certificate that is signed by Let’s Encrypt.
+The Let’s Encrypt CA is trusted by most systems nowadays, you shouldn’t really need to install a certificate.
+<a class="reference external" href="https://about.gbridge.kappelt.net/static/LetsEncrypt-AllCAs.pem">Only download the prepared CA certificates</a> if your system doesn’t support them natively.</p>
 <p>Subscribe now to the MQTT topic that belongs to your device, for example with <em>mosquitto_sub</em>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mosquitto_sub --username your-username <span class="se">\</span>
-   --pw your-password <span class="se">\</span>
-   --topic gBridge/u2/d4/onoff <span class="se">\</span>
-   --host mqtt.gbridge.kappelt.net
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mosquitto_sub --username your-mqtt-username <span class="se">\</span>
+   --pw your-mqtt-password <span class="se">\</span>
+   --capath /etc/ssl/certs/ <span class="se">\</span>
+   --host mqtt.gbridge.kappelt.net <span class="se">\</span>
+   --port <span class="m">8883</span> <span class="se">\</span>
+   --topic gBridge/u2/d4/onoff
 </pre></div>
 </div>
 <div class="align-center figure" id="id6">
@@ -257,7 +262,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x0000000005B1C1D0> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x00000000051564A8> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>

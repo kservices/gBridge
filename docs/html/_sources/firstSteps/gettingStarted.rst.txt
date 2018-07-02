@@ -82,19 +82,25 @@ Test it
 Everything is ready now! Messages will now be available on gBridge's public MQTT server. You can connect to it:
 
 :Hostname: mqtt.gbridge.kappelt.net
-:Port: 1883
+:Port: 8883
 :Username: Shown in your account's dashboard under "My Account"
-:Password: Shown in your account's dashboard under "My Account"
-:TLS: Not yet supported
+:Password: Needs to be set once in your account's dashboard
+:TLS: TLS V1.3 is required
+
+**About TLS:** The Server uses an certificate that is signed by Let's Encrypt. 
+The Let's Encrypt CA is trusted by most systems nowadays, you shouldn't really need to install a certificate. 
+`Only download the prepared CA certificates <https://about.gbridge.kappelt.net/static/LetsEncrypt-AllCAs.pem>`_ if your system doesn't support them natively. 
 
 Subscribe now to the MQTT topic that belongs to your device, for example with *mosquitto_sub*:
 
 .. code-block:: bash
 
-   mosquitto_sub --username your-username \
-      --pw your-password \
-      --topic gBridge/u2/d4/onoff \
-      --host mqtt.gbridge.kappelt.net
+   mosquitto_sub --username your-mqtt-username \
+      --pw your-mqtt-password \
+      --capath /etc/ssl/certs/ \
+      --host mqtt.gbridge.kappelt.net \
+      --port 8883 \
+      --topic gBridge/u2/d4/onoff
 
 .. figure:: ../_static/googlehome-try-it.png
    :width: 100%
