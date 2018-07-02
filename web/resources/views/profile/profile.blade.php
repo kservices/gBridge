@@ -43,8 +43,8 @@
 							<p><span class="card-title">MQTT server</span></p>
 							<ul class="browser-default">
 								<li><b>MQTT server:</b> mqtt.gbridge.kappelt.net</li>
-								<li><b>MQTT port:</b> 1883</li>
-								<li><b>TLS:</b> not yet supported</li>
+								<li><b>MQTT port:</b> 8883</li>
+								<li><b>TLS:</b> TLS V1.3 required.<br>Certificate is signed by Let's Encrypt, so use the CAs of your system (for example under /etc/ssl/certs/ for Debian based systems).<br><a href="https://about.gbridge.kappelt.net/static/LetsEncrypt-AllCAs.pem" download="LetsEncrypt-AllCAs.pem" target="_blank">Only download the CA files from here</a> if your system does not support Let's Encrypt CA natively.</li>
 								<li><b>Username:</b> gbridge-u{{ Auth::user()->user_id }}</li>
 								<li><b>Password:</b> (change below)</li>
 							</ul>
