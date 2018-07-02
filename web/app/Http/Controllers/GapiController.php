@@ -123,6 +123,9 @@ class GapiController extends Controller
         }elseif($input['intent'] === 'action.devices.EXECUTE'){
             //execute-intent
             return $this->handleExecute($user, $requestid, $input);
+        }elseif($input['intent'] === 'action.devices.DISCONNECT'){
+            $accesskey->delete();
+            return response()->json([]);
         }else{
             //unknown intent
             error_log('Unknown intent: "' . $input['intent'] . '"');
