@@ -9,6 +9,11 @@
 
     @include('common.messages')
 
+    <div class="card-panel green white-text">
+        <b>Nice to see you again!</b><br>
+        Google is requiring access to your gBridge account. Please enter your account's email and an accesskey you've generated.
+    </div>
+
     <div class="row">
         <div class="col s12 m12 l8 offset-l2">
             <div class="card blue-grey lighten-4 black-text">
