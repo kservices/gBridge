@@ -28,6 +28,6 @@ class Accesskey extends Model
      * Returns true, if this key has been created more than one hour ago
      */
     public function isExpired(){
-        return (Carbon::now('Europe/Berlin') > Carbon::parse($this->generated_at)->addHours(1));
+        return (Carbon::now('Europe/Berlin') > Carbon::parse($this->generated_at, 'Europe/Berlin')->addHours(1));
     }
 }

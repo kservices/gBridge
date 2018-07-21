@@ -30,13 +30,13 @@ class AccesskeyController extends Controller
         foreach($accesskeys as $accesskey){
             if($accesskey->password_used){
                 $accesskey->status = 'USED';
-            }elseif(Carbon::now('Europe/Berlin') > Carbon::parse($accesskey->generated_at)->addHours(1)){
+            }elseif(Carbon::now('Europe/Berlin') > Carbon::parse($accesskey->generated_at, 'Europe/Berlin')->addHours(1)){
                 $accesskey->status = 'EXPIRED';
             }else{
                 $accesskey->status = 'READY';
             }
 
-            $accesskey->valid_until = Carbon::parse($accesskey->generated_at)->addHours(1);
+            $accesskey->valid_until = Carbon::parse($accesskey->generated_at, 'Europe/Berlin')->addHours(1);
         }
 
         return view('accesskey.accesskeys', [
