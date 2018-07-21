@@ -13,7 +13,11 @@ var redis_cache = redislib.createClient(config.redis);
  * MQTT client
  */
 var mqttlib = require("mqtt");
-var mqtt = mqttlib.connect(config.mqtt);
+var mqtt = mqttlib.connect(config.mqtt, {
+    username: config.mqttuser,
+    password: config.mqttpassword
+});
+console.log(config.mqttpassword);
 
 /**
  * HTTP requests
@@ -98,6 +102,10 @@ redis_subscribe.on("pmessage", function (pattern, channel, message) {
           };
         requestSync();
     }
+
+    //TEMP
+    redis_cache.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
+    //END TEMP
 
     mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
 });
