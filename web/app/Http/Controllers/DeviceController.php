@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\User;
 use App\Device;
 use App\DeviceType;
 use App\TraitType;
@@ -19,6 +20,21 @@ class DeviceController extends Controller
     public function googleRequestSync(){
         $userid = Auth::user()->user_id;
         Redis::publish("gbridge:u$userid:d0:requestsync", "0");
+    }
+
+    /**
+     * Store general information about the user in the redis cache for usage with other modules of gBridge
+     */
+    public function userInfoToCache(){
+        $deviceinfo = [];
+        foreach(Auth::user()->devices as $device){
+            $deviceinfo[$device->device_id] = [];
+            foreach($device->traits as $trait){
+                $deviceinfo[$device->device_id][] = $trait->shortname;
+            }
+        }
+        $userid = Auth::user()->user_id;
+        Redis::set("gbridge:u$userid:devices", json_encode($deviceinfo));
     }
 
     /**
@@ -83,6 +99,7 @@ class DeviceController extends Controller
 
         $device->traits()->sync($request->input('traits'));
         
+        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device added');
@@ -135,6 +152,7 @@ class DeviceController extends Controller
 
         $device->traits()->sync($request->input('traits'));
         
+        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device modified');
@@ -151,6 +169,7 @@ class DeviceController extends Controller
         $device = Auth::user()->devices()->find($id);
         $device->delete();
 
+        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device deleted');
