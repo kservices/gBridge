@@ -17,7 +17,6 @@ var mqtt = mqttlib.connect(config.mqtt, {
     username: config.mqttuser,
     password: config.mqttpassword
 });
-console.log(config.mqttpassword);
 
 /**
  * HTTP requests
