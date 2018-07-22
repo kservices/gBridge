@@ -1,0 +1,19 @@
+{
+  "name": "gbridge-rs-worker",
+  "version": "1.0.0",
+  "description": "Kappelt Report State Daemon Worker",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "Peter Kappelt",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "jsonwebtoken": "^8.3.0",
+    "mqtt": "^2.18.1",
+    "redis": "^2.8.0",
+    "uuid": "^3.3.2"
+  }
+}
