@@ -114,16 +114,26 @@ class GapiController extends Controller
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
+        Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequestid', $requestid);
+
         if($input['intent'] === 'action.devices.SYNC'){
             //sync-intent
+            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'SYNC');
+            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'SYNC');
             return $this->handleSync($user, $requestid);
         }elseif($input['intent'] === 'action.devices.QUERY'){
             //query-intent
+            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'QUERY');
+            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'QUERY');
             return $this->handleQuery($user, $requestid, $input);
         }elseif($input['intent'] === 'action.devices.EXECUTE'){
             //execute-intent
+            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'EXECUTE');
+            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'EXECUTE');
             return $this->handleExecute($user, $requestid, $input);
         }elseif($input['intent'] === 'action.devices.DISCONNECT'){
+            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'DISCONNECT');
+            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'DISCONNECT');
             $accesskey->delete();
             return response()->json([]);
         }else{
@@ -159,9 +169,11 @@ class GapiController extends Controller
                     'defaultNames' => ['Kappelt Virtual Device'],
                     'name' => $device->name
                 ],
-                'willReportState' => false,
+                //when hosted by us we have to implement report state.
+                //I do not recommend that in a self-hosted environment since it is just useless effort for this application
+                'willReportState' => env('KSERVICES_HOSTED', false) ? true:false,
                 'deviceInfo' => [
-                    'manufacturer' => 'Kappelt'
+                    'manufacturer' => 'Kappelt kServices'
                 ]
             ];
         }
@@ -202,6 +214,13 @@ class GapiController extends Controller
                 $response['payload']['devices'][$deviceId]['online'] = true;
             }else{
                 $response['payload']['devices'][$deviceId]['online'] = false;
+            }
+
+            $powerstate = Redis::hget("gbridge:u$userid:d$deviceId", 'power');
+            if(!is_null($powerstate)){
+                if($powerstate == '0'){
+                    $response['payload']['devices'][$deviceId]['online'] = false;
+                }
             }
 
             foreach($traits as $trait){
@@ -247,8 +266,8 @@ class GapiController extends Controller
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
-        $success = true;
-        $handledDeviceIds = [];
+        $handledDeviceIds = [];         //array of all device ids that are handled
+        $successfulDeviceIds = [];      //array of all device ids that are handled successfully (e.g. are not offline and everything went well)
 
         foreach($input['payload']['commands'] as $command){
             $deviceIds = array_map(function($device){return $device['id'];}, $command['devices']);
@@ -268,28 +287,47 @@ class GapiController extends Controller
                     $value = $exec['params']['brightness'];
                 }else{
                     //unknown execute-command
-                    $success = false;
                     continue;
                 }
 
                 foreach($deviceIds as $deviceid){
+                    //publish the new state to Redis
                     Redis::publish("gbridge:u$user->user_id:d$deviceid:$trait", $value);
+
+                    //do not add to successfull devices if marked offline
+                    $powerstate = Redis::hget("gbridge:u$user->user_id:d$deviceid", 'power');
+                    if(is_null($powerstate)){
+                        $successfulDeviceIds[] = $deviceid;
+                    }elseif($powerstate != '0'){
+                        $successfulDeviceIds[] = $deviceid;
+                    }
                 }
             }
         }
 
+        $handledDeviceIds = array_unique($handledDeviceIds);
+        $successfulDeviceIds = array_unique($successfulDeviceIds);
+
         $response = [
             'requestId' => $requestid,
             'payload' => [
-                'commands' => [
-                    [
-                        'ids' => array_unique($handledDeviceIds),
-                        'status' => ($success ? "SUCCESS":"OFFLINE")
-                    ]
-                ]
+                'commands' => []
             ]
         ];
 
+        if(count($successfulDeviceIds) > 0){
+            $response['payload']['commands'][] = [
+                'ids' => $successfulDeviceIds,
+                'status' => 'SUCCESS'
+            ];
+        }
+        if(count(array_diff($handledDeviceIds, $successfulDeviceIds)) > 0){
+            $response['payload']['commands'][] = [
+                'ids' => array_values(array_diff($handledDeviceIds, $successfulDeviceIds)),
+                'status' => 'OFFLINE'
+            ];
+        }
+       
         return response()->json($response);
     }
 

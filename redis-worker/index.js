@@ -104,7 +104,7 @@ redis_subscribe.on("pmessage", function (pattern, channel, message) {
     }
 
     //TEMP
-    redis_cache.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
+    //redis_cache.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
     //END TEMP
 
     mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
@@ -118,7 +118,13 @@ redis_subscribe.psubscribe("gbridge:u*:d*:*");
  */
 mqtt.on('message', function(topic, message){
     message = message.toString();
-    var topicMatch = /(?:gBridge\/u)(\d+)(?:\/d)(\d+)(?:\/)(.*)(?:\/set)/;
+    /**
+     * The regex matches the following:
+     * gBridge/u<user-id>/d<device-id>/<trait>
+     * The additional "set" suffix is optional (avoided) here, MQTT subscribe takes care of that
+     * Additionally, the "set" suffix is not required for the "power" trait, so we shouldn't check here
+     */
+    var topicMatch = /^(?:gBridge\/u)(\d+)(?:\/d)(\d+)(?:\/)([^\/]+)/;
 
     if(!topicMatch.test(topic)){
         console.log(`MQTT client error (test): Received malformed topic "${topic}" with message "${message}"`);
@@ -155,6 +161,13 @@ mqtt.on('message', function(topic, message){
         }
 
         message = brightness;
+    }else if(devicetrait === "power"){
+        //device reporting power state
+        if((message == "0") || (message == "false") || (message == "off")){
+            message = 0;
+        }else{
+            message = 1;
+        }
     }else{
         console.log(`MQTT client error: Unsupported trait "${devicetrait}" for user ${userid}`);
         return;
@@ -164,3 +177,5 @@ mqtt.on('message', function(topic, message){
 });
 //MQTT topic format is here gBridge/u<userid>/d<deviceid>/<trait>/set
 mqtt.subscribe('gBridge/+/+/+/set');
+//subscribe to the power topic too, that doesn't require the "set" suffix
+mqtt.subscribe('gBridge/+/+/power');
