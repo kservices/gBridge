@@ -92,12 +92,22 @@ function reportState(userid, requestid){
 
             return new Promise(function(resolve, reject){
                 redis.hgetall(`gbridge:u${userid}:d${deviceid}`, function(err, data){
-                    if(err){
-                        return reject(err);
-                    }
-                    if(data){
-                        rsData['payload']['devices']['states'][deviceid] = {};
+                    rsData['payload']['devices']['states'][deviceid] = {};
 
+                    if(err || (!data)){
+                        //default values if not yet set, do not throw error
+                        if(traits.includes('OnOff')){
+                            rsData['payload']['devices']['states'][deviceid]['on'] = false;
+                        }
+                        if(traits.includes('Brightness')){
+                            rsData['payload']['devices']['states'][deviceid]['brightness'] = 0;
+                        }
+                        //return reject(err);
+                        resolve();
+                        return;
+                    }
+                    
+                    if(data){
                         if(traits.includes('OnOff')){
                             if('onoff' in data){
                                 rsData['payload']['devices']['states'][deviceid]['on'] = (data['onoff'] != '0') ? true:false;
