@@ -113,6 +113,15 @@
                             <label for="password_confirmation">Password (confirm)</label>
                         </div>
 
+                        @if(env('KSERVICES_HOSTED', false))
+                        <label>
+                            <input type="checkbox" id="accept_toc" name="accept_toc">
+                            <span>I've read and accepted both the <a href="https://about.gbridge.kappelt.net/toc" target="_blank">Terms and Conditions</a> and the <a href="https://about.gbridge.kappelt.net/privacy" target="_blank">Privacy Policy</a></span>
+                        </label>
+                        @else
+                        <input type="hidden" name="accept_toc" value="on">
+                        @endif
+
                     </div>
                     <div class="card-action">
                         <button style="width: 100%;" class="btn waves-effect blue" type="submit">

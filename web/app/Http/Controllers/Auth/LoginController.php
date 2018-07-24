@@ -42,7 +42,7 @@ class LoginController extends Controller
     {
         if (isset($user->verify_token)) {
             auth()->logout();
-            return back()->with('error', 'You need to confirm your account. We have sent you an activation code, please check your email. Contact support under gbridge@kappelt.net if you haven\'t received the confirmation');
+            return back()->with('error', 'You need to confirm your account. We have sent you an activation code, please check your email account. Check the spam folder for this mail, contact support under gbridge@kappelt.net if you haven\'t received the confirmation');
         }
         return redirect()->intended($this->redirectPath());
     }
