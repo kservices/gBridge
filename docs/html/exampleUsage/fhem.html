@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FHEM examples &mdash; Kappelt gBridge 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Hosted MQTT server" href="../firstSteps/mqttServer.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Kappelt gBridge
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">First steps:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../firstSteps/gettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../firstSteps/deviceMechanism.html">Device Mechanism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../firstSteps/mqttServer.html">Hosted MQTT server</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FHEM examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mqtt-server-connection">MQTT server connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-on-off-and-brightness">Basic On/Off and Brightness</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Kappelt gBridge</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>FHEM examples</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/exampleUsage/fhem.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fhem-examples">
+<h1>FHEM examples<a class="headerlink" href="#fhem-examples" title="Permalink to this headline">¶</a></h1>
+<p>This page will be filled with a couple of examples that explain the integration of gBridge in FHEM.</p>
+<div class="section" id="mqtt-server-connection">
+<h2>MQTT server connection<a class="headerlink" href="#mqtt-server-connection" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Sadly, MQTT over TLS does not yet work in FHEM. This example shows a direct, insecure connection to the gBridge MQTT server <strong>that should never be done on a production system</strong>.
+The only way to currently do it properly is the usage of <a class="reference internal" href="../firstSteps/mqttServer.html#mqttserver-mosquittobridge"><span class="std std-ref">a local Mosquitto instance as a bridge/ proxy</span></a>. If you’ve setup your local broker to act as a bridge, you can just specify it here for the MQTT connection.</p>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>define Connections.gBridge MQTT mqtt.gbridge.kappelt.net:1883 {gbridge-mqtt-username} {gbridge-mqtt-password}
+</pre></div>
+</div>
+</div>
+<div class="section" id="basic-on-off-and-brightness">
+<h2>Basic On/Off and Brightness<a class="headerlink" href="#basic-on-off-and-brightness" title="Permalink to this headline">¶</a></h2>
+<p>This example shows the configuration to control a device with the following feature set:</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">set</span> <span class="pre">{devicename}</span> <span class="pre">on</span></code> turns the device on</li>
+<li><code class="code docutils literal notranslate"><span class="pre">set</span> <span class="pre">{devicename}</span> <span class="pre">off</span></code> turns the device off</li>
+<li><code class="code docutils literal notranslate"><span class="pre">set</span> <span class="pre">{devicename}</span> <span class="pre">pct</span> <span class="pre">{value}</span></code> sets the brightness of the device, where value is inbetween 0-100</li>
+</ul>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>define {devicename}.gBridge MQTT_BRIDGE {devicename}
+attr {devicename}.gBridge IODev Connections.gBridge
+attr {devicename}.gBridge publishReading_onoff gBridge/u{userid}/d{deviceid}/onoff/set
+attr {devicename}.gBridge publishReading_pct gBridge/u{userid}/d{deviceid}/brightness/set
+attr {devicename}.gBridge stateFormat transmission-state
+attr {devicename}.gBridge subscribeSet_gstate {if($message eq &quot;0&quot;){fhem(&quot;set $device off&quot;)}else{ fhem(&quot;set $device on&quot;)};; 0} gBridge/u{userid}/d{deviceid}/onoff
+attr {devicename}.gBridge subscribeSet_pct gBridge/u{userid}/d{deviceid}/brightness
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../firstSteps/mqttServer.html" class="btn btn-neutral" title="Hosted MQTT server" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Kappelt.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x0000000005668DD8> 
+
+<br>
+<a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>
+Learn more about Kappelt gBridge? See <a href="https://about.gbridge.kappelt.net" target="_blank">https://about.gbridge.kappelt.net</a>
+
+ 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

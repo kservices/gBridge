@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Hosted MQTT server" href="mqttServer.html" />
     <link rel="prev" title="Introduction" href="../index.html" /> 
 
   
@@ -87,6 +88,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#test-it">Test it</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="mqttServer.html">Hosted MQTT server</a></li>
 </ul>
 
             
@@ -166,12 +168,12 @@
 <h2>A first device<a class="headerlink" href="#a-first-device" title="Permalink to this headline">¶</a></h2>
 <p>You’ll see your account’s dashboard for the first time after logging in.</p>
 <div class="align-center figure" id="id1">
-<a class="reference internal image-reference" href="../_images/empty-dashboard-devices.png"><img alt="alternate text" src="../_images/empty-dashboard-devices.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/empty-dashboard-devices.png"><img alt="No devices have been created yet." src="../_images/empty-dashboard-devices.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-text">Your dashboard</span></p>
 </div>
 <p>Press the top-right button labeled with “+ Device” to create a new one. Choose whatever you like. For this example, I’ve chosen “Light” as the type and both “On and Off” and “Brightness” as supported traits.</p>
 <div class="align-center figure" id="id2">
-<a class="reference internal image-reference" href="../_images/dashboard-first-device.png"><img alt="alternate text" src="../_images/dashboard-first-device.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/dashboard-first-device.png"><img alt="You've just created a first device." src="../_images/dashboard-first-device.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-text">Congratulations! You’ve just created your first virtual device.</span></p>
 </div>
 <p>Note the MQTT topics that are listed here.</p>
@@ -182,7 +184,7 @@
 </div>
 <p>To do so, open the tab “Accesskeys” and click on the add-button.</p>
 <div class="align-center figure" id="id3">
-<a class="reference internal image-reference" href="../_images/dashboard-first-accesskey.png"><img alt="alternate text" src="../_images/dashboard-first-accesskey.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/dashboard-first-accesskey.png"><img alt="A first accesskey has been generated." src="../_images/dashboard-first-accesskey.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-text">You’ll need that accesskey later!</span></p>
 </div>
 </div>
@@ -190,14 +192,14 @@
 <h2>Connect Google Assistant<a class="headerlink" href="#connect-google-assistant" title="Permalink to this headline">¶</a></h2>
 <p>Open the <em>Google Home App</em> to connect your Google Home system to gBridge. Navigate to the smart home settings and press the “Add” button to link your account. Select <em>Kappelt gBridge</em>.</p>
 <div class="align-center figure">
-<a class="reference internal image-reference" href="../_images/googlehome-add-provider.png"><img alt="alternate text" src="../_images/googlehome-add-provider.png" style="width: 50%;" /></a>
+<a class="reference internal image-reference" href="../_images/googlehome-add-provider.png"><img alt="You can add Kappelt gBridge as a smart home provider in the Google Home app." src="../_images/googlehome-add-provider.png" style="width: 50%;" /></a>
 </div>
 <div class="align-center figure" id="id4">
-<a class="reference internal image-reference" href="../_images/googlehome-link-account.png"><img alt="alternate text" src="../_images/googlehome-link-account.png" style="width: 50%;" /></a>
+<a class="reference internal image-reference" href="../_images/googlehome-link-account.png"><img alt="You need to enter your account's email and an accesskey." src="../_images/googlehome-link-account.png" style="width: 50%;" /></a>
 <p class="caption"><span class="caption-text">Enter your email, use the accesskey that was generated before.</span></p>
 </div>
 <div class="align-center figure" id="id5">
-<a class="reference internal image-reference" href="../_images/googlehome-device-listed.png"><img alt="alternate text" src="../_images/googlehome-device-listed.png" style="width: 50%;" /></a>
+<a class="reference internal image-reference" href="../_images/googlehome-device-listed.png"><img alt="Devices are listed in the Google Home app" src="../_images/googlehome-device-listed.png" style="width: 50%;" /></a>
 <p class="caption"><span class="caption-text">Your newly created devices will appear in the list. If you like, you can assign a room to the devices.</span></p>
 </div>
 <p>If you add new devices in your dashboard, they’ll appear in the list automatically.</p>
@@ -217,7 +219,7 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Password:</th><td class="field-body">Needs to be set once in your account’s dashboard</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.3 is required</td>
+<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
 </tr>
 </tbody>
 </table>
@@ -234,7 +236,7 @@ The Let’s Encrypt CA is trusted by most systems nowadays, you shouldn’t real
 </pre></div>
 </div>
 <div class="align-center figure" id="id6">
-<a class="reference internal image-reference" href="../_images/googlehome-try-it.png"><img alt="alternate text" src="../_images/googlehome-try-it.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="../_images/googlehome-try-it.png"><img alt="Google Assistant Example" src="../_images/googlehome-try-it.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-text">A voice command leads to a published MQTT message.</span></p>
 </div>
 </div>
@@ -247,6 +249,8 @@ The Let’s Encrypt CA is trusted by most systems nowadays, you shouldn’t real
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mqttServer.html" class="btn btn-neutral float-right" title="Hosted MQTT server" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../index.html" class="btn btn-neutral" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -262,7 +266,7 @@ The Let’s Encrypt CA is trusted by most systems nowadays, you shouldn’t real
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x00000000051564A8> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x000000000608EA20> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>
