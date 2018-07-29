@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Hosted MQTT server &mdash; Kappelt gBridge 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FHEM examples" href="../exampleUsage/fhem.html" />
+    <link rel="prev" title="Device Mechanism" href="deviceMechanism.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Kappelt gBridge
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">First steps:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deviceMechanism.html">Device Mechanism</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hosted MQTT server</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#authentication">Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#available-protocols">Available protocols</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mqtt-over-tls">MQTT over TLS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mqtt-over-secure-websockets">MQTT over secure websockets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plain-mqtt">Plain MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mqtt-over-websockets">MQTT over websockets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#using-own-mosquitto-as-a-bridge">Using own Mosquitto as a Bridge</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../exampleUsage/fhem.html">FHEM examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Kappelt gBridge</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Hosted MQTT server</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/firstSteps/mqttServer.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="hosted-mqtt-server">
+<h1>Hosted MQTT server<a class="headerlink" href="#hosted-mqtt-server" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This page is written for the hosted gBridge service.</p>
+</div>
+<div class="section" id="authentication">
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<p>Of course, the gBridge MQTT servers requires authentication.</p>
+<p><strong>Username:</strong> <code class="code docutils literal notranslate"><span class="pre">gbridge-{userid}</span></code>. Your full username is shown in your account’s dashboard under “My Account”. <em>Example:</em> <code class="code docutils literal notranslate"><span class="pre">gbridge-u4</span></code></p>
+<p><strong>Password:</strong> No default MQTT password is set for your account. You can set an own MQTT password in your account’s dashboard. This password must be at least 8 characters long, while containing both upper- and lowercase letters, a number and a special character. A new password will (almost) instantly apply for any new MQTT connections.</p>
+</div>
+<div class="section" id="available-protocols">
+<h2>Available protocols<a class="headerlink" href="#available-protocols" title="Permalink to this headline">¶</a></h2>
+<p>The hosted gBridge MQTT servers can be reached over many ways.</p>
+<div class="section" id="mqtt-over-tls">
+<h3>MQTT over TLS<a class="headerlink" href="#mqtt-over-tls" title="Permalink to this headline">¶</a></h3>
+<p>MQTT over TLS can be reached by <code class="code docutils literal notranslate"><span class="pre">mqtts://mqtt.gbridge.kappelt.net</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Server:</th><td class="field-body">mqtt.gbridge.kappelt.net</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">8883</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+</tr>
+</tbody>
+</table>
+<p>The server uses certificates signed by Let’s Encrypt. This CA is trusted by most systems, your shouldn’t need to do anything more than specifying your system’s CA directory.</p>
+<p>For many linux-based systems, trusted certificates are located under <code class="code docutils literal notranslate"><span class="pre">/etc/ssl/certs/</span></code>. For example, when using <code class="code docutils literal notranslate"><span class="pre">mosquitto_sub</span></code>  or <code class="code docutils literal notranslate"><span class="pre">mosquitto_pub</span></code>, you just need to give the parameter <code class="code docutils literal notranslate"><span class="pre">--capath</span> <span class="pre">/etc/ssl/certs/</span></code></p>
+</div>
+<div class="section" id="mqtt-over-secure-websockets">
+<h3>MQTT over secure websockets<a class="headerlink" href="#mqtt-over-secure-websockets" title="Permalink to this headline">¶</a></h3>
+<p>MQTT over secure websockets can be reached by <code class="code docutils literal notranslate"><span class="pre">wss://mqtt.gbridge.kappelt.net</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Server:</th><td class="field-body">mqtt.gbridge.kappelt.net</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">443</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+</tr>
+</tbody>
+</table>
+<p>The same certificates as for MQTT over TLS are used, so read the chapter above for more information.</p>
+</div>
+<div class="section" id="plain-mqtt">
+<h3>Plain MQTT<a class="headerlink" href="#plain-mqtt" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Unencrypted MQTT, especially over the (public, bad) internet, should <em>never</em> be used by any means. Support for plain MQTT can be canceled at any time, without any notice.</p>
+</div>
+<p>Plain, unsecure MQTT can be reached by <code class="code docutils literal notranslate"><span class="pre">mqtt://mqtt.gbridge.kappelt.net</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Server:</th><td class="field-body">mqtt.gbridge.kappelt.net</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">1883</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mqtt-over-websockets">
+<h3>MQTT over websockets<a class="headerlink" href="#mqtt-over-websockets" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Unencrypted MQTT, especially over the (public, bad) internet, should <em>never</em> be used by any means. Support for MQTT over (unsecured) websockets can be canceled at any time, without any notice.</p>
+</div>
+<p>Plain, unsecure MQTT can be reached by <code class="code docutils literal notranslate"><span class="pre">ws://mqtt.gbridge.kappelt.net</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Server:</th><td class="field-body">mqtt.gbridge.kappelt.net</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">80</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="using-own-mosquitto-as-a-bridge">
+<span id="mqttserver-mosquittobridge"></span><h2>Using own Mosquitto as a Bridge<a class="headerlink" href="#using-own-mosquitto-as-a-bridge" title="Permalink to this headline">¶</a></h2>
+<p>Kappelt gBridge should <em>never</em> be accessed via an unencrypted port. However, some devices might not support MQTT over TLS. In some cases, it is acceptabled to provide an unencrypted MQTT server in your own network/ intranet.</p>
+<p>If you are already have an Mosquitto instance running in your own network, you can use it as a so called “Bridge”. Only the Mosquitto server in your network will connect to the gBridge MQTT server. All devices in your network will connect to your own MQTT server - but they’ll receive messages from both your own MQTT server and the gBridge server.</p>
+<p>When your own Mosquitto instance receives data from the gBridge servers, that match a certain pattern, it’ll be forwarded to the devices connected in your local network (and vice versa).</p>
+<div class="align-center figure" id="id1">
+<a class="reference internal image-reference" href="../_images/scheme-mosquitto-bridge.png"><img alt="Local request for gBridge are proxied through your local mosquitto server." src="../_images/scheme-mosquitto-bridge.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Any data from gBridge is proxied by your local Mosquitto instance and then forwarded to your local devices. This works the other way around, too.</span></p>
+</div>
+<p>The following configuration works with Mosquitto. Place it at the end of your Mosquitto configuration (often under <code class="code docutils literal notranslate"><span class="pre">/etc/mosquitto/mosquitto.conf</span></code>) or in a separate file, that will be included. Replace the parameters in curly brackets with your appropriate information.</p>
+<div class="highlight-aconf notranslate"><div class="highlight"><pre><span></span><span class="nb">connection</span> kappelt-gbridge
+<span class="nb">address</span> mqtt.gbridge.kappelt.net:8883
+<span class="nb">bridge_attempt_unsubscribe</span> true
+<span class="nb">cleansession</span> true
+<span class="nb">remote_username</span> {gbridge-mqtt-username}
+<span class="nb">remote_password</span> {gbridge-mqtt-password}
+
+<span class="nb">topic</span> gBridge/u{gbridge-userid}/+/+ both <span class="m">0</span> <span class="s2">&quot;&quot;</span> <span class="s2">&quot;&quot;</span>
+<span class="nb">topic</span> gBridge/u{gbridge-userid}/+/+/set both <span class="m">0</span> <span class="s2">&quot;&quot;</span> <span class="s2">&quot;&quot;</span>
+<span class="c">#you might need to change the path of the CA files</span>
+<span class="nb">bridge_capath</span> <span class="sx">/etc/ssl/certs/</span>
+<span class="nb">bridge_tls_version</span> tlsv1.2
+</pre></div>
+</div>
+<p>Restart your mosquitto instance. Have a look in its log file. It should show no errors, if everything went well:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pi@hcpi01:~ $ sudo tail /var/log/mosquitto/mosquitto.log -n <span class="m">20</span>
+<span class="m">1532876260</span>: mosquitto version <span class="m">1</span>.4.10 <span class="o">(</span>build date Fri, <span class="m">22</span> Dec <span class="m">2017</span> <span class="m">08</span>:19:25 +0000<span class="o">)</span> starting
+<span class="m">1532876260</span>: Config loaded from /etc/mosquitto/mosquitto.conf.
+<span class="m">1532876260</span>: Opening ipv4 listen socket on port <span class="m">1883</span>.
+<span class="m">1532876260</span>: Opening ipv6 listen socket on port <span class="m">1883</span>.
+<span class="m">1532876260</span>: Connecting bridge kappelt-gbridge <span class="o">(</span>mqtt.gbridge.kappelt.net:8883<span class="o">)</span>
+<span class="m">1532876260</span>: New connection from <span class="m">192</span>.168.2.151 on port <span class="m">1883</span>.
+<span class="m">1532876260</span>: New client connected from <span class="m">192</span>.168.2.151 as KH102_BC73E4 <span class="o">(</span>c1, k15, u<span class="s1">&#39;DVES_USER&#39;</span><span class="o">)</span>.
+<span class="o">[</span>...<span class="o">]</span>
+</pre></div>
+</div>
+<p>Now, subscribe to a device topic of gBridge (like <code class="code docutils literal notranslate"><span class="pre">gBridge/u1/d1/onoff</span></code>), but do <em>not</em> connect to the gBridge MQTT server (<code class="code docutils literal notranslate"><span class="pre">mqtt.gbridge.kappelt.net</span></code>), connect to your local MQTT server instead.</p>
+<p>If everything is OK, you should now receive messages from your local server as you would from the gBridge server.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../exampleUsage/fhem.html" class="btn btn-neutral float-right" title="FHEM examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="deviceMechanism.html" class="btn btn-neutral" title="Device Mechanism" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Kappelt.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x0000000005A46F98> 
+
+<br>
+<a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>
+Learn more about Kappelt gBridge? See <a href="https://about.gbridge.kappelt.net" target="_blank">https://about.gbridge.kappelt.net</a>
+
+ 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

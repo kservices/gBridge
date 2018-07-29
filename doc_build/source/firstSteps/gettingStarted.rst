@@ -17,7 +17,7 @@ You'll see your account's dashboard for the first time after logging in.
 .. figure:: ../_static/empty-dashboard-devices.png
    :width: 100%
    :align: center
-   :alt: alternate text
+   :alt: No devices have been created yet.
    :figclass: align-center
 
    Your dashboard
@@ -27,7 +27,7 @@ Press the top-right button labeled with "+ Device" to create a new one. Choose w
 .. figure:: ../_static/dashboard-first-device.png
    :width: 100%
    :align: center
-   :alt: alternate text
+   :alt: You've just created a first device.
    :figclass: align-center
 
    Congratulations! You've just created your first virtual device.
@@ -44,7 +44,7 @@ To do so, open the tab "Accesskeys" and click on the add-button.
 .. figure:: ../_static/dashboard-first-accesskey.png
    :width: 100%
    :align: center
-   :alt: alternate text
+   :alt: A first accesskey has been generated.
    :figclass: align-center
 
    You'll need that accesskey later!
@@ -56,13 +56,13 @@ Open the *Google Home App* to connect your Google Home system to gBridge. Naviga
 .. figure:: ../_static/googlehome-add-provider.png
    :width: 50%
    :align: center
-   :alt: alternate text
+   :alt: You can add Kappelt gBridge as a smart home provider in the Google Home app.
    :figclass: align-center
 
 .. figure:: ../_static/googlehome-link-account.png
    :width: 50%
    :align: center
-   :alt: alternate text
+   :alt: You need to enter your account's email and an accesskey.
    :figclass: align-center
 
    Enter your email, use the accesskey that was generated before.
@@ -70,7 +70,7 @@ Open the *Google Home App* to connect your Google Home system to gBridge. Naviga
 .. figure:: ../_static/googlehome-device-listed.png
    :width: 50%
    :align: center
-   :alt: alternate text
+   :alt: Devices are listed in the Google Home app
    :figclass: align-center
 
    Your newly created devices will appear in the list. If you like, you can assign a room to the devices.
@@ -85,7 +85,7 @@ Everything is ready now! Messages will now be available on gBridge's public MQTT
 :Port: 8883
 :Username: Shown in your account's dashboard under "My Account"
 :Password: Needs to be set once in your account's dashboard
-:TLS: TLS V1.3 is required
+:TLS: TLS V1.2 is required
 
 **About TLS:** The Server uses an certificate that is signed by Let's Encrypt. 
 The Let's Encrypt CA is trusted by most systems nowadays, you shouldn't really need to install a certificate. 
@@ -105,7 +105,7 @@ Subscribe now to the MQTT topic that belongs to your device, for example with *m
 .. figure:: ../_static/googlehome-try-it.png
    :width: 100%
    :align: center
-   :alt: alternate text
+   :alt: Google Assistant Example
    :figclass: align-center
 
    A voice command leads to a published MQTT message.

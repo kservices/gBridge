@@ -27,4 +27,6 @@ All set? :doc:`Let's get started <firstSteps/gettingStarted>`
 
    self
    firstSteps/gettingStarted
-
+   firstSteps/deviceMechanism
+   firstSteps/mqttServer
+   exampleUsage/fhem.rst
