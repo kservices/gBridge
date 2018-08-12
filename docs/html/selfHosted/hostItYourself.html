@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Self-Hosted gBridge &mdash; Kappelt gBridge 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="FHEM examples" href="../exampleUsage/fhem.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Kappelt gBridge
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">First steps:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../firstSteps/gettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../firstSteps/deviceMechanism.html">Device Mechanism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../firstSteps/mqttServer.html">Hosted MQTT server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exampleUsage/fhem.html">FHEM examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Self-Hosted gBridge</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-up-google-action">Set up Google Action</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-new-project">Create a new Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#choose-a-name">Choose a name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-up-account-linking">Set up account linking</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#add-action-fulfillment">Add action fulfillment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#look-for-the-project-id">Look for the project id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-simulator-for-synchronization">Start simulator for synchronization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enable-the-homegraph-api">Enable the Homegraph API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#set-up-gbridge-in-docker">Set up gBridge in Docker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-docker-compose-file">Generate Docker-Compose-File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starting-gbridge-for-the-first-time">Starting gBridge for the first time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-containers-in-background">Start containers in background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-the-database">Prepare the database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#open-the-web-interface">Open the web interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-your-webserver">Configure your webserver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-it">Test it</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Kappelt gBridge</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Self-Hosted gBridge</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/selfHosted/hostItYourself.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="self-hosted-gbridge">
+<h1>Self-Hosted gBridge<a class="headerlink" href="#self-hosted-gbridge" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>The following points need to be satisfied in order to host your own instance of gBridge.</p>
+<ul class="simple">
+<li><strong>Availability of a (web-) server that is running constantly.</strong> Docker needs to be installed. A Raspberry Pi should have plenty of power for this purpose.</li>
+<li><strong>A webserver is running, available and configured,</strong> one needs to be available to access it publicly. A static domain (e.g. provided by a DDNS provider) has to be configured for your server, too.</li>
+<li><strong>Your webserver needs to be configured for HTTPS.</strong> A valid, signed certificate must be served via HTTPS. This should be no problem nowadays since one can get free certificates, e.g. from <a class="reference external" href="https://letsencrypt.org/">Let’s Encrypt</a>.</li>
+<li><strong>A MQTT server needs to available in your network.</strong></li>
+</ul>
+</div>
+<div class="section" id="set-up-google-action">
+<h2>Set up Google Action<a class="headerlink" href="#set-up-google-action" title="Permalink to this headline">¶</a></h2>
+<p>This part will describe the process of creating a new Smart Home project in the Google Actions Console. Your new project will be listed as a smart home provider in the Google Home app, thus can be used in your own environment.</p>
+<div class="section" id="create-a-new-project">
+<h3>Create a new Project<a class="headerlink" href="#create-a-new-project" title="Permalink to this headline">¶</a></h3>
+<p>Navigate to the <a class="reference external" href="https://console.actions.google.com/">Google Actions Console</a>. Make sure you are logged in with the Google Account you are already using with Google Assistant.</p>
+<div class="align-center figure" id="id2">
+<a class="reference internal image-reference" href="../_images/gproject-projectoverview.png"><img alt="Project Overview in Google Actions Console." src="../_images/gproject-projectoverview.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">You’ll see this page after logging in to the Google Actions Console. Create a new project.</span></p>
+</div>
+</div>
+<div class="section" id="choose-a-name">
+<h3>Choose a name<a class="headerlink" href="#choose-a-name" title="Permalink to this headline">¶</a></h3>
+<p>Choose a generic name. Create the new project and select it to be a “Home control” application.</p>
+<div class="align-center figure" id="id3">
+<a class="reference internal image-reference" href="../_images/gproject-newproject.png"><img alt="Setting the project's name." src="../_images/gproject-newproject.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Choose the name for the project.</span></p>
+</div>
+<div class="align-center figure" id="id4">
+<a class="reference internal image-reference" href="../_images/gproject-newproject-category.png"><img alt="Selecting application category for the new project." src="../_images/gproject-newproject-category.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Select “Home control” as the application type.</span></p>
+</div>
+<div class="align-center figure" id="id5">
+<a class="reference internal image-reference" href="../_images/gproject-newproject-overview.png"><img alt="Step-by-step page for the project setup." src="../_images/gproject-newproject-overview.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Set the name here again. Continue with the next step: Account linking</span></p>
+</div>
+</div>
+<div class="section" id="set-up-account-linking">
+<h3>Set up account linking<a class="headerlink" href="#set-up-account-linking" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Do not allow users to register accounts via voice.</li>
+<li>Select OAuth only with Implicit grants.</li>
+<li>Generate a random password for the client id. Avoid special chars. This can be long and difficult to remember, since you only need to enter it once later on.</li>
+<li>Use the following URL: <code class="code docutils literal notranslate"><span class="pre">https://YOUR-WEBSERVER'S-ADDRESS/gbrigde/gapi/auth</span></code>. For example: <code class="code docutils literal notranslate"><span class="pre">https://dev.gbridge.kappelt.net/gbrigde/gapi/auth</span></code></li>
+<li>OAuth scopes are not required, leave them empty. You don’t need to add a useful instruction for account linking either.</li>
+</ul>
+<div class="align-center figure" id="id6">
+<a class="reference internal image-reference" href="../_images/gproject-accountlinking.png"><img alt="Set-up of account linking." src="../_images/gproject-accountlinking.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Follow the steps above to set up account linking.</span></p>
+</div>
+</div>
+<div class="section" id="add-action-fulfillment">
+<h3>Add action fulfillment<a class="headerlink" href="#add-action-fulfillment" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Go back to the overview page, select “Add Actions”.</li>
+<li>Enter the following URL as the fulfillment URL: <code class="code docutils literal notranslate"><span class="pre">https://YOUR-WEBSERVER'S-ADDRESS/gbrigde/gapi</span></code>. For example: <code class="code docutils literal notranslate"><span class="pre">https://dev.gbridge.kappelt.net/gbrigde/gapi</span></code></li>
+</ul>
+<div class="align-center figure" id="id7">
+<a class="reference internal image-reference" href="../_images/gproject-addaction.png"><img alt="Add a new action to the project." src="../_images/gproject-addaction.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Add a new action.</span></p>
+</div>
+<div class="align-center figure" id="id8">
+<a class="reference internal image-reference" href="../_images/gproject-addaction-fulfill.png"><img alt="Setting fulfillment URL of new action." src="../_images/gproject-addaction-fulfill.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Set the fulfillment URL for the new action.</span></p>
+</div>
+</div>
+<div class="section" id="look-for-the-project-id">
+<h3>Look for the project id<a class="headerlink" href="#look-for-the-project-id" title="Permalink to this headline">¶</a></h3>
+<p>Note the project id, since it’ll be necessary to known it later. It is shown in the project settings.</p>
+<div class="align-center figure" id="id9">
+<a class="reference internal image-reference" href="../_images/gproject-projectid.png"><img alt="The project id is shown in the project settings." src="../_images/gproject-projectid.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">The project id is shown in the project settings.</span></p>
+</div>
+</div>
+<div class="section" id="start-simulator-for-synchronization">
+<h3>Start simulator for synchronization<a class="headerlink" href="#start-simulator-for-synchronization" title="Permalink to this headline">¶</a></h3>
+<p>Select “Simulator” in the left menu. Choose your own language there, click on “Start Testing”. There is no need to do anything more here. This step is sometimes necessary for synchronization of the project options.</p>
+</div>
+<div class="section" id="enable-the-homegraph-api">
+<h3>Enable the Homegraph API<a class="headerlink" href="#enable-the-homegraph-api" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Navigate to the <a class="reference external" href="https://console.cloud.google.com/">Google Cloud Console</a></li>
+<li>Select your project in the top bar. Select “APIs and Services” in the left menu.</li>
+<li>Add a new API. Search for “Homegraph”, select it and enable it afterwards.</li>
+<li>Open the left menu, select “APIs and Services”, “Credentials” there.</li>
+<li>Select “Create credentials”, “API Key”. Note the new key.</li>
+<li>For safety reasons, select “Restrict key”. Choose “HomeGraph API” as the only API restriction and save.</li>
+</ul>
+<div class="align-center figure" id="id10">
+<a class="reference internal image-reference" href="../_images/gproject-homegraph.png"><img alt="Enable a new API for the project." src="../_images/gproject-homegraph.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Enable a new API for the project.</span></p>
+</div>
+<div class="align-center figure" id="id11">
+<a class="reference internal image-reference" href="../_images/gproject-homegraph-select.png"><img alt="Select the Homegraph API." src="../_images/gproject-homegraph-select.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Select the Homegraph API.</span></p>
+</div>
+<div class="align-center figure" id="id12">
+<a class="reference internal image-reference" href="../_images/gproject-homegraph-credentials.png"><img alt="Generate a new API Key." src="../_images/gproject-homegraph-credentials.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Generate a new API key in the credentials menu.</span></p>
+</div>
+<div class="align-center figure" id="id13">
+<a class="reference internal image-reference" href="../_images/gproject-homegraph-restrict.png"><img alt="Restrict the key to only work with the Homegraph API." src="../_images/gproject-homegraph-restrict.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Restrict the key to only work with the Homegraph API.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="set-up-gbridge-in-docker">
+<h2>Set up gBridge in Docker<a class="headerlink" href="#set-up-gbridge-in-docker" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Prerequisites<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Install both <code class="code docutils literal notranslate"><span class="pre">docker</span></code> and <code class="code docutils literal notranslate"><span class="pre">docker-compose</span></code> on your server, e.g. with your favourite package manager.</p>
+</div>
+<div class="section" id="generate-docker-compose-file">
+<h3>Generate Docker-Compose-File<a class="headerlink" href="#generate-docker-compose-file" title="Permalink to this headline">¶</a></h3>
+<p>A small script for generating individual Docker-Compose-Files for gBridge is available under <a class="reference external" href="https://about.gbridge.kappelt.net/dockergen">https://about.gbridge.kappelt.net/dockergen</a>.</p>
+<p>Fill in your information. Since a webserver is probably already running on your server, make sure to select a webserver port that is free.</p>
+<p>Click on “Generate and Download” to download your individual docker-compose file. Save it in an new, empty directory (e.g. <code class="code docutils literal notranslate"><span class="pre">/opt/gbridge/</span></code>) on your server:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sysop@kappelt:/opt/gbridge$ ls -al
+insgesamt <span class="m">12</span>
+drwxr-xr-x  <span class="m">2</span> root  root  <span class="m">4096</span> Aug <span class="m">12</span> <span class="m">12</span>:11 .
+drwxr-xr-x  <span class="m">5</span> root  root  <span class="m">4096</span> Aug <span class="m">12</span> <span class="m">12</span>:10 ..
+-rwxrwxrw-+ <span class="m">1</span> sysop sysop <span class="m">2176</span> Aug <span class="m">12</span> <span class="m">12</span>:09 docker-compose.yml
+</pre></div>
+</div>
+</div>
+<div class="section" id="starting-gbridge-for-the-first-time">
+<h3>Starting gBridge for the first time<a class="headerlink" href="#starting-gbridge-for-the-first-time" title="Permalink to this headline">¶</a></h3>
+<p>Navigate to the directory, run <code class="code docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">up</span></code>. Depending on your account’s permissions, you might need to run this as the root user.</p>
+<p>Docker is going to download the necessary packages. A lot of lines will be displayed. Look for the following ones, they usually indicate a successfull startup:</p>
+<p><em>If you’ve chosen to use a docker database:</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Creating gbridge_database_1 ... <span class="k">done</span>
+...
+database_1      <span class="p">|</span> GENERATED ROOT PASSWORD: ZZZZ
+...
+database_1      <span class="p">|</span> MySQL init process <span class="k">done</span>. Ready <span class="k">for</span> start up.
+...
+database_1      <span class="p">|</span> <span class="m">2018</span>-08-12T10:19:26.111095Z <span class="m">0</span> <span class="o">[</span>Note<span class="o">]</span> Event Scheduler: Loaded <span class="m">0</span> events
+database_1      <span class="p">|</span> <span class="m">2018</span>-08-12T10:19:26.112757Z <span class="m">0</span> <span class="o">[</span>Note<span class="o">]</span> mysqld: ready <span class="k">for</span> connections.
+database_1      <span class="p">|</span> Version: <span class="s1">&#39;5.7.23&#39;</span>  socket: <span class="s1">&#39;/var/run/mysqld/mysqld.sock&#39;</span>  port: <span class="m">3306</span>  MySQL Community Server <span class="o">(</span>GPL<span class="o">)</span>
+</pre></div>
+</div>
+<p><em>If you’ve chosen to run Redis in docker:</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cache_1         <span class="p">|</span> <span class="m">1</span>:C <span class="m">12</span> Aug <span class="m">10</span>:18:34.393 <span class="c1"># oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo</span>
+cache_1         <span class="p">|</span> <span class="m">1</span>:C <span class="m">12</span> Aug <span class="m">10</span>:18:34.395 <span class="c1"># Redis version=4.0.11, bits=64, commit=00000000, modified=0, pid=1, just started</span>
+...
+cache_1         <span class="p">|</span> <span class="m">1</span>:M <span class="m">12</span> Aug <span class="m">10</span>:18:34.400 * Ready to accept connections
+</pre></div>
+</div>
+<p><em>Always shown:</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>redis-worker_1  <span class="p">|</span> MQTT client connected
+redis-worker_1  <span class="p">|</span> Redis client <span class="o">(</span>subscribe<span class="o">)</span> connected
+redis-worker_1  <span class="p">|</span> Redis client <span class="o">(</span>cache<span class="o">)</span> connected
+redis-worker_1  <span class="p">|</span> Redis client <span class="o">(</span>subscribe<span class="o">)</span> successful subscribe to gbridge:u*:d*:*
+...
+web_1           <span class="p">|</span> <span class="o">[</span>Sun Aug <span class="m">12</span> <span class="m">10</span>:18:48.685014 <span class="m">2018</span><span class="o">]</span> <span class="o">[</span>mpm_prefork:notice<span class="o">]</span> <span class="o">[</span>pid <span class="m">1</span><span class="o">]</span> AH00163: Apache/2.4.25 <span class="o">(</span>Debian<span class="o">)</span> PHP/7.2.8 configured -- resuming normal operations
+web_1           <span class="p">|</span> <span class="o">[</span>Sun Aug <span class="m">12</span> <span class="m">10</span>:18:48.685345 <span class="m">2018</span><span class="o">]</span> <span class="o">[</span>core:notice<span class="o">]</span> <span class="o">[</span>pid <span class="m">1</span><span class="o">]</span> AH00094: Command line: <span class="s1">&#39;apache2 -D FOREGROUND&#39;</span>
+</pre></div>
+</div>
+<p>If you got all lines and no obvious errors are visible, stop the containers by pressing <code class="code docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">+</span> <span class="pre">C</span></code> once.</p>
+</div>
+<div class="section" id="start-containers-in-background">
+<h3>Start containers in background<a class="headerlink" href="#start-containers-in-background" title="Permalink to this headline">¶</a></h3>
+<p>..by running <code class="code docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">up</span> <span class="pre">--detach</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sysop@kappelt:/opt/gbridge$ docker-compose up --detach
+Starting gbridge_database_1 ... <span class="k">done</span>
+Starting gbridge_cache_1    ... <span class="k">done</span>
+Starting gbridge_redis-worker_1 ... <span class="k">done</span>
+Starting gbridge_web_1          ... <span class="k">done</span>
+</pre></div>
+</div>
+<p>You can now view the container’s log files by navigating to gBridge’s directory and running <code class="code docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">logs</span></code>.</p>
+<p>To stop the containers, navigate into gBridge’s directory and run <code class="code docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">stop</span></code>.</p>
+</div>
+<div class="section" id="prepare-the-database">
+<h3>Prepare the database<a class="headerlink" href="#prepare-the-database" title="Permalink to this headline">¶</a></h3>
+<p>Make sure the containers are running.</p>
+<p>Navigate into gBridge’s directory, run <code class="code docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">exec</span> <span class="pre">web</span> <span class="pre">php</span> <span class="pre">artisan</span> <span class="pre">migrate</span></code>. Type “yes” as a confirmation, enter your mail once prompted.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sysop@kappelt:/opt/gbridge$ sudo docker-compose <span class="nb">exec</span> web php artisan migrate
+**************************************
+*     Application In Production!     *
+**************************************
+
+Do you really wish to run this command? <span class="o">(</span>yes/no<span class="o">)</span> <span class="o">[</span>no<span class="o">]</span>:
+&gt; yes
+
+Migration table created successfully.
+Enter your E-Mail address: kappelt.peter+gbridgedemo@kappelt.net
+A new user with the mail <span class="s2">&quot;kappelt.peter+gbridgedemo@kappelt.net&quot;</span> and the password <span class="s2">&quot;123456&quot;</span> has been created.
+Please change the password immediately!
+
+
+Migrating: 2014_10_12_000000_create_users_table
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="open-the-web-interface">
+<h3>Open the web interface<a class="headerlink" href="#open-the-web-interface" title="Permalink to this headline">¶</a></h3>
+<p>Navigate to the docker host’s ip in your webbrowser, use the port you’ve entered for the web interface. In my case, the host’s IP address is <code class="code docutils literal notranslate"><span class="pre">192.168.2.49</span></code> and I’ve chosen the port <code class="code docutils literal notranslate"><span class="pre">8080</span></code>.</p>
+<p>You should see the login screen:</p>
+<div class="align-center figure" id="id14">
+<a class="reference internal image-reference" href="../_images/webinterface-login.png"><img alt="Login screen of your gBridge instance." src="../_images/webinterface-login.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Login screen of your gBridge instance.</span></p>
+</div>
+<p>Log in using the mail you’ve entered during database setup and the password <code class="code docutils literal notranslate"><span class="pre">123456</span></code>.</p>
+<p>You should now see the empty account dashboard:</p>
+<div class="align-center figure" id="id15">
+<a class="reference internal image-reference" href="../_images/webinterface-firstpage.png"><img alt="The first page after logging in." src="../_images/webinterface-firstpage.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">The first page after logging in.</span></p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last"><strong>Immediately</strong> change your password under “Hi {YOUR-MAIL}”, “My Account”.</p>
+</div>
+</div>
+</div>
+<div class="section" id="configure-your-webserver">
+<h2>Configure your webserver<a class="headerlink" href="#configure-your-webserver" title="Permalink to this headline">¶</a></h2>
+<p>TBD.</p>
+</div>
+<div class="section" id="test-it">
+<h2>Test it<a class="headerlink" href="#test-it" title="Permalink to this headline">¶</a></h2>
+<p>TBD.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../exampleUsage/fhem.html" class="btn btn-neutral" title="FHEM examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Kappelt.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x00000000065214E0> 
+
+<br>
+<a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>
+Learn more about Kappelt gBridge? See <a href="https://about.gbridge.kappelt.net" target="_blank">https://about.gbridge.kappelt.net</a>
+
+ 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

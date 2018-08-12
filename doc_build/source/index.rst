@@ -30,3 +30,4 @@ All set? :doc:`Let's get started <firstSteps/gettingStarted>`
    firstSteps/deviceMechanism
    firstSteps/mqttServer
    exampleUsage/fhem.rst
+   selfHosted/hostItYourself.rst
