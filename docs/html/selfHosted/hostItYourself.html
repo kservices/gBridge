@@ -105,8 +105,16 @@
 <li class="toctree-l3"><a class="reference internal" href="#open-the-web-interface">Open the web interface</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#configure-your-webserver">Configure your webserver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#test-it">Test it</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-your-webserver">Configure your webserver</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apache-2">Apache 2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nginx">NGINX</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#test-it">Test it</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#access-test">Access Test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#congratulations">Congratulations</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -393,11 +401,93 @@ Migrating: 2014_10_12_000000_create_users_table
 </div>
 <div class="section" id="configure-your-webserver">
 <h2>Configure your webserver<a class="headerlink" href="#configure-your-webserver" title="Permalink to this headline">¶</a></h2>
-<p>TBD.</p>
+<p>gBridge requires you to have an available webserver, that is publicly accessible. This part describes the configuration for this servers.</p>
+<div class="section" id="apache-2">
+<h3>Apache 2<a class="headerlink" href="#apache-2" title="Permalink to this headline">¶</a></h3>
+<p>Your virtual host configuration can look similar to the following. Please note, that Apache’s proxy module has to be enabled (<code class="code docutils literal notranslate"><span class="pre">a2enmod</span> <span class="pre">proxy_http</span></code>).</p>
+<div class="highlight-apacheconf notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;VirtualHost</span> <span class="s">*:443</span><span class="nt">&gt;</span>
+    <span class="c">#Leave this part as configured</span>
+    <span class="c">#You&#39;ll still be able to use the webserver for your own services.</span>
+    <span class="nb">ServerAdmin</span> <span class="k">info</span>@kappelt.net
+    <span class="nb">DocumentRoot</span> <span class="sx">/var/www/html/</span>
+    <span class="c">#Usually your public DNS name</span>
+    <span class="nb">ServerName</span> dev.gbridge.kappelt.net
+    <span class="nb">ServerAlias</span> dev.gbridge.kappelt.net
+
+    <span class="c">#note that HTTPS is required</span>
+    <span class="nb">SSLEngine</span> <span class="k">on</span>
+    <span class="nb">SSLCertificateFile</span>      <span class="sx">/path/to/your/certificate.cer</span>
+    <span class="nb">SSLCertificateKeyFile</span>   <span class="sx">/path/to/your/keyfile.key</span>
+    <span class="nb">SSLCertificateChainFile</span> <span class="sx">/path/to/your/fullchain.cer</span>
+
+    <span class="nb">ErrorLog</span> ${APACHE_LOG_DIR}/error.log
+    <span class="nb">CustomLog</span> ${APACHE_LOG_DIR}/access.log combined
+
+    <span class="c">#</span>
+    <span class="c">#Proxying of gBridge-Requests</span>
+    <span class="c">#</span>
+
+    <span class="c">#the IP of the Docker host gBridge is running on</span>
+    <span class="nb">Define</span> GBRIDGE_HOST localhost
+    <span class="c">#the port you&#39;ve defined for the gBridge web interface</span>
+    <span class="nb">Define</span> GBRIDGE_PORT <span class="m">8080</span>
+
+    <span class="nb">ProxyPreserveHost</span> <span class="k">On</span>
+    <span class="nb">ProxyRequests</span> <span class="k">off</span>
+    <span class="c">#note that public access for the account dashboard is disabled here due to security reasons</span>
+    <span class="nb">ProxyPass</span> <span class="sx">/gbridge/gapi</span> http://${GBRIDGE_HOST}:${GBRIDGE_PORT}/gapi
+    <span class="nb">ProxyPassReverse</span> <span class="sx">/gbridge/gapi</span> http://${GBRIDGE_HOST}:${GBRIDGE_PORT}/gapi
+<span class="nt">&lt;/VirtualHost&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="nginx">
+<h3>NGINX<a class="headerlink" href="#nginx" title="Permalink to this headline">¶</a></h3>
+<p>Your NGINX-Config may look similar to this.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This configuration hasn’t been tested before, since I’m not using NGINX on my servers. I’d appreciate feedback, whether this config is OK.</p>
+</div>
+<div class="highlight-NGINX notranslate"><div class="highlight"><pre><span></span><span class="k">server</span> <span class="p">{</span>
+    <span class="kn">listen</span> <span class="mi">443</span> <span class="s">ssl</span><span class="p">;</span>
+
+    <span class="c1">#usually your public DNS name</span>
+    <span class="kn">server_name</span> <span class="s">dev.gbridge.kappelt.net</span><span class="p">;</span>
+
+    <span class="c1">#SSL-settings and generic server options here</span>
+
+    <span class="c1">#the IP of the Docker host gBridge is running on</span>
+    <span class="kn">set</span> <span class="nv">$gbridge_host</span> <span class="s">localhost</span>
+    <span class="c1">#the port you&#39;ve defined for the gBridge web interface</span>
+    <span class="s">set</span> <span class="nv">$gbridge_port</span> <span class="mi">8080</span>
+
+    <span class="s">location</span> <span class="s">/gbridge/gapi/</span> <span class="p">{</span>
+        <span class="c1">#public access to the account dashboard is disabled for security reasons</span>
+        <span class="kn">proxy_pass</span> <span class="s">http://</span><span class="nv">$gbridge_host:$gbridge_port/gapi/</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="test-it">
 <h2>Test it<a class="headerlink" href="#test-it" title="Permalink to this headline">¶</a></h2>
-<p>TBD.</p>
+<div class="section" id="access-test">
+<h3>Access Test<a class="headerlink" href="#access-test" title="Permalink to this headline">¶</a></h3>
+<p>Try to access <code class="code docutils literal notranslate"><span class="pre">https://YOUR-WEBSERVER'S-ADDRESS/gbridge/gapi</span></code> with your webbrowser. You should get this JSON-formatted text response:</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;requestId&quot;</span><span class="p">:</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="nt">&quot;payload&quot;</span><span class="p">:{</span><span class="nt">&quot;errorCode&quot;</span><span class="p">:</span><span class="s2">&quot;protocolError&quot;</span><span class="p">}}</span>
+</pre></div>
+</div>
+<p>Navigate to <code class="code docutils literal notranslate"><span class="pre">https://YOUR-WEBSERVER'S-ADDRESS/gbridge/gapi/auth</span></code> with your webbrowser. You should see the account linking page:</p>
+<div class="align-center figure" id="id16">
+<a class="reference internal image-reference" href="../_images/googlehome-link-account1.png"><img alt="Account linking login page." src="../_images/googlehome-link-account1.png" style="width: 50%;" /></a>
+<p class="caption"><span class="caption-text">You should see the page used for account linking.</span></p>
+</div>
+</div>
+<div class="section" id="congratulations">
+<h3>Congratulations<a class="headerlink" href="#congratulations" title="Permalink to this headline">¶</a></h3>
+<p><strong>Your gBridge instance should now work a treat!</strong>. You can continue with logging in in your Google Home account, have a look at the <a class="reference internal" href="../firstSteps/gettingStarted.html#gettingstarted"><span class="std std-ref">getting started chapter</span></a>.</p>
+</div>
 </div>
 </div>
 
@@ -423,7 +513,7 @@ Migrating: 2014_10_12_000000_create_users_table
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x00000000065214E0> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x000000000532FCC0> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>

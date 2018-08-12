@@ -302,9 +302,100 @@ You should now see the empty account dashboard:
 Configure your webserver
 --------------------------------
 
-TBD.
+gBridge requires you to have an available webserver, that is publicly accessible. This part describes the configuration for this servers.
+
+Apache 2
+~~~~~~~~~~~~~
+Your virtual host configuration can look similar to the following. Please note, that Apache's proxy module has to be enabled (:code:`a2enmod proxy_http`).
+
+.. code-block:: apacheconf
+
+    <VirtualHost *:443>
+        #Leave this part as configured
+        #You'll still be able to use the webserver for your own services.
+        ServerAdmin info@kappelt.net
+        DocumentRoot /var/www/html/ 
+        #Usually your public DNS name
+        ServerName dev.gbridge.kappelt.net      
+        ServerAlias dev.gbridge.kappelt.net
+
+        #note that HTTPS is required
+        SSLEngine on
+        SSLCertificateFile      /path/to/your/certificate.cer
+        SSLCertificateKeyFile   /path/to/your/keyfile.key
+        SSLCertificateChainFile /path/to/your/fullchain.cer
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        #
+        #Proxying of gBridge-Requests
+        #
+
+        #the IP of the Docker host gBridge is running on
+        Define GBRIDGE_HOST localhost
+        #the port you've defined for the gBridge web interface
+        Define GBRIDGE_PORT 8080
+
+        ProxyPreserveHost On
+        ProxyRequests off
+        #note that public access for the account dashboard is disabled here due to security reasons
+        ProxyPass /gbridge/gapi http://${GBRIDGE_HOST}:${GBRIDGE_PORT}/gapi
+        ProxyPassReverse /gbridge/gapi http://${GBRIDGE_HOST}:${GBRIDGE_PORT}/gapi
+    </VirtualHost>
+
+NGINX
+~~~~~~~~~~~~~
+
+Your NGINX-Config may look similar to this.
+
+.. note::
+    This configuration hasn't been tested before, since I'm not using NGINX on my servers. I'd appreciate feedback, whether this config is OK.
+
+.. code-block:: NGINX
+
+    server {
+        listen 443 ssl;
+
+        #usually your public DNS name
+        server_name dev.gbridge.kappelt.net;
+
+        #SSL-settings and generic server options here
+
+        #the IP of the Docker host gBridge is running on
+        set $gbridge_host localhost
+        #the port you've defined for the gBridge web interface
+        set $gbridge_port 8080
+
+        location /gbridge/gapi/ {
+            #public access to the account dashboard is disabled for security reasons
+            proxy_pass http://$gbridge_host:$gbridge_port/gapi/;
+        }
+    }
 
 Test it
 ----------------
 
-TBD.
+Access Test
+~~~~~~~~~~~~~~~
+
+Try to access :code:`https://YOUR-WEBSERVER'S-ADDRESS/gbridge/gapi` with your webbrowser. You should get this JSON-formatted text response:
+
+.. code-block:: JSON
+
+    {"requestId":"","payload":{"errorCode":"protocolError"}}
+
+Navigate to :code:`https://YOUR-WEBSERVER'S-ADDRESS/gbridge/gapi/auth` with your webbrowser. You should see the account linking page:
+
+.. figure:: ../_static/googlehome-link-account.png
+   :width: 50%
+   :align: center
+   :alt: Account linking login page.
+   :figclass: align-center
+
+   You should see the page used for account linking.
+
+Congratulations
+~~~~~~~~~~~~~~~~~
+
+**Your gBridge instance should now work a treat!**. You can continue with logging in in your Google Home account, have a look at the :ref:`getting started chapter <gettingStarted>`.
