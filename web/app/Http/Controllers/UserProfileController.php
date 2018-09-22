@@ -55,6 +55,49 @@ class UserProfileController extends Controller
     }
 
     /**
+     * Update the user's display name.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\User  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function updatename(Request $request, User $user){
+        $validator_messages = [
+            'required' => 'Your display name cannot be empty!'
+        ];
+        $validator = Validator::make($request->all(), [
+            'name' => 'bail|required',
+        ], $validator_messages)->validate();
+
+        $edituser = Auth::user();
+        $edituser->name = $request->input('name');
+        $edituser->save();
+
+        return redirect()->route('profile.index')->with('success', 'Your Display Name has been changed!.');
+    }
+
+    /**
+     * Update the user's prefered language.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\User  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function updatelang(Request $request, User $user){
+        $validator = Validator::make($request->all(), [
+            'language' => 'required|integer|between:0,1',
+        ])->validate();
+
+        $edituser = Auth::user();
+        $edituser->language = $request->input('language');
+        $edituser->save();
+
+        return redirect()->route('profile.index')->with('success', 'Your prefered language has been changed!.');
+    }
+
+
+
+    /**
      * Update the user's mqtt server password.
      *
      * @param  \Illuminate\Http\Request  $request

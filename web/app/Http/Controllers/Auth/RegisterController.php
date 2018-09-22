@@ -54,15 +54,15 @@ class RegisterController extends Controller
     {
         $validator_messages = [
             'required' => 'Please provide an email and a password!',
-            'confirmed' => 'The given passwords do not match',
             'min' => 'The password must be at least 8 characters long and must contain at least one number (0-9), letters, and at least one special char.',
             'regex' => 'The password must be at least 8 characters long and must contain at least one number (0-9), letters, and at least one special char.',
             'accepted' => 'Please accept both our terms and conditions and our privacy policy in order to use this service!',
         ];
         return Validator::make($data, [
             'email' => 'required|string|email|max:255|unique:user',
-            'password' => 'required|string|min:8|confirmed|regex:/^.*(?=.{5,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#"%§&\/()=?+*~#\'\-_<>,;.:^]).*$/',
+            'password' => 'required|string|min:8|regex:/^.*(?=.{5,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#"%§&\/()=?+*~#\'\-_<>,;.:^]).*$/',
             'accept_toc' => 'accepted',
+            'language' => 'required|integer|between:0,1'
         ], $validator_messages);
     }
 
@@ -74,10 +74,13 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        $cleanName = empty($data['name']) ? $data['email']:$data['name'];
         $user = User::create([
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
             'verify_token' => str_random(32),
+            'language' => $data['language'],
+            'name' => $cleanName
         ]);
 
         Mail::to($user->email)->send(new VerifyMail($user));

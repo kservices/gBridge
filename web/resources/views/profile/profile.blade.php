@@ -5,8 +5,51 @@
 	<div class="container">
 		@include('common.messages')
 
-		<h3>Hi, {{ $user->email }}!</h3>
+		<h3>Hi, {{ $user->name }}!</h3>
 		
+		<div class="row">
+			<div class="col s12 m6">
+				<div class="card blue-grey lighten-4 black-text">
+					<form class="form-horizontal" method="POST" accept-charset="UTF-8" action="{{ route('profile.updatename') }}">
+						{{ csrf_field() }}
+						<div class="card-content black-text">
+							<p><span class="card-title">Change Display Name</span></p>
+							<div class="input-field">
+								<input type="text" class="validate" id="name" name="name" value="{{ Auth::user()->name }}" required>
+								<label for="password">New Display Name</label>
+							</div>
+						</div>
+						<div class="card-action">
+							<button style="width: 100%;" class="btn waves-effect blue" type="submit">
+								<i class="material-icons left">save</i>Change Display Name
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="col s12 m6">
+				<div class="card blue-grey lighten-4 black-text">
+					<form class="form-horizontal" method="POST" accept-charset="UTF-8" action="{{ route('profile.updatelang') }}">
+						{{ csrf_field() }}
+						<div class="card-content black-text">
+							<p><span class="card-title">Change prefered Language</span></p>
+							<div class="input-field">
+								<select class="validate" id="language" name="language">
+									<option value="0"{{ Auth::user()->language == 0 ? ' selected':'' }}>English</option>
+									<option value="1"{{ Auth::user()->language == 1 ? ' selected':'' }}>Deutsch</option>
+								</select>
+								<label>Prefered Language</label>
+							</div>
+						</div>
+						<div class="card-action">
+							<button style="width: 100%;" class="btn waves-effect blue" type="submit">
+								<i class="material-icons left">save</i>Change Language
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 		<div class="row">
 			<div class="col s12 m6">
 				<div class="card blue-grey lighten-4 black-text">
