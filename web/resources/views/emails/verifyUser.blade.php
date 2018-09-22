@@ -1,7 +1,7 @@
 @extends('emails.email')
 
 @section('mail_content')
-<h2>Welcome to Kappelt gBridge, {{ $user->email }}!</h2>
+<h2>Welcome to Kappelt gBridge, {{ $user->name }}!</h2>
 <br>
 Please click on the below link to verify your email account
 <br><br>
