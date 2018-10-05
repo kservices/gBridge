@@ -96,10 +96,10 @@ function reportState(userid, requestid) {
 
                     if (err || (!data)) {
                         //default values if not yet set, do not throw error
-                        if (traits.includes('OnOff')) {
+                        if ('OnOff' in traits) {
                             rsData['payload']['devices']['states'][deviceid]['on'] = false;
                         }
-                        if (traits.includes('Brightness')) {
+                        if ('Brightness' in traits) {
                             rsData['payload']['devices']['states'][deviceid]['brightness'] = 0;
                         }
                         //return reject(err);
@@ -108,14 +108,14 @@ function reportState(userid, requestid) {
                     }
 
                     if (data) {
-                        if (traits.includes('OnOff')) {
+                        if ('OnOff' in traits) {
                             if ('onoff' in data) {
                                 rsData['payload']['devices']['states'][deviceid]['on'] = (data['onoff'] != '0') ? true : false;
                             } else {
                                 rsData['payload']['devices']['states'][deviceid]['on'] = false;
                             }
                         }
-                        if (traits.includes('Brightness')) {
+                        if ('Brightness' in traits) {
                             if ('brightness' in data) {
                                 rsData['payload']['devices']['states'][deviceid]['brightness'] = parseInt(data['brightness']);
                             } else {
@@ -220,91 +220,202 @@ mqtt.on('reconnect', function () {
     console.log("MQTT client reconnected!");
 });
 
-mqtt.on('message', function (topic, message) {
-    message = message.toString();
-    var topicMatch = /^(?:gBridge\/u)(\d+)(?:\/d)(\d+)(?:\/)([^\/]+)/;
+/**
+ * Users write to MQTT topics, formatted "gBridge/u<user-id>/<user-custom-part>"
+ * This function tries to isolate the user id from the topic
+ * It returns the following array:
+ * {
+ *  user-id: <user-id>, null if it couldn't be detected
+ *  user-custom-part: the user's custom part of the topic, null if it couldn't be determined
+ *  error-message: a human readable message for logging, null if everything seems to be ok
+ * }
+ * @param {*} topic the MQTT topic
+ */
+function guessUserIdFromMqttTopic(topic) {
+    var returnval = {
+        'user-id': null,
+        'user-custom-part': null,
+        'error-message': 'Not yet initialized'
+    };
+
+    var topicMatch = /^(?:gBridge\/u)([0-9]+)(?:\/)(.*)/;
 
     if (!topicMatch.test(topic)) {
-        console.log(`MQTT client error (test): Received malformed topic "${topic}" with message "${message}"`);
-        return;
+        //The regex doesn't match
+        returnval["error-message"] = 'Regex not matching!';
+        return returnval;
     }
 
     var matches = topicMatch.exec(topic);
-    if ((matches == null) || (matches.length < 4)) {      //4 variables are expected in the match: The whole match itself and the three capture groups
-        console.log(`MQTT client error (match): Received malformed topic "${topic}" with message "${message}"`);
-        return;
+    if ((matches == null) || (matches.lenth < 3)) {        //Three groups are expected: the whole match and three capture groups
+        returnval["error-message"] = 'Regex result either null or too short';
+        return returnval;
     }
 
-    var userid = matches[1];
-    var deviceid = matches[2];
-    var devicetrait = matches[3].toLowerCase();
+    //Everything is fine...
+    returnval["user-id"] = matches[1];
+    returnval["user-custom-part"] = matches[2];
+    returnval["error-message"] = null;
 
-    if (devicetrait === "onoff") {
-        if ((message == "0") || (message == "false") || (message == "off")) {
-            message = 0;
-        } else {
-            message = 1;
-        }
-    } else if (devicetrait === "brightness") {
-        var brightness = Number.parseInt(message);
-        if (Number.isNaN(brightness)) {
-            console.log(`MQTT client error: Wrong brightness "${message}" for user ${userid}`);
-            return;
-        }
-        if (brightness < 0) {
-            brightness = 0;
-        }
-        if (brightness > 100) {
-            brightness = 100;
-        }
+    return returnval;
+}
 
-        message = brightness;
-    } else if (devicetrait === "power") {
-        //device reporting power state
-        if ((message == "0") || (message == "false") || (message == "off")) {
-            message = 0;
-        } else {
-            message = 1;
-        }
-    } else {
-        console.log(`MQTT client error: Unsupported trait "${devicetrait}" for user ${userid}`);
-        return;
-    }
-
-    redis.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
-
-    redis.hget(`gbridge:u${userid}:d0`, 'grequesttype', function (err, response) {
+/**
+ * Get info about a user's devices, including the traits and the topics.
+ * The callback takes to params:
+ *  - err: Human readable error message if there's a problem, null if not
+ *  - data: An associative array containing the information
+ */
+function getDevicesOfUser(userid, callback) {
+    redis.get(`gbridge:u${userid}:devices`, function (err, response) {
         if (err) {
-            console.error("Redis client error while fetching last request type: " + err);
+            callback("Redis client error while fetching device for user " + userid + ": " + err, null);
             return;
         }
         if (response == null) {
-            console.error("Redis client error while fetching last request type: undefined request type");
+            callback("Redis client error while fetching devices for user " + userid + ": device list empty", null);
             return;
         }
 
-        if (response == 'EXECUTE') {
-            //get last requestid if if the previous request was EXECUTE
-            redis.hget(`gbridge:u${userid}:d0`, 'grequestid', function (err, response) {
-                if (err) {
-                    console.error("Redis client error while fetching request id: " + err);
-                    return;
-                }
-                if (response == null) {
-                    console.error("Redis client error while fetching request id: undefined request id");
-                    return;
-                }
-                //console.log("Good set");
-                reportState(userid, response);
-            });
-        } else {
-            //console.log("Bad set");
-            reportState(userid, null);
+        try {
+            info = JSON.parse(response);
+        } catch (e) {
+            callback('JSON parsing error for user ' + userid + ': ' + e, null);
+            return;
         }
+
+        callback(null, info);
+    });
+}
+
+mqtt.on('message', function (topic, message) {
+    message = message.toString();
+
+    topicinfo = guessUserIdFromMqttTopic(topic);
+    if (topicinfo['error-message'] != null) {
+        console.error(`Could not determine user in topic "${topic}": ${topicinfo['error-message']}`);
+        return;
+    }
+
+    let userid = topicinfo['user-id'];
+    let topicuserpart = topicinfo['user-custom-part'];
+
+    //Filter topic that were published by the script itself, just quietly return
+    if (topicuserpart === 'd0/grequest') {
+        return;
+    }
+
+    getDevicesOfUser(userid, function (err, devices) {
+        //Check for error, abort if necessary
+        if (err) {
+            console.error('Error in mapping status topic: ' + err);
+            return;
+        }
+
+        let deviceid = null;
+        let devicetrait = null;
+
+        //look for the device/ trait that matches the user part of the topic
+        for (var currentDeviceId in devices) {
+            for (var currentTrait in devices[currentDeviceId]) {
+                //This script has published to the topic, since it is an action topic. Just quietly return
+                if (devices[currentDeviceId][currentTrait]['actionTopic'] === topicuserpart) {
+                    return;
+                }
+
+                //The topic was the actual status topic
+                if (devices[currentDeviceId][currentTrait]['statusTopic'] === topicuserpart) {
+                    deviceid = currentDeviceId;
+                    devicetrait = currentTrait.toLowerCase();
+                }
+            }
+        }
+
+        //The topic wasn't found for the user
+        //special case: Power-Topics, are "gBrige/u<user-id>/d<device-id>/power"
+        if (!deviceid) {
+            var powerMatch = /^(?:d)([0-9]+)(?:\/power)/;
+            if (powerMatch.test(topicuserpart)) {
+                var matches = powerMatch.exec(topicuserpart);
+                if ((matches != null) && (matches.length == 2)) {
+                    //It is a standard "Power-Topic" that can't be changed by the user
+                    deviceid = matches[1];
+                    devicetrait = 'power';
+                }
+            }
+        }
+
+        //Topic could still not be matched
+        if (!deviceid) {
+            console.error(`Could not match topic ${topicuserpart} for user ${userid}`);
+            return;
+        }
+
+        if (devicetrait === "onoff") {
+            if ((message == "0") || (message == "false") || (message == "off")) {
+                message = 0;
+            } else {
+                message = 1;
+            }
+        } else if (devicetrait === "brightness") {
+            var brightness = Number.parseInt(message);
+            if (Number.isNaN(brightness)) {
+                console.log(`MQTT client error: Wrong brightness "${message}" for user ${userid}`);
+                return;
+            }
+            if (brightness < 0) {
+                brightness = 0;
+            }
+            if (brightness > 100) {
+                brightness = 100;
+            }
+
+            message = brightness;
+        } else if (devicetrait === "power") {
+            //device reporting power state
+            if ((message == "0") || (message == "false") || (message == "off")) {
+                message = 0;
+            } else {
+                message = 1;
+            }
+        } else {
+            console.log(`MQTT client error: Unsupported trait "${devicetrait}" for user ${userid}`);
+            return;
+        }
+
+        redis.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
+
+        redis.hget(`gbridge:u${userid}:d0`, 'grequesttype', function (err, response) {
+            if (err) {
+                console.error("Redis client error while fetching last request type: " + err);
+                return;
+            }
+            if (response == null) {
+                console.error("Redis client error while fetching last request type: undefined request type");
+                return;
+            }
+
+            if (response == 'EXECUTE') {
+                //get last requestid if if the previous request was EXECUTE
+                redis.hget(`gbridge:u${userid}:d0`, 'grequestid', function (err, response) {
+                    if (err) {
+                        console.error("Redis client error while fetching request id: " + err);
+                        return;
+                    }
+                    if (response == null) {
+                        console.error("Redis client error while fetching request id: undefined request id");
+                        return;
+                    }
+                    //console.log("Good set");
+                    reportState(userid, response);
+                });
+            } else {
+                //console.log("Bad set");
+                reportState(userid, null);
+            }
+        });
     });
 
 });
-//MQTT topic format is here gBridge/u<userid>/d<deviceid>/<trait>/set
-mqtt.subscribe('gBridge/+/+/+/set');
-//Subscribe to power topic, too
-mqtt.subscribe("gBridge/+/+/power");
+//Subscribe to all topic that may fit
+mqtt.subscribe('gBridge/+/#');

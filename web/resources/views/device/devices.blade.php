@@ -40,10 +40,10 @@
 									<div>{{ $trait->name }}</div>
 								</div>
 								<div class="col s12 m6 l5">
-									<input type="text" readonly value="{{ 'gBridge/u' . Auth::user()->user_id . '/d' . $device->device_id . '/' . strtolower($trait->shortname) }}">
+									<input type="text" readonly value="{{ 'gBridge/u' . Auth::user()->user_id . '/' . $trait->pivot->mqttActionTopic }}">
 								</div>
 								<div class="col s12 m6 l5">
-									<input type="text" readonly value="{{ 'gBridge/u' . Auth::user()->user_id . '/d' . $device->device_id . '/' . strtolower($trait->shortname) . '/set' }}">
+									<input type="text" readonly value="{{ 'gBridge/u' . Auth::user()->user_id . '/' . $trait->pivot->mqttStatusTopic }}">
 								</div>
 								@endforeach
 							</div>
