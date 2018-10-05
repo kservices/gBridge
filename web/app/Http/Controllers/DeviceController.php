@@ -11,6 +11,7 @@ use App\DeviceType;
 use App\TraitType;
 
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Validator;
 
 class DeviceController extends Controller
 {
@@ -30,11 +31,36 @@ class DeviceController extends Controller
         foreach(Auth::user()->devices as $device){
             $deviceinfo[$device->device_id] = [];
             foreach($device->traits as $trait){
-                $deviceinfo[$device->device_id][] = $trait->shortname;
+                $deviceinfo[$device->device_id][$trait->shortname] = [
+                    'actionTopic' => $trait->pivot->mqttActionTopic,
+                    'statusTopic' => $trait->pivot->mqttStatusTopic
+                ];
             }
         }
         $userid = Auth::user()->user_id;
         Redis::set("gbridge:u$userid:devices", json_encode($deviceinfo));
+    }
+
+    /**
+     * Stores general information about all user's devices in the redis cache for usage with oder modules of gBridge
+     */
+    public function allUserInfoToCache(){
+        foreach(User::all() as $user){
+            $deviceinfo = [];
+            foreach($user->devices as $device){
+                $deviceinfo[$device->device_id] = [];
+                foreach($device->traits as $trait){
+                    $deviceinfo[$device->device_id][$trait->shortname] = [
+                        'actionTopic' => $trait->pivot->mqttActionTopic,
+                        'statusTopic' => $trait->pivot->mqttStatusTopic
+                    ];
+                }
+            }
+            $userid = $user->user_id;
+            Redis::set("gbridge:u$userid:devices", json_encode($deviceinfo));
+        }
+
+        print("SUCCESS");
     }
 
     /**
@@ -97,7 +123,17 @@ class DeviceController extends Controller
 
         $device->save();
 
-        $device->traits()->sync($request->input('traits'));
+        $traits = [];
+        //use the default MQTT topics for the traits
+        foreach($request->input('traits') as $traitTypeId){
+            $traitType = TraitType::find($traitTypeId);
+
+            $traits[$traitTypeId] = [
+                'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname),
+                'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname) . '/set'
+            ];
+        }
+        $device->traits()->sync($traits);
         
         $this->userInfoToCache();
         $this->googleRequestSync();
@@ -150,12 +186,75 @@ class DeviceController extends Controller
 
         $device->save();
 
-        $device->traits()->sync($request->input('traits'));
+        $traits = [];
+        //use the default MQTT topics for the traits if the trait is added newly,
+        //or use the previous one
+        foreach($request->input('traits') as $traitTypeId){
+            $traitType = TraitType::find($traitTypeId);
+
+            if($device->traits->where('traittype_id', $traitTypeId)->count()){
+                //trait has been specified before
+                $traits[$traitTypeId] = [
+                    'mqttActionTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttActionTopic,
+                    'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttStatusTopic
+                ];
+            }else{
+                //trait was newly added
+                $traits[$traitTypeId] = [
+                    'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname),
+                    'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname) . '/set'
+                ];
+            }
+        }
+        $device->traits()->sync($traits);
         
         $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device modified');
+    }
+
+    /**
+     * Update MQTT topics for this device.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function updatetopic(Request $request, $id)
+    {
+        $device = Auth::user()->devices()->find($id);
+
+        //build the validator configuration
+        $validatorConf = [];
+        foreach($device->traits as $trait){
+            $validatorConf[$trait->traittype_id . '-action'] = 'bail|required|regex:/^[a-z0-9-_\/]+$/i';
+            $validatorConf[$trait->traittype_id . '-status'] = 'bail|required|regex:/^[a-z0-9-_\/]+$/i';
+        }
+
+        $this->validate($request, $validatorConf, [
+            'required' => 'Please specify a topic for each trait!',
+            'regex' => 'The topics may only contain alphanumeric chracters, slashes (/), underscores (_) and dashes (-)!'
+        ]);
+
+        //Sync the trait config for this device
+        $traits = [];
+        foreach($device->traits as $trait){
+            $traitTypeId = $trait->traittype_id;
+
+            $traits[$traitTypeId] = [
+                'mqttActionTopic' => $request->input($traitTypeId . '-action'),
+                'mqttStatusTopic' => $request->input($traitTypeId . '-status')
+            ];
+        }
+        $device->traits()->sync($traits);
+        
+        $this->userInfoToCache();
+
+        //Not necessary here?!
+        //$this->googleRequestSync();
+
+        return redirect()->route('device.index')->with('success', 'Device topics modified');
     }
 
     /**
