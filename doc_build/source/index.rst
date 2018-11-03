@@ -30,4 +30,11 @@ All set? :doc:`Let's get started <firstSteps/gettingStarted>`
    firstSteps/deviceMechanism
    firstSteps/mqttServer
    exampleUsage/fhem.rst
+   exampleUsage/communityManuals.rst
    selfHosted/hostItYourself.rst
+
+.. figure:: ./_static/works-with-assistant.png
+   :width: 50%
+   :align: center
+   :alt: Works with Assistant
+   :figclass: align-center

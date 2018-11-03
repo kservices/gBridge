@@ -171,7 +171,7 @@
 <h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
 <p>Of course, the gBridge MQTT servers requires authentication.</p>
 <p><strong>Username:</strong> <code class="code docutils literal notranslate"><span class="pre">gbridge-{userid}</span></code>. Your full username is shown in your account’s dashboard under “My Account”. <em>Example:</em> <code class="code docutils literal notranslate"><span class="pre">gbridge-u4</span></code></p>
-<p><strong>Password:</strong> No default MQTT password is set for your account. You can set an own MQTT password in your account’s dashboard. This password must be at least 8 characters long, while containing both upper- and lowercase letters, a number and a special character. A new password will (almost) instantly apply for any new MQTT connections.</p>
+<p><strong>Password:</strong> No default MQTT password is set for your account. You have to set an own MQTT password in your account’s dashboard. This password must be at least 8 characters long, while containing both upper- and lowercase letters, a number and a special character. A new password will (almost) instantly apply for any new MQTT connections.</p>
 </div>
 <div class="section" id="available-protocols">
 <h2>Available protocols<a class="headerlink" href="#available-protocols" title="Permalink to this headline">¶</a></h2>
@@ -187,9 +187,11 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">8883</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
+<tr class="field-odd field"><th class="field-name">MQTT Protocol:</th><td class="field-body">Version 3.1</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+<tr class="field-even field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
 </tr>
 </tbody>
 </table>
@@ -207,9 +209,11 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">443</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
+<tr class="field-odd field"><th class="field-name">MQTT Protocol:</th><td class="field-body">Version 3.1</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+<tr class="field-even field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
 </tr>
 </tbody>
 </table>
@@ -230,7 +234,9 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">1883</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+<tr class="field-odd field"><th class="field-name">MQTT Protocol:</th><td class="field-body">Version 3.1</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
 </tr>
 </tbody>
 </table>
@@ -250,7 +256,9 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Port:</th><td class="field-body">80</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
+<tr class="field-odd field"><th class="field-name">MQTT Protocol:</th><td class="field-body">Version 3.1</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Authentication:</th><td class="field-body">required, as described above</td>
 </tr>
 </tbody>
 </table>
@@ -269,6 +277,7 @@
 <div class="highlight-aconf notranslate"><div class="highlight"><pre><span></span><span class="nb">connection</span> kappelt-gbridge
 <span class="nb">address</span> mqtt.gbridge.kappelt.net:8883
 <span class="nb">bridge_attempt_unsubscribe</span> true
+<span class="nb">bridge_protocol_version</span> mqttv31
 <span class="nb">cleansession</span> true
 <span class="nb">remote_username</span> {gbridge-mqtt-username}
 <span class="nb">remote_password</span> {gbridge-mqtt-password}
@@ -321,7 +330,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x00000000064AC9B0> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x000000000567EE48> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>

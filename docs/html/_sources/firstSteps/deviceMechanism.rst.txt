@@ -10,7 +10,7 @@ Kappelt gBridge publishes on those action topics, once an action request is made
 
 Your device/ software should subscribe to those topics and trigger the appropriate actions once a message is received.
 
-Action topics are formatted as shown:
+By default, action topics are formatted as shown. You might change them as you like.
 
 | :code:`gBridge/u{userid}/d{deviceid}/{trait}`
 | **Example:** :code:`gBridge/u1/d4/onoff`
@@ -34,7 +34,7 @@ The current state of your device shall be published to status topics, so gBridge
 
 Your device/ software should publish the current states of your devices every time something changes (e.g. they are turned on or off). **It must publish the new states even if the change was triggered by an action topic by gBridge itself.**
 
-Status topics are formatted as shown. You can identify them by the suffix "set".
+By default, status topics are formatted as shown. You can identify them by the suffix "set". You might change them as you like.
 
 | :code:`gBridge/u{userid}/d{deviceid}/{trait}/set`
 | **Example:** :code:`gBridge/u1/d4/onoff/set`

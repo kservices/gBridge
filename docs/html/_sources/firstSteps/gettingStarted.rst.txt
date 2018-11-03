@@ -10,8 +10,6 @@ Register a new account
 -----------------------
 That's not complicated at all: just visit `https://gbridge.kappelt.net/register <https://gbridge.kappelt.net/register>`_ and fill in the required information. After you've received the confirmation email, you can instantly log in.
 
-It might take up to 24 hours for your account to get fully activated during the beta phase, since some confirmations have to be done manually. You'll receive another mail once your account is fully set.
-
 A first device
 --------------------
 You'll see your account's dashboard for the first time after logging in.
@@ -36,6 +34,11 @@ Press the top-right button labeled with "+ Device" to create a new one. Choose w
 
 Note the MQTT topics that are listed here.
 
+.. TIP::
+   You can edit these MQTT topics for the devices as you like. To do so, press the "Edit" button in the device list.
+
+   Please note that you can't specify your own topics while creating new devices, only while editing them after creation.
+
 Before we can move on to the Google Home app, you need to create an accesskey.
 
 .. TIP::
@@ -53,7 +56,7 @@ To do so, open the tab "Accesskeys" and click on the add-button.
 
 Connect Google Assistant
 -----------------------------
-Open the *Google Home App* to connect your Google Home system to gBridge. Navigate to the smart home settings and press the "Add" button to link your account. Select *Kappelt gBridge*.
+Open the *Google Home App* to connect your Google Home system to gBridge. Add a new device, select the category "Works with Google". Select *Kappelt gBridge*.
 
 .. figure:: ../_static/googlehome-add-provider.png
    :width: 50%
@@ -78,6 +81,13 @@ Open the *Google Home App* to connect your Google Home system to gBridge. Naviga
    Your newly created devices will appear in the list. If you like, you can assign a room to the devices.
 
 If you add new devices in your dashboard, they'll appear in the list automatically.
+
+.. IMPORTANT::
+   There is a bug in a current version of the Google Home app that might lead to the message "Couldn't update the settings. Check your connection". This problem is solely caused by the Google Home app, thus we are unable to fix it at the moment.
+
+   This issue has been analyzed by `some Reddit users <https://www.reddit.com/r/googlehome/comments/7npsz8/psa_solutions_to_the_couldnt_update_the_settings/>`_. It seems to be common among Android devices with Google Chrome as the standard browser, while being logged in to multiple Google Accounts.
+
+   For many users, installing Firefox and setting it (temporarily) to the default browser seemed to fixed the problem.
 
 Test it
 ---------
