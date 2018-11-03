@@ -10,7 +10,7 @@ Of course, the gBridge MQTT servers requires authentication.
 
 **Username:** :code:`gbridge-{userid}`. Your full username is shown in your account's dashboard under "My Account". *Example:* :code:`gbridge-u4`
 
-**Password:** No default MQTT password is set for your account. You can set an own MQTT password in your account's dashboard. This password must be at least 8 characters long, while containing both upper- and lowercase letters, a number and a special character. A new password will (almost) instantly apply for any new MQTT connections.
+**Password:** No default MQTT password is set for your account. You have to set an own MQTT password in your account's dashboard. This password must be at least 8 characters long, while containing both upper- and lowercase letters, a number and a special character. A new password will (almost) instantly apply for any new MQTT connections.
 
 Available protocols
 ---------------------
@@ -23,6 +23,7 @@ MQTT over TLS can be reached by :code:`mqtts://mqtt.gbridge.kappelt.net`
 
 :Server: mqtt.gbridge.kappelt.net
 :Port: 8883
+:MQTT Protocol: Version 3.1
 :TLS: TLS V1.2 is required
 :Authentication: required, as described above
 
@@ -36,6 +37,7 @@ MQTT over secure websockets can be reached by :code:`wss://mqtt.gbridge.kappelt.
 
 :Server: mqtt.gbridge.kappelt.net
 :Port: 443
+:MQTT Protocol: Version 3.1
 :TLS: TLS V1.2 is required
 :Authentication: required, as described above
 
@@ -50,6 +52,7 @@ Plain, unsecure MQTT can be reached by :code:`mqtt://mqtt.gbridge.kappelt.net`
 
 :Server: mqtt.gbridge.kappelt.net
 :Port: 1883
+:MQTT Protocol: Version 3.1
 :Authentication: required, as described above
 
 MQTT over websockets
@@ -61,6 +64,7 @@ Plain, unsecure MQTT can be reached by :code:`ws://mqtt.gbridge.kappelt.net`
 
 :Server: mqtt.gbridge.kappelt.net
 :Port: 80
+:MQTT Protocol: Version 3.1
 :Authentication: required, as described above
 
 .. _mqttServer-mosquittoBridge:
@@ -89,6 +93,7 @@ The following configuration works with Mosquitto. Place it at the end of your Mo
     connection kappelt-gbridge
     address mqtt.gbridge.kappelt.net:8883
     bridge_attempt_unsubscribe true
+    bridge_protocol_version mqttv31
     cleansession true
     remote_username {gbridge-mqtt-username}
     remote_password {gbridge-mqtt-password}

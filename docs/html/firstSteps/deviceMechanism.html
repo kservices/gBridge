@@ -162,7 +162,7 @@
 <h2>Action topics<a class="headerlink" href="#action-topics" title="Permalink to this headline">¶</a></h2>
 <p>Kappelt gBridge publishes on those action topics, once an action request is made via Google Assistant.</p>
 <p>Your device/ software should subscribe to those topics and trigger the appropriate actions once a message is received.</p>
-<p>Action topics are formatted as shown:</p>
+<p>By default, action topics are formatted as shown. You might change them as you like.</p>
 <div class="line-block">
 <div class="line"><code class="code docutils literal notranslate"><span class="pre">gBridge/u{userid}/d{deviceid}/{trait}</span></code></div>
 <div class="line"><strong>Example:</strong> <code class="code docutils literal notranslate"><span class="pre">gBridge/u1/d4/onoff</span></code></div>
@@ -188,7 +188,7 @@
 <h2>Status topics<a class="headerlink" href="#status-topics" title="Permalink to this headline">¶</a></h2>
 <p>The current state of your device shall be published to status topics, so gBridge can cache them. Once a query is made via Google Assistant (like “Hey Google, is device xyz turned on?”), the last value that was published to the status topic will be returned.</p>
 <p>Your device/ software should publish the current states of your devices every time something changes (e.g. they are turned on or off). <strong>It must publish the new states even if the change was triggered by an action topic by gBridge itself.</strong></p>
-<p>Status topics are formatted as shown. You can identify them by the suffix “set”.</p>
+<p>By default, status topics are formatted as shown. You can identify them by the suffix “set”. You might change them as you like.</p>
 <div class="line-block">
 <div class="line"><code class="code docutils literal notranslate"><span class="pre">gBridge/u{userid}/d{deviceid}/{trait}/set</span></code></div>
 <div class="line"><strong>Example:</strong> <code class="code docutils literal notranslate"><span class="pre">gBridge/u1/d4/onoff/set</span></code></div>
@@ -240,7 +240,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x00000000063497F0> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x000000000568E4A8> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>

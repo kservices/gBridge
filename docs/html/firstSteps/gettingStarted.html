@@ -91,6 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="deviceMechanism.html">Device Mechanism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mqttServer.html">Hosted MQTT server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exampleUsage/fhem.html">FHEM examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exampleUsage/communityManuals.html">Community Manuals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../selfHosted/hostItYourself.html">Self-Hosted gBridge</a></li>
 </ul>
 
@@ -165,7 +166,6 @@
 <div class="section" id="register-a-new-account">
 <h2>Register a new account<a class="headerlink" href="#register-a-new-account" title="Permalink to this headline">¶</a></h2>
 <p>That’s not complicated at all: just visit <a class="reference external" href="https://gbridge.kappelt.net/register">https://gbridge.kappelt.net/register</a> and fill in the required information. After you’ve received the confirmation email, you can instantly log in.</p>
-<p>It might take up to 24 hours for your account to get fully activated during the beta phase, since some confirmations have to be done manually. You’ll receive another mail once your account is fully set.</p>
 </div>
 <div class="section" id="a-first-device">
 <h2>A first device<a class="headerlink" href="#a-first-device" title="Permalink to this headline">¶</a></h2>
@@ -180,6 +180,11 @@
 <p class="caption"><span class="caption-text">Congratulations! You’ve just created your first virtual device.</span></p>
 </div>
 <p>Note the MQTT topics that are listed here.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p>You can edit these MQTT topics for the devices as you like. To do so, press the “Edit” button in the device list.</p>
+<p class="last">Please note that you can’t specify your own topics while creating new devices, only while editing them after creation.</p>
+</div>
 <p>Before we can move on to the Google Home app, you need to create an accesskey.</p>
 <div class="admonition tip">
 <p class="first admonition-title">Tip</p>
@@ -193,7 +198,7 @@
 </div>
 <div class="section" id="connect-google-assistant">
 <h2>Connect Google Assistant<a class="headerlink" href="#connect-google-assistant" title="Permalink to this headline">¶</a></h2>
-<p>Open the <em>Google Home App</em> to connect your Google Home system to gBridge. Navigate to the smart home settings and press the “Add” button to link your account. Select <em>Kappelt gBridge</em>.</p>
+<p>Open the <em>Google Home App</em> to connect your Google Home system to gBridge. Add a new device, select the category “Works with Google”. Select <em>Kappelt gBridge</em>.</p>
 <div class="align-center figure">
 <a class="reference internal image-reference" href="../_images/googlehome-add-provider.png"><img alt="You can add Kappelt gBridge as a smart home provider in the Google Home app." src="../_images/googlehome-add-provider.png" style="width: 50%;" /></a>
 </div>
@@ -206,6 +211,12 @@
 <p class="caption"><span class="caption-text">Your newly created devices will appear in the list. If you like, you can assign a room to the devices.</span></p>
 </div>
 <p>If you add new devices in your dashboard, they’ll appear in the list automatically.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p>There is a bug in a current version of the Google Home app that might lead to the message “Couldn’t update the settings. Check your connection”. This problem is solely caused by the Google Home app, thus we are unable to fix it at the moment.</p>
+<p>This issue has been analyzed by <a class="reference external" href="https://www.reddit.com/r/googlehome/comments/7npsz8/psa_solutions_to_the_couldnt_update_the_settings/">some Reddit users</a>. It seems to be common among Android devices with Google Chrome as the standard browser, while being logged in to multiple Google Accounts.</p>
+<p class="last">For many users, installing Firefox and setting it (temporarily) to the default browser seemed to fixed the problem.</p>
+</div>
 </div>
 <div class="section" id="test-it">
 <h2>Test it<a class="headerlink" href="#test-it" title="Permalink to this headline">¶</a></h2>
@@ -269,7 +280,7 @@ The Let’s Encrypt CA is trusted by most systems nowadays, you shouldn’t real
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x0000000005BECDA0> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x000000000619F3C8> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>
