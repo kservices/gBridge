@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\DeviceType;
+use App\Services\DeviceService;
+use App\TraitType;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
-use App\User;
-use App\Device;
-use App\DeviceType;
-use App\TraitType;
-
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Validator;
 
 class DeviceController extends Controller
 {
+    private $deviceService;
+
     /**
      * Send a request to the worker, in order to request Google to refresh the customer's device list
      */
@@ -66,8 +65,9 @@ class DeviceController extends Controller
     /**
      * Force Authentication
      */
-    public function __construct(){
+    public function __construct(DeviceService $deviceService){
         $this->middleware('auth');
+        $this->deviceService = $deviceService;
     }
 
     /**
@@ -116,25 +116,8 @@ class DeviceController extends Controller
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
 
-        $device = new Device;
-        $device->name = $request->input('name');
-        $device->devicetype_id = $request->input('type');
-        $device->user_id = Auth::user()->user_id;
+        $this -> deviceService -> create($request, Auth::user() -> user_id);
 
-        $device->save();
-
-        $traits = [];
-        //use the default MQTT topics for the traits
-        foreach($request->input('traits') as $traitTypeId){
-            $traitType = TraitType::find($traitTypeId);
-
-            $traits[$traitTypeId] = [
-                'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname),
-                'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname) . '/set'
-            ];
-        }
-        $device->traits()->sync($traits);
-        
         $this->userInfoToCache();
         $this->googleRequestSync();
 
@@ -170,7 +153,7 @@ class DeviceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $this->validate($request, [
             'name' => 'bail|required|max:32|min:1',
@@ -178,35 +161,7 @@ class DeviceController extends Controller
             'traits' => 'bail|required|array',
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
-
-        $device = Auth::user()->devices()->find($id);
-        $device->name = $request->input('name');
-        $device->devicetype_id = $request->input('type');
-        $device->user_id = Auth::user()->user_id;
-
-        $device->save();
-
-        $traits = [];
-        //use the default MQTT topics for the traits if the trait is added newly,
-        //or use the previous one
-        foreach($request->input('traits') as $traitTypeId){
-            $traitType = TraitType::find($traitTypeId);
-
-            if($device->traits->where('traittype_id', $traitTypeId)->count()){
-                //trait has been specified before
-                $traits[$traitTypeId] = [
-                    'mqttActionTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttActionTopic,
-                    'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttStatusTopic
-                ];
-            }else{
-                //trait was newly added
-                $traits[$traitTypeId] = [
-                    'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname),
-                    'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname) . '/set'
-                ];
-            }
-        }
-        $device->traits()->sync($traits);
+        $this -> deviceService -> update($request, $id, Auth::user());
         
         $this->userInfoToCache();
         $this->googleRequestSync();
@@ -265,8 +220,7 @@ class DeviceController extends Controller
      */
     public function destroy($id)
     {
-        $device = Auth::user()->devices()->find($id);
-        $device->delete();
+        $this -> deviceService -> delete($id, Auth::user());
 
         $this->userInfoToCache();
         $this->googleRequestSync();
