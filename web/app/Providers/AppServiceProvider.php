@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\DeviceService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind('App\Services\DeviceService', function () {
+            return new DeviceService();
+        });
     }
 }
