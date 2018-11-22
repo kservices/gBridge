@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Device;
@@ -14,22 +15,24 @@ class DeviceService
         $device->name = $request->input('name');
         $device->devicetype_id = $request->input('type');
         $device->user_id = $userId;
-
         $device->save();
 
         $traits = [];
-        foreach($request->input('traits') as $traitTypeId){
+        $topicPrefixFromRequest = $request->input('topicPrefix');
+        $topicPrefix = $topicPrefixFromRequest ? $topicPrefixFromRequest : 'd' . $device->device_id;
+        foreach ($request->input('traits') as $traitTypeId) {
             $traitType = TraitType::find($traitTypeId);
 
             $traits[$traitTypeId] = [
-                'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname),
-                'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname) . '/set'
+                'mqttActionTopic' => $topicPrefix . '/' . strtolower($traitType->shortname),
+                'mqttStatusTopic' => $topicPrefix . '/' . strtolower($traitType->shortname) . '/set'
             ];
         }
         $device->traits()->sync($traits);
     }
-    
-    public function update(Request $request, int $id, User $user){
+
+    public function update(Request $request, int $id, User $user)
+    {
         $device = $user->devices()->find($id);
         $device->name = $request->input('name');
         $device->devicetype_id = $request->input('type');
@@ -40,16 +43,16 @@ class DeviceService
         $traits = [];
         //use the default MQTT topics for the traits if the trait is added newly,
         //or use the previous one
-        foreach($request->input('traits') as $traitTypeId){
+        foreach ($request->input('traits') as $traitTypeId) {
             $traitType = TraitType::find($traitTypeId);
 
-            if($device->traits->where('traittype_id', $traitTypeId)->count()){
+            if ($device->traits->where('traittype_id', $traitTypeId)->count()) {
                 //trait has been specified before
                 $traits[$traitTypeId] = [
                     'mqttActionTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttActionTopic,
                     'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttStatusTopic
                 ];
-            }else{
+            } else {
                 //trait was newly added
                 $traits[$traitTypeId] = [
                     'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname),
@@ -60,8 +63,12 @@ class DeviceService
         $device->traits()->sync($traits);
     }
 
-    public function delete($id, User $user){
+    public function delete($id, User $user)
+    {
         $device = $user->devices()->find($id);
-        return $device->delete();
+        if($device){
+            return $device->delete();
+        }
+        return false;
     }
 }

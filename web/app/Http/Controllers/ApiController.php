@@ -77,9 +77,9 @@ class ApiController extends Controller
      * @param User $user
      * @return \Illuminate\Http\Response
      */
-    public function deleteDevice(int $id, User $user)
+    public function deleteDevice(int $id)
     {
-        $this -> deviceService -> delete($id, $user);
+        $this -> deviceService -> delete($id, Auth::user());
         return response('Deleted', 200);
     }
 }
