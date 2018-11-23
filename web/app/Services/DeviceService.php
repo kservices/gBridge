@@ -6,15 +6,16 @@ use App\Device;
 use App\TraitType;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 
 class DeviceService
 {
-    public function create(Request $request, String $userId)
+    public function create(Request $request, User $user)
     {
         $device = new Device;
         $device->name = $request->input('name');
         $device->devicetype_id = $request->input('type');
-        $device->user_id = $userId;
+        $device->user_id = $user -> user_id;
         $device->save();
 
         $traits = [];
@@ -29,6 +30,7 @@ class DeviceService
             ];
         }
         $device->traits()->sync($traits);
+        $this -> userInfoToCache($user);
     }
 
     public function update(Request $request, int $id, User $user)
@@ -61,6 +63,7 @@ class DeviceService
             }
         }
         $device->traits()->sync($traits);
+        $this -> userInfoToCache($user);
     }
 
     public function delete($id, User $user)
@@ -69,6 +72,26 @@ class DeviceService
         if($device){
             return $device->delete();
         }
+        $this -> userInfoToCache($user);
         return false;
+    }
+
+    /**
+     * Store general information about the user in the redis cache for usage with other modules of gBridge
+     * @param User $user
+     */
+    public function userInfoToCache(User $user){
+        $deviceinfo = [];
+        foreach($user->devices as $device){
+            $deviceinfo[$device->device_id] = [];
+            foreach($device->traits as $trait){
+                $deviceinfo[$device->device_id][$trait->shortname] = [
+                    'actionTopic' => $trait->pivot->mqttActionTopic,
+                    'statusTopic' => $trait->pivot->mqttStatusTopic
+                ];
+            }
+        }
+        $userid = $user->user_id;
+        Redis::set("gbridge:u$userid:devices", json_encode($deviceinfo));
     }
 }
