@@ -23,24 +23,6 @@ class DeviceController extends Controller
     }
 
     /**
-     * Store general information about the user in the redis cache for usage with other modules of gBridge
-     */
-    public function userInfoToCache(){
-        $deviceinfo = [];
-        foreach(Auth::user()->devices as $device){
-            $deviceinfo[$device->device_id] = [];
-            foreach($device->traits as $trait){
-                $deviceinfo[$device->device_id][$trait->shortname] = [
-                    'actionTopic' => $trait->pivot->mqttActionTopic,
-                    'statusTopic' => $trait->pivot->mqttStatusTopic
-                ];
-            }
-        }
-        $userid = Auth::user()->user_id;
-        Redis::set("gbridge:u$userid:devices", json_encode($deviceinfo));
-    }
-
-    /**
      * Stores general information about all user's devices in the redis cache for usage with oder modules of gBridge
      */
     public function allUserInfoToCache(){
@@ -116,9 +98,8 @@ class DeviceController extends Controller
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
 
-        $this -> deviceService -> create($request, Auth::user() -> user_id);
+        $this -> deviceService -> create($request, Auth::user());
 
-        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device added');
@@ -163,7 +144,6 @@ class DeviceController extends Controller
         ]);
         $this -> deviceService -> update($request, $id, Auth::user());
         
-        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device modified');
@@ -178,7 +158,8 @@ class DeviceController extends Controller
      */
     public function updatetopic(Request $request, $id)
     {
-        $device = Auth::user()->devices()->find($id);
+        $user = Auth::user();
+        $device = $user->devices()->find($id);
 
         //build the validator configuration
         $validatorConf = [];
@@ -204,7 +185,7 @@ class DeviceController extends Controller
         }
         $device->traits()->sync($traits);
         
-        $this->userInfoToCache();
+        $this->deviceService -> userInfoToCache($user);
 
         //Not necessary here?!
         //$this->googleRequestSync();
@@ -222,7 +203,6 @@ class DeviceController extends Controller
     {
         $this -> deviceService -> delete($id, Auth::user());
 
-        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device deleted');
