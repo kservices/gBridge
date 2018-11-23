@@ -47,7 +47,7 @@ class ApiController extends Controller
             'traits' => 'bail|required|array',
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
-        $this -> deviceService -> create($request, Auth::user() -> user_id);
+        $this -> deviceService -> create($request, Auth::user());
         return response('Created', 201);
     }
 
