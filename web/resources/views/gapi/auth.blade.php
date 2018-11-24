@@ -11,7 +11,7 @@
 
     <div class="card-panel green white-text">
         <b>Nice to see you again!</b><br>
-        Google is requiring access to your gBridge account. Please enter your account's email and an accesskey you've generated.
+        Google is requiring access to your gBridge account. @if(Auth::check())Please confirm the linking. @else Please enter your account's credentials. @endif
     </div>
 
     <div class="row">
@@ -24,7 +24,13 @@
                     <input type="hidden" name="redirect_uri" value="{{ $redirect_uri }}">
                     <input type="hidden" name="state" value="{{ $state }}">
                     <div class="card-content black-text">
-                        <p><span class="card-title">Login</span></p>
+                        <p><span class="card-title">Link Accounts</span></p>
+                        @if(Auth::check())
+                            {{-- User is already logged in. Just show confirmation button --}}
+                            <b>Hi {{ Auth::user()->name }}!</b>
+                            <p>Click the button below to link your gBridge account to Google.</p>
+                        @else
+
                         @if ($errors->has('email'))
                         <b class="red-text">{{ $errors->first('email') }}</b>
                         @endif
@@ -37,13 +43,19 @@
                         <b class="red-text">{{ $errors->first('password') }}</b>
                         @endif
                         <div class="input-field">
-                            <input type="password" class="validate tooltipped" id="accesskey" name="accesskey" required data-tooltip="This is not your account's password!<br>You can create a temporary accesskey in your account's dashboard">
-                            <label for="accesskey">Accesskey</label>
+                            <input type="password" class="validate" id="password" name="password" required>
+                            <label for="password">Account Password</label>
                         </div>
+
+                        @endif
                     </div>
                     <div class="card-action">
                         <button style="width: 100%;" class="btn waves-effect blue" type="submit">
-                            <i class="material-icons left">vpn_key</i>Authenticate
+                            @if(Auth::check())
+                            <i class="material-icons left">navigate_next</i>Confirm Linking
+                            @else
+                            <i class="material-icons left">vpn_key</i>Link Accounts
+                            @endif
                         </button>
                     </div>
                 </form>

@@ -74,10 +74,16 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        //Mosquitto (MQTT server) requires an password string that is unusual, but based on PBKDF2. It must be build manually.
+        $mqtt_salt = str_random(16);
+        $mqtt_keypart = base64_encode(hash_pbkdf2('sha256', $data['password'], $mqtt_salt, 902, 24, true));
+        $mqtt_key = "PBKDF2\$sha256\$902\$$mqtt_salt\$$mqtt_keypart";
+
         $cleanName = empty($data['name']) ? $data['email']:$data['name'];
         $user = User::create([
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
+            'mqtt_password' => $mqtt_key,
             'verify_token' => str_random(32),
             'language' => $data['language'],
             'name' => $cleanName

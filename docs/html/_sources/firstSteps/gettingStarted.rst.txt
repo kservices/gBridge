@@ -39,21 +39,6 @@ Note the MQTT topics that are listed here.
 
    Please note that you can't specify your own topics while creating new devices, only while editing them after creation.
 
-Before we can move on to the Google Home app, you need to create an accesskey.
-
-.. TIP::
-   Accesskeys are one-time-passwords that can be used to link a gBridge account with the Google Home app.
-
-To do so, open the tab "Accesskeys" and click on the add-button.
-
-.. figure:: ../_static/dashboard-first-accesskey.png
-   :width: 100%
-   :align: center
-   :alt: A first accesskey has been generated.
-   :figclass: align-center
-
-   You'll need that accesskey later!
-
 Connect Google Assistant
 -----------------------------
 Open the *Google Home App* to connect your Google Home system to gBridge. Add a new device, select the category "Works with Google". Select *Kappelt gBridge*.
@@ -70,7 +55,7 @@ Open the *Google Home App* to connect your Google Home system to gBridge. Add a 
    :alt: You need to enter your account's email and an accesskey.
    :figclass: align-center
 
-   Enter your email, use the accesskey that was generated before.
+   Enter your email and your password.
 
 .. figure:: ../_static/googlehome-device-listed.png
    :width: 50%
@@ -96,7 +81,7 @@ Everything is ready now! Messages will now be available on gBridge's public MQTT
 :Hostname: mqtt.gbridge.kappelt.net
 :Port: 8883
 :Username: Shown in your account's dashboard under "My Account"
-:Password: Needs to be set once in your account's dashboard
+:Password: Is your account's password by default, but can be changed independently.
 :TLS: TLS V1.2 is required
 
 **About TLS:** The Server uses an certificate that is signed by Let's Encrypt. 
@@ -121,3 +106,11 @@ Subscribe now to the MQTT topic that belongs to your device, for example with *m
    :figclass: align-center
 
    A voice command leads to a published MQTT message.
+
+Going further
+----------------
+Now you're all set! There is more information in this documentation.
+
+Have a look at https://status.gbridge.kappelt.net, too. You can subscribe to notifications about planned updates or possible service outages.
+
+If you like, you can follow us on Twitter: https://twitter.com/Kappelt_gBridge

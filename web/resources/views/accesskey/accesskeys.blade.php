@@ -5,24 +5,19 @@
 	<div class="container">
 		@include('common.messages')
 
-		<div class="right">
-			<a class="waves-effect btn blue" href="{{ route('accesskey.create') }}">
-				<i class="material-icons left">add</i>Accesskey
-			</a>
-		</div>
-
-		<h2>Accesskeys</h2>
+		<h2>Google Account Linking</h2>
 		
+		@if(\Carbon\Carbon::create(2018, 11, 24, 15, 0, 0)->gt(Auth::user()->created_at))
+		<div class="card-panel green white-text">
+			<i class="material-icons center">info</i><br>
+			From now on, you don't need to generate accesskeys anymore. Just enter your account's password when linking in the Google Home app.
+		</div>
+		@endif
+
 		<div class="card-panel blue white-text">
 			<i class="material-icons center">info</i><br>
-			Accesskeys are temporary passwords, that can be used to log in to gBridge with Google Assistant.
-			Once you select "Kappelt gBridge" in the Google Home App (or alike), you'll be prompted to enter your email and an accesskey.
-			Note the following:
-			<ul>
-				<li>An Accesskey can only be used once.</li>
-				<li>An Accesskey has to be used during one hour after its generation. It'll become invalid afterwards.</li>
-				<li>If you delete an Accesskey, the linked Google account will be unable to communicate with gBridge. Un-link and relink your gBridge-Account in the Google Home App then.</li>
-			</ul> 
+			This page shows all linkings between gBridge and your Google Home system.<br>
+			You can delete a linking here, the belonging Google account will be unable to communicate with gBridge. Un-link and relink your gBridge-Account in the Google Home App then.
 		</div>
 
 		@if (count($accesskeys) > 0)
@@ -40,31 +35,7 @@
 					@foreach ($accesskeys as $accesskey)
 						<tr>
 							<td>
-								@if($accesskey->status === 'USED')
-								<p class="green-text">
-								@elseif($accesskey->status === 'EXPIRED')
-								<p class="red-text">
-								@elseif($accesskey->status === 'READY')
-								<p class="blue-text">
-								@else
-								<p>
-								@endif
-								<b title="Identifier u{{Auth::user()->user_id}}a{{$accesskey->accesskey_id}}">Accesskey No. {{ $loop->iteration }}</b><br>
-								Valid until {{ $accesskey->valid_until }} CE(S)T.
-								</p>
-
-								@if($accesskey->status === 'USED')
-								Accesskey: <input type="text" value="&lt;hidden&gt;" readonly><br>
-								<b>This key has been used to register an Google Home account at {{ $accesskey->used_at }} CE(S)T</b>
-								@elseif($accesskey->status === 'EXPIRED')
-								Accesskey: <input style="font-family: monospace;" type="text" value="{{ $accesskey->password }}" readonly>
-								<b>This accesskey has expired. You may delete this key and create a new one.</b>
-								@elseif($accesskey->status === 'READY')
-								Accesskey: <input style="font-family: monospace;" type="text" value="{{ $accesskey->password }}" readonly>
-								<b>This key is ready to be used.</b>
-								@else
-								The status of this accesskey is unknown.
-								@endif
+								Linking with Google on {{ $accesskey->generated_at }}
 							</td>
 							<td>
 								{!!Form::open(['action' => ['AccesskeyController@destroy', $accesskey->accesskey_id], 'method' => 'POST'])!!}
@@ -79,8 +50,8 @@
 		@else
 			{{-- See https://github.com/Dogfalo/materialize/issues/2340 for dialogs --}}
 			<div class="card-panel green white-text">
-				No accesskey created yet.<br>
-				Create one by pressing the button above!
+				You haven't linked gBridge with Google yet.<br>
+				Use the Google Home app, choose to add new smart home and search for "Kappelt gBridge"
 			</div>
 		@endif
 	</div>

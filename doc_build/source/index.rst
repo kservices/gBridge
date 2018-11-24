@@ -21,6 +21,12 @@ This MQTT message can finally be handled by most smart home applications and mig
 
 All set? :doc:`Let's get started <firstSteps/gettingStarted>` 
 
+.. figure:: ./_static/works-with-assistant.png
+   :width: 50%
+   :align: center
+   :alt: Works with Assistant
+   :figclass: align-center
+
 .. toctree::
    :maxdepth: 2
    :caption: First steps:
@@ -28,13 +34,8 @@ All set? :doc:`Let's get started <firstSteps/gettingStarted>`
    self
    firstSteps/gettingStarted
    firstSteps/deviceMechanism
+   firstSteps/deviceTypes
    firstSteps/mqttServer
    exampleUsage/fhem.rst
    exampleUsage/communityManuals.rst
    selfHosted/hostItYourself.rst
-
-.. figure:: ./_static/works-with-assistant.png
-   :width: 50%
-   :align: center
-   :alt: Works with Assistant
-   :figclass: align-center
