@@ -34,12 +34,12 @@ Route::get('/home', function(){
 Route::resource('device', 'DeviceController', [
     'only' => ['store', 'index', 'create', 'update', 'destroy', 'edit'],        //no show-method
 ]);
-Route::put('/device/{id}/updatetopic', 'DeviceController@updatetopic')->name('device.updatetopic')->middleware('auth');
-Route::get('/temp-syncdev', 'DeviceController@allUserInfoToCache')->middleware('auth');
+Route::put('/device/{device}/updatetopic/{trait}', 'DeviceController@updatetopic')->name('device.updatetopic')->middleware('auth');
+#Route::get('/temp-syncdev', 'DeviceController@allUserInfoToCache')->middleware('auth');
 
 //Accesskey-management too
 Route::resource('accesskey', 'AccesskeyController', [
-    'only' => ['index', 'create', 'destroy']                            //limited functions
+    'only' => ['index', 'destroy']                            //limited functions
 ]);
 
 //User profile management

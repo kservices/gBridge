@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Hosted MQTT server" href="mqttServer.html" />
+    <link rel="next" title="Device Types" href="deviceTypes.html" />
     <link rel="prev" title="Getting Started" href="gettingStarted.html" /> 
 
   
@@ -88,8 +88,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#valid-values-for-messages">Valid values for messages</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="deviceTypes.html">Device Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mqttServer.html">Hosted MQTT server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exampleUsage/fhem.html">FHEM examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exampleUsage/communityManuals.html">Community Manuals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../selfHosted/hostItYourself.html">Self-Hosted gBridge</a></li>
 </ul>
 
@@ -207,9 +209,23 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">onoff:</th><td class="field-body">Valid values are <code class="code docutils literal notranslate"><span class="pre">0</span></code> (Device is off) and <code class="code docutils literal notranslate"><span class="pre">1</span></code> (Device is on). When publishing on a status topic, the values <code class="code docutils literal notranslate"><span class="pre">false</span></code>, <code class="code docutils literal notranslate"><span class="pre">off</span></code> (Device is off) and <code class="code docutils literal notranslate"><span class="pre">true</span></code>, <code class="code docutils literal notranslate"><span class="pre">on</span></code> (Device is on) are valid too.</td>
+<tr class="field-odd field"><th class="field-name">OnOff:</th><td class="field-body">Valid values are <code class="code docutils literal notranslate"><span class="pre">0</span></code> (Device is off) and <code class="code docutils literal notranslate"><span class="pre">1</span></code> (Device is on). When publishing on a status topic, the values <code class="code docutils literal notranslate"><span class="pre">false</span></code>, <code class="code docutils literal notranslate"><span class="pre">off</span></code> (Device is off) and <code class="code docutils literal notranslate"><span class="pre">true</span></code>, <code class="code docutils literal notranslate"><span class="pre">on</span></code> (Device is on) are valid too (case insensitive).</td>
 </tr>
-<tr class="field-even field"><th class="field-name">brightness:</th><td class="field-body">Valid values are integer numbers from 0 to 100, including 0 and 100 themselves. They represent the brightness in percent.</td>
+<tr class="field-even field"><th class="field-name">Brightness:</th><td class="field-body">Valid values are integer numbers from 0 to 100, including 0 and 100 themselves. They represent the brightness in percent.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Scene:</th><td class="field-body">Scenes only consists of a action topic. <code class="code docutils literal notranslate"><span class="pre">1</span></code> is published on the action topic once the scene gets activated.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Temperature Setting - Mode:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Valid values are, depending on the configured supported modes, one of: <code class="code docutils literal notranslate"><span class="pre">off</span></code>, <code class="code docutils literal notranslate"><span class="pre">heat</span></code>, <code class="code docutils literal notranslate"><span class="pre">cool</span></code>, <code class="code docutils literal notranslate"><span class="pre">on</span></code>, <code class="code docutils literal notranslate"><span class="pre">auto</span></code>, <code class="code docutils literal notranslate"><span class="pre">fan-only</span></code>, <code class="code docutils literal notranslate"><span class="pre">purifier</span></code>, <code class="code docutils literal notranslate"><span class="pre">eco</span></code>, <code class="code docutils literal notranslate"><span class="pre">dry</span></code> (case insensitive).</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Temperature Setting - Setpoint:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">The temperature (in °C) that is set for the thermostat. Valid values are decimal fractions with (up to) one decimal place. The decimal separator is a dot (<code class="code docutils literal notranslate"><span class="pre">.</span></code>). Example: <code class="code docutils literal notranslate"><span class="pre">15.3</span></code>. Note that Google will round this number to 0.5 °C.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Temperature Setting - Ambient:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">The actual room temperature (in °C) that was observed by the thermostat. Only consists of status topic. Valid values are the same like for the Setpoint. Google won’t round this number.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Temperature Setting - Humidity:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">The relative humidity (in %) that was observed by the thermostat, optional. Only consists of status topic. Valid values are the same like for the Setpoint, but in the range inbetween <code class="code docutils literal notranslate"><span class="pre">0.0</span></code> and <code class="code docutils literal notranslate"><span class="pre">100.0</span></code>. Google won’t round this number.</td>
 </tr>
 </tbody>
 </table>
@@ -224,7 +240,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mqttServer.html" class="btn btn-neutral float-right" title="Hosted MQTT server" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="deviceTypes.html" class="btn btn-neutral float-right" title="Device Types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="gettingStarted.html" class="btn btn-neutral" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -240,7 +256,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x000000000568E4A8> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x00000000061AC908> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>

@@ -7,6 +7,8 @@ use App\Accesskey;
 use App\Device;
 
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class GapiController extends Controller
 {
@@ -34,10 +36,12 @@ class GapiController extends Controller
      */
     public function checkauth(Request $request)
     {
-        $this->validate($request, [
-            'email' => 'bail|required|string|email|max:255',
-            'accesskey' => 'bail|required|string',
-        ]);
+        if(!Auth::check()){
+            $this->validate($request, [
+                'email' => 'bail|required|string|email|max:255',
+                'password' => 'bail|required|string',
+            ]);
+        }
 
         //check parameters provided by Google
         $googleerror_prefix = "The request by Google Home was malformed. Please try again in a few minute. If this problem persists, please contact the team of Kappelt gBridge. ";
@@ -48,31 +52,28 @@ class GapiController extends Controller
         if($request->input('response_type', '') != 'token'){
             return redirect()->back()->withInput()->with('error', $googleerror_prefix . 'Unkown Response Type requested!');
         }
-        if($request->input('redirect_uri', '__y') != ('https://oauth-redirect.googleusercontent.com/r/' . env('GOOGLE_PROJECTID', ''))){
+        if($request->input('redirect_uri', '__x') != ('https://oauth-redirect.googleusercontent.com/r/' . env('GOOGLE_PROJECTID', ''))){
             return redirect()->back()->withInput()->with('error', $googleerror_prefix . 'Invalid redirect Request!');
         }
         if(!$request->input('state')){
             return redirect()->back()->withInput()->with('error', $googleerror_prefix . 'No State given!');
         }
 
-        $accesskey = Accesskey::where('password', $request->input('accesskey', ''))->whereHas('User', function($q){
-            global $request;
-            $q->where('email', $request->input('email', ''));
-        })->get();
-
-        if(count($accesskey) < 1){
-            return redirect()->back()->withInput()->with('error', 'Invalid Email or Accesskey! Create a new one in your account\'s dashboard.');
-        }
-        $accesskey = $accesskey[0];
-        if($accesskey->password_used){
-            return redirect()->back()->withInput()->with('error', 'This Accesskey has been used before! Create a new one in your account\'s dashboard.');
-        }
-        if($accesskey->isExpired()){
-            return redirect()->back()->withInput()->with('error', 'This Accesskey has expired! Create a new one in your account\'s dashboard.');
+        if(!Auth::check()){
+            //User is not authenticated in this browser. Try logging
+            if(!Auth::once(['email' => $request->input('email', ''), 'password' => $request->input('password', '')])){
+                return redirect()->back()->withInput()->with('error', "Your account doesn't exist or the credentials don't match our records!");
+            }
         }
 
-        $accesskey->password_used = 1;
-        $accesskey->used_at = date('Y-m-d H:i:s');
+        if(isset(Auth::user()->verify_token)) {
+            return redirect()->back()->withInput()->with('error', "You need to confirm your account. We have sent you an activation code, please check your email account. Check the spam folder for this mail, contact support under gbridge@kappelt.net if you haven't received the confirmation");
+        }
+
+        $accesskey = new Accesskey;
+        $accesskey->google_key = password_hash(str_random(32), PASSWORD_BCRYPT);
+        $accesskey->user_id = Auth::user()->user_id;
+
         $accesskey->save();
 
         return redirect($request->input('redirect_uri') . '#access_token=' . $accesskey->google_key . '&token_type=bearer&state=' . $request->input('state'));
@@ -160,8 +161,10 @@ class GapiController extends Controller
         $devices = $user->devices;
         
         foreach($devices as $device){
-            $trait_googlenames = $device->traits->pluck('gname'); 
-            $response['payload']['devices'][] = [
+            $trait_googlenames = $device->traits->pluck('gname')->toArray(); 
+            $trait_googlenames = array_unique($trait_googlenames);      //Unique: Some traits (for thermostats) are specified multiple times
+
+            $deviceBuilder = [
                 'id' => $device->device_id,
                 'type' => $device->deviceType->gname,
                 'traits' => $trait_googlenames,
@@ -176,8 +179,39 @@ class GapiController extends Controller
                     'manufacturer' => 'Kappelt kServices'
                 ]
             ];
-        }
 
+            /** CUSTOM MODIFICATIONS FOR TYPE: "Scene" */
+            if($device->deviceType->shortname == 'Scene'){
+                $deviceBuilder['willReportState'] = false;  //Scene will never report state, since they are write-only devs
+                $deviceBuilder['attributes'] = [
+                    'sceneReversible' => false              //scenes are not (yet) reversible in this implementation
+                ];
+            }
+            /** END CUSTOM MODIFICATIONS */
+
+            /** CUSTOM MODIFICATIONS FOR TYPE: "Thermostat" */
+            //Check if the "TemperatureSetting" trait is specified for this device
+            $modes = $device->traits->where('shortname', 'TempSet.Mode');
+            if($modes->count()){
+                $modes = Collection::make(json_decode($modes->first()->pivot->config, true))->get('modesSupported');
+                if(empty($modes)){
+                    $modes = ['on', 'off'];
+                }
+            }else{
+                $modes = ['on', 'off'];
+            }
+
+            if($device->deviceType->shortname == 'Thermostat'){
+                $deviceBuilder['attributes'] = [
+                    'thermostatTemperatureUnit' => 'C',              //only degrees C are supported as mode
+                    'availableThermostatModes' => implode(',', $modes)
+                ];
+            }
+            /** END CUSTOM MODIFICATIONS */
+
+            $response['payload']['devices'][] = $deviceBuilder;
+        }
+        //error_log(json_encode($response));
         return response()->json($response);
     }
 
@@ -237,21 +271,61 @@ class GapiController extends Controller
                         $value = $value ? true:false;
                     }
                     $traitname = 'on';
+
+                    $response['payload']['devices'][$deviceId][$traitname] = $value;
                 }elseif($traitname == 'brightness'){
                     if(is_null($value)){
                         $value = 0;
                     }else{
                         $value = intval($value);
                     }
+
+                    $response['payload']['devices'][$deviceId][$traitname] = $value;
+                }elseif($traitname == 'tempset.mode'){
+                    if(is_null($value)){
+                        $value = 'off';
+                    }
+
+                    $response['payload']['devices'][$deviceId]['thermostatMode'] = $value;
+                }elseif($traitname == 'tempset.setpoint'){
+                    if(is_null($value)){
+                        $value = 0.0;
+                    }else{
+                        $value = floatval($value);
+                    }
+                    
+                    $response['payload']['devices'][$deviceId]['thermostatTemperatureSetpoint'] = $value;
+                }elseif($traitname == 'tempset.ambient'){
+                    if(is_null($value)){
+                        $value = 0.0;
+                    }else{
+                        $value = floatval($value);
+                    }
+                    
+                    $response['payload']['devices'][$deviceId]['thermostatTemperatureAmbient'] = $value;
+                }elseif($traitname == 'tempset.humidity'){
+                    if(is_null($value)){
+                        $value = 20.1;
+                    }else{
+                        $value = floatval(value);
+                    }
+                    
+                    $traitconf = Collection::make(json_decode($trait->pivot->config, true));
+
+                    if($traitconf->get('humiditySupported')){
+                        $response['payload']['devices'][$deviceId]['thermostatHumidityAmbient'] = $value;
+                    }
+                }elseif($traitname == 'scene'){
+                    //no value is required for scene, only "online" information
                 }else{
                     error_log("Unknown trait:\"$traitname\" for user $userid in query");
                     $response['payload']['devices'][$deviceId]['online'] = false;
                 }
 
-                $response['payload']['devices'][$deviceId][$traitname] = $value;
+                
             }
         }
-
+        //error_log(json_encode($response));
         return response()->json($response);
     }
 
@@ -285,6 +359,15 @@ class GapiController extends Controller
                 }elseif($exec['command'] === 'action.devices.commands.BrightnessAbsolute'){
                     $trait = 'brightness';
                     $value = $exec['params']['brightness'];
+                }elseif($exec['command'] === 'action.devices.commands.ActivateScene'){
+                    $trait = 'scene';
+                    $value = 1;
+                }elseif($exec['command'] === 'action.devices.commands.ThermostatTemperatureSetpoint'){
+                    $trait = 'tempset.setpoint';
+                    $value = $exec['params']['thermostatTemperatureSetpoint'];
+                }elseif($exec['command'] === 'action.devices.commands.ThermostatSetMode'){
+                    $trait = 'tempset.mode';
+                    $value = $exec['params']['thermostatMode'];
                 }else{
                     //unknown execute-command
                     continue;

@@ -56,5 +56,10 @@ Only certain values are valid for MQTT messages on the topics described above. P
 
 Allowed values are specified per trait:
 
-:onoff: Valid values are :code:`0` (Device is off) and :code:`1` (Device is on). When publishing on a status topic, the values :code:`false`, :code:`off` (Device is off) and :code:`true`, :code:`on` (Device is on) are valid too.
-:brightness: Valid values are integer numbers from 0 to 100, including 0 and 100 themselves. They represent the brightness in percent.
+:OnOff: Valid values are :code:`0` (Device is off) and :code:`1` (Device is on). When publishing on a status topic, the values :code:`false`, :code:`off` (Device is off) and :code:`true`, :code:`on` (Device is on) are valid too (case insensitive).
+:Brightness: Valid values are integer numbers from 0 to 100, including 0 and 100 themselves. They represent the brightness in percent.
+:Scene: Scenes only consists of a action topic. :code:`1` is published on the action topic once the scene gets activated.
+:Temperature Setting - Mode: Valid values are, depending on the configured supported modes, one of: :code:`off`, :code:`heat`, :code:`cool`, :code:`on`, :code:`auto`, :code:`fan-only`, :code:`purifier`, :code:`eco`, :code:`dry` (case insensitive).
+:Temperature Setting - Setpoint: The temperature (in °C) that is set for the thermostat. Valid values are decimal fractions with (up to) one decimal place. The decimal separator is a dot (:code:`.`). Example: :code:`15.3`. Note that Google will round this number to 0.5 °C.
+:Temperature Setting - Ambient: The actual room temperature (in °C) that was observed by the thermostat. Only consists of status topic. Valid values are the same like for the Setpoint. Google won't round this number.
+:Temperature Setting - Humidity: The relative humidity (in %) that was observed by the thermostat, optional. Only consists of status topic. Valid values are the same like for the Setpoint, but in the range inbetween :code:`0.0` and :code:`100.0`. Google won't round this number.
