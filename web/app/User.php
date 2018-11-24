@@ -27,7 +27,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'email', 'password', 'verify_token', 'name', 'language'
+        'email', 'password', 'mqtt_password', 'verify_token', 'name', 'language'
     ];
 
     /**

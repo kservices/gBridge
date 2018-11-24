@@ -69,6 +69,9 @@
                         </li>
                         <li>
                             <a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/imprint">Imprint/ Impressum</a>
+						</li>
+						<li>
+                            <a class="grey-text text-lighten-3" href="https://doc.gbridge.kappelt.net/html/">Documentation and Support</a>
                         </li>
                         <li>
                             <a class="grey-text text-lighten-3" href="https://github.com/kservices/gBridge">gBridge on Github</a>

@@ -43,5 +43,9 @@
 			</div>
 			<button class="btn waves-effect blue"><i class="material-icons left">add</i>Add</button>
 		</form>
+
+		<div class="card-panel blue white-text">
+			<i class="material-icons">info</i> You can edit the device's MQTT topics and other settings after creating it, by pressing the "Edit" button for the device after creating it.
+		</div>
 	</div>
 @endsection
