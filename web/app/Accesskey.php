@@ -24,10 +24,4 @@ class Accesskey extends Model
         return $this->belongsTo('App\User', 'user_id');
     }
     
-    /**
-     * Returns true, if this key has been created more than one hour ago
-     */
-    public function isExpired(){
-        return (Carbon::now('Europe/Berlin') > Carbon::parse($this->generated_at, 'Europe/Berlin')->addHours(1));
-    }
 }

@@ -9,6 +9,9 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 
 class DeviceController extends Controller
 {
@@ -76,10 +79,19 @@ class DeviceController extends Controller
      */
     public function create()
     {
+        $traitTypes = TraitType::all();
+
+        //Special handling for trait "TemperatureSetting". Only one trait (instead of 4) is shown for the user
+        $traitTypes = $traitTypes->filter(function($trait, $key){
+            //Only TempSet.Mode is kept, TempSet.* is removed
+            return !in_array($trait->shortname, ['TempSet.Setpoint', 'TempSet.Ambient', 'TempSet.Humidity']);
+        });
+        $traitTypes->where('shortname', 'TempSet.Mode')->first()->name = 'Temperature Setting';
+
         return view('device.create', [
             'site_title' => 'New Device',
             'devicetypes' => DeviceType::all(),
-            'traittypes' => TraitType::all(),
+            'traittypes' => $traitTypes,
         ]);
     }
 
@@ -119,11 +131,26 @@ class DeviceController extends Controller
             return redirect()->route('device.index')->with('error', 'Device does not exist');
         }
 
+        $traitTypes = TraitType::all();
+
+        //Special handling for trait "TemperatureSetting". Only one trait (instead of 4) is shown for the user
+        $traitTypes = $traitTypes->filter(function($trait, $key){
+            //Only TempSet.Mode is kept, TempSet.* is removed
+            return !in_array($trait->shortname, ['TempSet.Setpoint', 'TempSet.Ambient', 'TempSet.Humidity']);
+        });
+        $traitTypes->where('shortname', 'TempSet.Mode')->first()->name = 'Temperature Setting';
+
+        //Parse JSON in the pivot
+        foreach($device->traits as $trait){
+            $conf = $trait->pivot->config;
+            $trait->pivot->config = Collection::make(json_decode($conf, true));
+        }
+
         return view('device.edit', [
             'site_title' => 'Edit Device',
             'device' => $device,
             'devicetypes' => DeviceType::all(),
-            'traittypes' => TraitType::all(),
+            'traittypes' => $traitTypes,
         ]);
     }
 
@@ -143,7 +170,7 @@ class DeviceController extends Controller
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
         $this -> deviceService -> update($request, $id, Auth::user());
-        
+
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device modified');
@@ -153,44 +180,62 @@ class DeviceController extends Controller
      * Update MQTT topics for this device.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  Device $device
+     * @param   TraitType $trait
      * @return \Illuminate\Http\Response
      */
-    public function updatetopic(Request $request, $id)
+    public function updatetopic(Request $request, Device $device, TraitType $trait)
     {
         $user = Auth::user();
-        $device = $user->devices()->find($id);
+        $traittype = $device->traits->where('traittype_id', $trait->traittype_id)->first();
 
         //build the validator configuration
-        $validatorConf = [];
-        foreach($device->traits as $trait){
-            $validatorConf[$trait->traittype_id . '-action'] = 'bail|required|regex:/^[a-z0-9-_\/]+$/i';
-            $validatorConf[$trait->traittype_id . '-status'] = 'bail|required|regex:/^[a-z0-9-_\/]+$/i';
+        $validatorConf = [
+            //Action topics are required for these traits: OnOff, Brightness, Scene, TempSet.Mode, TempSet.Setpoint
+            'action' => 'bail|required|regex:/^[a-z0-9-_\/]+$/i',
+            //Status topics are required for the traits: OnOff, Brightness, TempSet.Mode, TempSet.Setpoint, TempSet.Ambient, TempSet.Humidity
+            'status' => 'bail|required|regex:/^[a-z0-9-_\/]+$/i'
+        ];
+
+        //Special handling for trait TempSet.Mode
+        if($traittype->shortname == 'TempSet.Mode'){
+            $validatorConf['modes'] = 'bail|required|array';
+            $validatorConf['modes.*'] = 'bail|required|in:off,heat,cool,on,auto,fan-only,purifier,eco,dry';
         }
 
         $this->validate($request, $validatorConf, [
-            'required' => 'Please specify a topic for each trait!',
-            'regex' => 'The topics may only contain alphanumeric chracters, slashes (/), underscores (_) and dashes (-)!'
+            'required' => 'Please specify the required settings!',
+            'regex' => 'The topics may only contain alphanumeric chracters, slashes (/), underscores (_) and dashes (-)!',
+            'in' => 'You\'ve specified an invalid thermostat mode!'
         ]);
 
-        //Sync the trait config for this device
-        $traits = [];
-        foreach($device->traits as $trait){
-            $traitTypeId = $trait->traittype_id;
-
-            $traits[$traitTypeId] = [
-                'mqttActionTopic' => $request->input($traitTypeId . '-action'),
-                'mqttStatusTopic' => $request->input($traitTypeId . '-status')
-            ];
+        //Special handling (config parse) for trait TempSet.Humidity
+        if($traittype->shortname == 'TempSet.Humidity'){
+            $traittype->pivot->config = json_encode([
+                'humiditySupported' => $request->input('humiditySupported') ? true:false
+            ]);
         }
-        $device->traits()->sync($traits);
+
+        //Special handling (config parse) for trait TempSet.Mode
+        if($traittype->shortname == 'TempSet.Mode'){
+            $traittype->pivot->config = json_encode([
+                'modesSupported' => $request->input('modes')
+            ]);
+        }
+
+        //Sync the trait config for this device
+        $traittype->pivot->mqttActionTopic = $request->input('action');
+        $traittype->pivot->mqttStatusTopic = $request->input('status');
+        $traittype->pivot->save();
         
         $this->deviceService -> userInfoToCache($user);
 
-        //Not necessary here?!
-        //$this->googleRequestSync();
+        //if this trait contains a custom config, it is quite likely, that Google needs to synchronize this conf
+        if(!empty($traittype->pivot->config)){
+            $this->googleRequestSync();
+        }
 
-        return redirect()->route('device.index')->with('success', 'Device topics modified');
+        return redirect()->route('device.index')->with('success', 'Device settings modified');
     }
 
     /**

@@ -10,7 +10,7 @@ Of course, the gBridge MQTT servers requires authentication.
 
 **Username:** :code:`gbridge-{userid}`. Your full username is shown in your account's dashboard under "My Account". *Example:* :code:`gbridge-u4`
 
-**Password:** No default MQTT password is set for your account. You have to set an own MQTT password in your account's dashboard. This password must be at least 8 characters long, while containing both upper- and lowercase letters, a number and a special character. A new password will (almost) instantly apply for any new MQTT connections.
+**Password:** Your account's password is the default MQTT password. You may change the MQTT password independently from your account's password in the dashboard. This password must be at least 8 characters long, while containing both upper- and lowercase letters, a number and a special character. A new password will (almost) instantly apply for any new MQTT connections.
 
 Available protocols
 ---------------------

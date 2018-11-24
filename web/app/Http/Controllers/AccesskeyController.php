@@ -26,21 +26,8 @@ class AccesskeyController extends Controller
     {
         $accesskeys = Auth::user()->accesskeys()->orderBy('generated_at', 'asc')->get();
 
-        //determine the status of each accesskey
-        foreach($accesskeys as $accesskey){
-            if($accesskey->password_used){
-                $accesskey->status = 'USED';
-            }elseif(Carbon::now('Europe/Berlin') > Carbon::parse($accesskey->generated_at, 'Europe/Berlin')->addHours(1)){
-                $accesskey->status = 'EXPIRED';
-            }else{
-                $accesskey->status = 'READY';
-            }
-
-            $accesskey->valid_until = Carbon::parse($accesskey->generated_at, 'Europe/Berlin')->addHours(1);
-        }
-
         return view('accesskey.accesskeys', [
-            'site_title' => 'Accesskeys',
+            'site_title' => 'Account Linking',
             'accesskeys' => $accesskeys,
         ]);
     }
@@ -50,17 +37,10 @@ class AccesskeyController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        $accesskey = new Accesskey;
-        $accesskey->password = str_random(8);
-        $accesskey->google_key = password_hash(str_random(32), PASSWORD_BCRYPT);
-        $accesskey->user_id = Auth::user()->user_id;
-
-        $accesskey->save();
-
-        return redirect()->route('accesskey.index')->with('success', 'Created new Accesskey');
-    }
+    //public function create()
+    //{
+    //
+    //}
 
     /**
      * Store a newly created resource in storage.

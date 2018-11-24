@@ -40,10 +40,14 @@
 									<div>{{ $trait->name }}</div>
 								</div>
 								<div class="col s12 m6 l5">
+									@if($trait->needsActionTopic)
 									<input type="text" readonly value="{{ 'gBridge/u' . Auth::user()->user_id . '/' . $trait->pivot->mqttActionTopic }}">
+									@endif
 								</div>
 								<div class="col s12 m6 l5">
+									@if($trait->needsStatusTopic)
 									<input type="text" readonly value="{{ 'gBridge/u' . Auth::user()->user_id . '/' . $trait->pivot->mqttStatusTopic }}">
+									@endif
 								</div>
 								@endforeach
 							</div>

@@ -128,6 +128,24 @@ redis_subscribe.on("pmessage", function (pattern, channel, message) {
             } else {
                 mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
             }
+        } else if (devicetrait === 'scene') {
+            if ('Scene' in deviceinfo) {
+                mqtt.publish(`gBridge/u${userid}/${deviceinfo['Scene']['actionTopic']}`, message);
+            } else {
+                mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
+            }
+        } else if (devicetrait === 'tempset.mode') {
+            if ('TempSet.Mode' in deviceinfo) {
+                mqtt.publish(`gBridge/u${userid}/${deviceinfo['TempSet.Mode']['actionTopic']}`, message);
+            } else {
+                mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
+            }
+        } else if (devicetrait === 'tempset.setpoint') {
+            if ('TempSet.Mode' in deviceinfo) {
+                mqtt.publish(`gBridge/u${userid}/${deviceinfo['TempSet.Setpoint']['actionTopic']}`, message);
+            } else {
+                mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
+            }
         } else {
             mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
         }
@@ -222,7 +240,7 @@ mqtt.on('message', function (topic, message) {
     let topicuserpart = topicinfo['user-custom-part'];
 
     //Filter topic that were published by the script itself, just quietly return
-    if(topicuserpart === 'd0/grequest'){
+    if ((topicuserpart === 'd0/grequest') || (topicuserpart === 'd0/requestsync')) {
         return;
     }
 
@@ -240,7 +258,7 @@ mqtt.on('message', function (topic, message) {
         for (var currentDeviceId in devices) {
             for (var currentTrait in devices[currentDeviceId]) {
                 //This script has published to the topic, since it is an action topic. Just quietly return
-                if(devices[currentDeviceId][currentTrait]['actionTopic'] === topicuserpart) {
+                if (devices[currentDeviceId][currentTrait]['actionTopic'] === topicuserpart) {
                     return;
                 }
 
@@ -273,6 +291,7 @@ mqtt.on('message', function (topic, message) {
         }
 
         if (devicetrait === "onoff") {
+            message = String(message).toLowerCase().trim();
             if ((message == "0") || (message == "false") || (message == "off")) {
                 message = 0;
             } else {
@@ -292,8 +311,53 @@ mqtt.on('message', function (topic, message) {
             }
 
             message = brightness;
+        } else if (devicetrait === "tempset.mode") {
+            var requestedMode = String(message).toLowerCase().trim();
+            var allModes = ['off', 'heat', 'cool', 'on', 'auto', 'fan-only', 'purifier', 'eco', 'dry'];
+
+            if (allModes.indexOf(requestedMode) < 0) {
+                console.log(`MQTT client error: Wrong thermostat mode "${message}" for user ${userid}`);
+                return;
+            }
+
+            message = requestedMode;
+        } else if (devicetrait === "tempset.setpoint") {
+            var temperature = Number.parseFloat(message);
+            if (Number.isNaN(temperature)) {
+                console.log(`MQTT client error: Wrong temperature (set) "${message}" for user ${userid}`);
+                return;
+            }
+
+            message = temperature;
+        } else if (devicetrait === "tempset.ambient") {
+            var temperature = Number.parseFloat(message);
+            if (Number.isNaN(temperature)) {
+                console.log(`MQTT client error: Wrong temperature (amb) "${message}" for user ${userid}`);
+                return;
+            }
+
+            message = temperature;
+        } else if (devicetrait === "tempset.humidity") {
+            var humidity = Number.parseFloat(message);
+            if (Number.isNaN(humidity)) {
+                console.log(`MQTT client error: Wrong humidity "${message}" for user ${userid}`);
+                return;
+            }
+
+            if(humidity < 0.0){
+                humidity = 0.0;
+            }
+            if(humidity > 100.0){
+                humidity = 100.0;
+            }
+
+            message = humidity;
+        } else if (devicetrait === "scene") {
+            //no special handling for scenes required
+            message = 1;
         } else if (devicetrait === "power") {
             //device reporting power state
+            message = String(message).toLowerCase();
             if ((message == "0") || (message == "false") || (message == "off")) {
                 message = 0;
             } else {

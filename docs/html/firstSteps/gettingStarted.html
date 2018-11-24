@@ -86,9 +86,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#a-first-device">A first device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#connect-google-assistant">Connect Google Assistant</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-it">Test it</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#going-further">Going further</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="deviceMechanism.html">Device Mechanism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deviceTypes.html">Device Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mqttServer.html">Hosted MQTT server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exampleUsage/fhem.html">FHEM examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exampleUsage/communityManuals.html">Community Manuals</a></li>
@@ -185,16 +187,6 @@
 <p>You can edit these MQTT topics for the devices as you like. To do so, press the “Edit” button in the device list.</p>
 <p class="last">Please note that you can’t specify your own topics while creating new devices, only while editing them after creation.</p>
 </div>
-<p>Before we can move on to the Google Home app, you need to create an accesskey.</p>
-<div class="admonition tip">
-<p class="first admonition-title">Tip</p>
-<p class="last">Accesskeys are one-time-passwords that can be used to link a gBridge account with the Google Home app.</p>
-</div>
-<p>To do so, open the tab “Accesskeys” and click on the add-button.</p>
-<div class="align-center figure" id="id3">
-<a class="reference internal image-reference" href="../_images/dashboard-first-accesskey.png"><img alt="A first accesskey has been generated." src="../_images/dashboard-first-accesskey.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text">You’ll need that accesskey later!</span></p>
-</div>
 </div>
 <div class="section" id="connect-google-assistant">
 <h2>Connect Google Assistant<a class="headerlink" href="#connect-google-assistant" title="Permalink to this headline">¶</a></h2>
@@ -202,11 +194,11 @@
 <div class="align-center figure">
 <a class="reference internal image-reference" href="../_images/googlehome-add-provider.png"><img alt="You can add Kappelt gBridge as a smart home provider in the Google Home app." src="../_images/googlehome-add-provider.png" style="width: 50%;" /></a>
 </div>
-<div class="align-center figure" id="id4">
+<div class="align-center figure" id="id3">
 <a class="reference internal image-reference" href="../_images/googlehome-link-account.png"><img alt="You need to enter your account's email and an accesskey." src="../_images/googlehome-link-account.png" style="width: 50%;" /></a>
-<p class="caption"><span class="caption-text">Enter your email, use the accesskey that was generated before.</span></p>
+<p class="caption"><span class="caption-text">Enter your email and your password.</span></p>
 </div>
-<div class="align-center figure" id="id5">
+<div class="align-center figure" id="id4">
 <a class="reference internal image-reference" href="../_images/googlehome-device-listed.png"><img alt="Devices are listed in the Google Home app" src="../_images/googlehome-device-listed.png" style="width: 50%;" /></a>
 <p class="caption"><span class="caption-text">Your newly created devices will appear in the list. If you like, you can assign a room to the devices.</span></p>
 </div>
@@ -231,7 +223,7 @@
 </tr>
 <tr class="field-odd field"><th class="field-name">Username:</th><td class="field-body">Shown in your account’s dashboard under “My Account”</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Password:</th><td class="field-body">Needs to be set once in your account’s dashboard</td>
+<tr class="field-even field"><th class="field-name">Password:</th><td class="field-body">Is your account’s password by default, but can be changed independently.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">TLS:</th><td class="field-body">TLS V1.2 is required</td>
 </tr>
@@ -249,10 +241,16 @@ The Let’s Encrypt CA is trusted by most systems nowadays, you shouldn’t real
    --topic gBridge/u2/d4/onoff
 </pre></div>
 </div>
-<div class="align-center figure" id="id6">
+<div class="align-center figure" id="id5">
 <a class="reference internal image-reference" href="../_images/googlehome-try-it.png"><img alt="Google Assistant Example" src="../_images/googlehome-try-it.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-text">A voice command leads to a published MQTT message.</span></p>
 </div>
+</div>
+<div class="section" id="going-further">
+<h2>Going further<a class="headerlink" href="#going-further" title="Permalink to this headline">¶</a></h2>
+<p>Now you’re all set! There is more information in this documentation.</p>
+<p>Have a look at <a class="reference external" href="https://status.gbridge.kappelt.net">https://status.gbridge.kappelt.net</a>, too. You can subscribe to notifications about planned updates or possible service outages.</p>
+<p>If you like, you can follow us on Twitter: <a class="reference external" href="https://twitter.com/Kappelt_gBridge">https://twitter.com/Kappelt_gBridge</a></p>
 </div>
 </div>
 
@@ -280,7 +278,7 @@ The Let’s Encrypt CA is trusted by most systems nowadays, you shouldn’t real
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x000000000619F3C8> 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. <jinja2.runtime.BlockReference object at 0x0000000005EA61D0> 
 
 <br>
 <a href="https://github.com/kservices/gBridge">gBridge on Github</a><br>
