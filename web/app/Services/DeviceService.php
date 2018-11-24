@@ -18,19 +18,42 @@ class DeviceService
         $device->user_id = $user -> user_id;
         $device->save();
 
+        $requestTraits = $request->input('traits');
+
+        //Special handling for trait "TemperatureSetting": If the user selected TempSet.Mode, add the other three belonging traits
+        $allTraits = TraitType::all();
+        if (in_array($allTraits->where('shortname', 'TempSet.Mode')->first()->traittype_id, $requestTraits)) {
+            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Setpoint')->first()->traittype_id;
+            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Ambient')->first()->traittype_id;
+            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Humidity')->first()->traittype_id;
+        }
+
         $traits = [];
         $topicPrefixFromRequest = $request->input('topicPrefix');
         $topicPrefix = $topicPrefixFromRequest ? $topicPrefixFromRequest : 'd' . $device->device_id;
-        foreach ($request->input('traits') as $traitTypeId) {
+        //use the default MQTT topics for the traits
+        foreach ($requestTraits as $traitTypeId) {
             $traitType = TraitType::find($traitTypeId);
 
+            //some trait short names contain a . (dot) -> composite traits
+            //replace them with a dash
+            $traitShortname = str_replace('.', '-', $traitType->shortname);
+
             $traits[$traitTypeId] = [
-                'mqttActionTopic' => $topicPrefix . '/' . strtolower($traitType->shortname),
-                'mqttStatusTopic' => $topicPrefix . '/' . strtolower($traitType->shortname) . '/set'
+                'mqttActionTopic' => $topicPrefix . '/' . strtolower($traitShortname),
+                'mqttStatusTopic' => $topicPrefix . '/' . strtolower($traitShortname) . '/set'
             ];
+
+            //special handling for trait TempSet.Mode: Define default supported modes
+            if ($traitType->shortname == 'TempSet.Mode') {
+                $traits[$traitTypeId]['config'] = json_encode([
+                    'modesSupported' => ['off', 'heat', 'on', 'auto']
+                ]);
+            }
         }
         $device->traits()->sync($traits);
-        $this -> userInfoToCache($user);
+
+        $this->userInfoToCache($user);
     }
 
     public function update(Request $request, int $id, User $user)
@@ -42,23 +65,39 @@ class DeviceService
 
         $device->save();
 
+        $requestTraits = $request->input('traits');
+
+        //Special handling for trait "TemperatureSetting": If the user selected TempSet.Mode, add the other three belonging traits
+        $allTraits = TraitType::all();
+        if (in_array($allTraits->where('shortname', 'TempSet.Mode')->first()->traittype_id, $requestTraits)) {
+            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Setpoint')->first()->traittype_id;
+            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Ambient')->first()->traittype_id;
+            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Humidity')->first()->traittype_id;
+        }
+
         $traits = [];
         //use the default MQTT topics for the traits if the trait is added newly,
         //or use the previous one
-        foreach ($request->input('traits') as $traitTypeId) {
+        foreach ($requestTraits as $traitTypeId) {
             $traitType = TraitType::find($traitTypeId);
 
             if ($device->traits->where('traittype_id', $traitTypeId)->count()) {
                 //trait has been specified before
+
                 $traits[$traitTypeId] = [
-                    'mqttActionTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttActionTopic,
-                    'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)[0]->pivot->mqttStatusTopic
+                    'mqttActionTopic' => $device->traits->where('traittype_id', $traitTypeId)->first()->pivot->mqttActionTopic,
+                    'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)->first()->pivot->mqttStatusTopic
                 ];
             } else {
                 //trait was newly added
+
+                //some trait short names contain a . (dot) -> composite traits
+                //replace them with a dash
+                $traitShortname = str_replace('.', '-', $traitType->shortname);
+
                 $traits[$traitTypeId] = [
-                    'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname),
-                    'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitType->shortname) . '/set'
+                    'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname),
+                    'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname) . '/set'
                 ];
             }
         }
