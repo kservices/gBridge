@@ -16,3 +16,9 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('device', 'ApiController@createDevice')->name('device.create');
+Route::delete('device/{id}', 'ApiController@deleteDevice')->name('device.create');
+Route::get('device', 'ApiController@getDevices')->name('devices.get');
+Route::get('trait-types', 'ApiController@getTraitTypes')->name('trait.types.get');
+Route::get('device-types', 'ApiController@getDeviceTypes')->name('device.types.get');

@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\DeviceType;
+use App\Services\DeviceService;
+use App\TraitType;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
-use App\User;
-use App\Device;
-use App\DeviceType;
-use App\TraitType;
-
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -17,30 +15,14 @@ use Illuminate\Support\Collection;
 
 class DeviceController extends Controller
 {
+    private $deviceService;
+
     /**
      * Send a request to the worker, in order to request Google to refresh the customer's device list
      */
     public function googleRequestSync(){
         $userid = Auth::user()->user_id;
         Redis::publish("gbridge:u$userid:d0:requestsync", "0");
-    }
-
-    /**
-     * Store general information about the user in the redis cache for usage with other modules of gBridge
-     */
-    public function userInfoToCache(){
-        $deviceinfo = [];
-        foreach(Auth::user()->devices as $device){
-            $deviceinfo[$device->device_id] = [];
-            foreach($device->traits as $trait){
-                $deviceinfo[$device->device_id][$trait->shortname] = [
-                    'actionTopic' => $trait->pivot->mqttActionTopic,
-                    'statusTopic' => $trait->pivot->mqttStatusTopic
-                ];
-            }
-        }
-        $userid = Auth::user()->user_id;
-        Redis::set("gbridge:u$userid:devices", json_encode($deviceinfo));
     }
 
     /**
@@ -68,8 +50,9 @@ class DeviceController extends Controller
     /**
      * Force Authentication
      */
-    public function __construct(){
+    public function __construct(DeviceService $deviceService){
         $this->middleware('auth');
+        $this->deviceService = $deviceService;
     }
 
     /**
@@ -127,48 +110,8 @@ class DeviceController extends Controller
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
 
-        $device = new Device;
-        $device->name = $request->input('name');
-        $device->devicetype_id = $request->input('type');
-        $device->user_id = Auth::user()->user_id;
+        $this -> deviceService -> create($request, Auth::user());
 
-        $device->save();
-
-
-        $requestTraits = $request->input('traits');
-
-        //Special handling for trait "TemperatureSetting": If the user selected TempSet.Mode, add the other three belonging traits
-        $allTraits = TraitType::all();
-        if(in_array( $allTraits->where('shortname', 'TempSet.Mode')->first()->traittype_id, $requestTraits )){
-            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Setpoint')->first()->traittype_id;
-            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Ambient')->first()->traittype_id;
-            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Humidity')->first()->traittype_id;
-        }
-
-        $traits = [];
-        //use the default MQTT topics for the traits
-        foreach($requestTraits as $traitTypeId){
-            $traitType = TraitType::find($traitTypeId);
-
-            //some trait short names contain a . (dot) -> composite traits
-            //replace them with a dash
-            $traitShortname = str_replace('.', '-', $traitType->shortname);
-
-            $traits[$traitTypeId] = [
-                'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname),
-                'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname) . '/set'
-            ];
-
-            //special handling for trait TempSet.Mode: Define default supported modes
-            if($traitType->shortname == 'TempSet.Mode'){
-                $traits[$traitTypeId]['config'] = json_encode([
-                    'modesSupported' => ['off', 'heat', 'on', 'auto']
-                ]);
-            }
-        }
-        $device->traits()->sync($traits);
-        
-        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device added');
@@ -218,7 +161,7 @@ class DeviceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $this->validate($request, [
             'name' => 'bail|required|max:32|min:1',
@@ -226,54 +169,8 @@ class DeviceController extends Controller
             'traits' => 'bail|required|array',
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
+        $this -> deviceService -> update($request, $id, Auth::user());
 
-        $device = Auth::user()->devices()->find($id);
-        $device->name = $request->input('name');
-        $device->devicetype_id = $request->input('type');
-        $device->user_id = Auth::user()->user_id;
-
-        $device->save();
-
-
-        $requestTraits = $request->input('traits');
-
-        //Special handling for trait "TemperatureSetting": If the user selected TempSet.Mode, add the other three belonging traits
-        $allTraits = TraitType::all();
-        if(in_array( $allTraits->where('shortname', 'TempSet.Mode')->first()->traittype_id, $requestTraits )){
-            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Setpoint')->first()->traittype_id;
-            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Ambient')->first()->traittype_id;
-            $requestTraits[] = $allTraits->where('shortname', 'TempSet.Humidity')->first()->traittype_id;
-        }
-
-        $traits = [];
-        //use the default MQTT topics for the traits if the trait is added newly,
-        //or use the previous one
-        foreach($requestTraits as $traitTypeId){
-            $traitType = TraitType::find($traitTypeId);
-
-            if($device->traits->where('traittype_id', $traitTypeId)->count()){
-                //trait has been specified before
-                
-                $traits[$traitTypeId] = [
-                    'mqttActionTopic' => $device->traits->where('traittype_id', $traitTypeId)->first()->pivot->mqttActionTopic,
-                    'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)->first()->pivot->mqttStatusTopic
-                ];
-            }else{
-                //trait was newly added
-
-                //some trait short names contain a . (dot) -> composite traits
-                //replace them with a dash
-                $traitShortname = str_replace('.', '-', $traitType->shortname);
-
-                $traits[$traitTypeId] = [
-                    'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname),
-                    'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname) . '/set'
-                ];
-            }
-        }
-        $device->traits()->sync($traits);
-        
-        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device modified');
@@ -289,6 +186,7 @@ class DeviceController extends Controller
      */
     public function updatetopic(Request $request, Device $device, TraitType $trait)
     {
+        $user = Auth::user();
         $traittype = $device->traits->where('traittype_id', $trait->traittype_id)->first();
 
         //build the validator configuration
@@ -330,7 +228,7 @@ class DeviceController extends Controller
         $traittype->pivot->mqttStatusTopic = $request->input('status');
         $traittype->pivot->save();
         
-        $this->userInfoToCache();
+        $this->deviceService -> userInfoToCache($user);
 
         //if this trait contains a custom config, it is quite likely, that Google needs to synchronize this conf
         if(!empty($traittype->pivot->config)){
@@ -348,10 +246,8 @@ class DeviceController extends Controller
      */
     public function destroy($id)
     {
-        $device = Auth::user()->devices()->find($id);
-        $device->delete();
+        $this -> deviceService -> delete($id, Auth::user());
 
-        $this->userInfoToCache();
         $this->googleRequestSync();
 
         return redirect()->route('device.index')->with('success', 'Device deleted');
