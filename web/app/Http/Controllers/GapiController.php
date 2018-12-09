@@ -117,6 +117,11 @@ class GapiController extends Controller
 
         Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequestid', $requestid);
 
+        //Check for users device limit
+        if($user->devices()->count() > $user->device_limit){
+            return $this->errorResponse($requestid, ErrorCode::deviceTurnedOff);
+        }
+
         if($input['intent'] === 'action.devices.SYNC'){
             //sync-intent
             Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'SYNC');

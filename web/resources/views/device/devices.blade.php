@@ -5,11 +5,36 @@
 	<div class="container">
 		@include('common.messages')
 
+		@if((Auth::user()->device_limit <= env('KSERVICES_HOSTED_FREELIMIT')) && env('KSERVICES_HOSTED', false))
+		<div class="row">
+			<div class="col s12">
+				<div class="card-panel green white-text">
+					Since you are using the free gBridge plan, you may only create up to {{env('KSERVICES_HOSTED_FREELIMIT')}} devices.<br>
+					You are currently using {{Auth::user()->devices()->count()}} devices.<br>
+					<a class="grey-text text-lighten-4" href="https://gbridge.kappelt.net/subscription/overview" target="_blank">Need more devices and want to support our work? Consider upgrading to gBridge standard. You only need to pay what you want! Click here to show subscription options.</a>
+				</div>
+			</div>
+		</div>
+		@endif
+
+		@if(Auth::user()->device_limit < Auth::user()->devices()->count())
+		<div class="row">
+			<div class="col s12">
+				<div class="card-panel red white-text">
+					<b>You have currently created {{Auth::user()->devices()->count()}} devices, while your account is limited to {{Auth::user()->device_limit}} devices.<br>
+					Google commands will fail until you remove at least {{Auth::user()->devices()->count() - Auth::user()->device_limit}} of them.</b>
+				</div>
+			</div>
+		</div>
+		@endif
+
 		<div class="right">
 			<a class="waves-effect btn blue" href="{{ route('device.create') }}">
 				<i class="material-icons left">add</i>Device
 			</a>
 		</div>
+
+		
 
 		<h2>All Devices</h2>
 		
