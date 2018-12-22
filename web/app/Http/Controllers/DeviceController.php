@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Device;
 use App\DeviceType;
 use App\Services\DeviceService;
 use App\TraitType;
@@ -187,6 +188,11 @@ class DeviceController extends Controller
     public function updatetopic(Request $request, Device $device, TraitType $trait)
     {
         $user = Auth::user();
+        $device = Auth::user()->devices()->where('device_id', $device->device_id)->first();
+        if(!$device){
+            return redirect()->route('device.index')->with('error', 'The device to be updated does not exist.');
+        }
+
         $traittype = $device->traits->where('traittype_id', $trait->traittype_id)->first();
 
         //build the validator configuration
