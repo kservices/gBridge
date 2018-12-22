@@ -312,7 +312,7 @@ class GapiController extends Controller
                     if(is_null($value)){
                         $value = 20.1;
                     }else{
-                        $value = floatval(value);
+                        $value = floatval($value);
                     }
                     
                     $traitconf = Collection::make(json_decode($trait->pivot->config, true));

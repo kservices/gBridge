@@ -35,7 +35,7 @@ Route::resource('device', 'DeviceController', [
     'only' => ['store', 'index', 'create', 'update', 'destroy', 'edit'],        //no show-method
 ]);
 Route::put('/device/{device}/updatetopic/{trait}', 'DeviceController@updatetopic')->name('device.updatetopic')->middleware('auth');
-#Route::get('/temp-syncdev', 'DeviceController@allUserInfoToCache')->middleware('auth');
+//Route::get('/temp-syncdev', 'DeviceController@allUserInfoToCache')->middleware('auth');
 
 //Accesskey-management too
 Route::resource('accesskey', 'AccesskeyController', [

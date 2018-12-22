@@ -44,6 +44,16 @@ class LoginController extends Controller
             auth()->logout();
             return back()->with('error', 'You need to confirm your account. We have sent you an activation code, please check your email account. Check the spam folder for this mail, contact support under gbridge@kappelt.net if you haven\'t received the confirmation');
         }
+
+        if($user->first_login){
+            $user->first_login = false;
+            $user->save();
+
+            if(env('KSERVICES_HOSTED', false)){
+                return redirect()->to('/subscription/firststart');
+            }
+        }
+
         return redirect()->intended($this->redirectPath());
     }
 }
