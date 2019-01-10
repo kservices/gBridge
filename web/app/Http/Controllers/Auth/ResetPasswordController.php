@@ -43,7 +43,7 @@ class ResetPasswordController extends Controller
     public function rules(){
         return [
             'email' => 'required|string|email|max:255',
-            'password' => 'required|string|min:8|confirmed|regex:/^.*(?=.{5,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#"%§&\/()=?+*~#\'\-_<>,;.:^]).*$/',
+            'password' => 'required|string|min:8|confirmed|regex:/^.*(?=.{5,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#"%§&\/()=?+*~#\'\-_<>,;.:^@]).*$/',
         ];
     }
 }
