@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\DeviceService;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceRootUrl($proxy_url);
         }
         if (!empty($proxy_schema)) {
-            URL::forceSchema($proxy_schema);
+            URL::forceScheme($proxy_schema);
         }
     }
 
