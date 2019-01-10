@@ -74,18 +74,26 @@
 
 				{{-- Special settings for TempSet.Mode --}}
 				@if($trait->shortname == 'TempSet.Mode')
+
+				@php
+				$supportedThermostatModes = [];
+				if(!is_null($trait->pivot->config->get('modesSupported'))){
+					$supportedThermostatModes = $trait->pivot->config->get('modesSupported');
+				}
+				@endphp
+				
 				<div class="input-field col s11 offset-s1">
 					<br>
 					<select id="modes[]" name="modes[]" required multiple>
-						<option value="off" {{ in_array('off', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Off</option>
-						<option value="heat" {{ in_array('heat', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Heating</option>
-						<option value="cool" {{ in_array('cool', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Cooling</option>
-						<option value="on" {{ in_array('on', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>On</option>
-						<option value="auto" {{ in_array('auto', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Automatic</option>
-						<option value="fan-only" {{ in_array('fan-only', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Fan-only</option>
-						<option value="purifier" {{ in_array('purifier', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Purifying</option>
-						<option value="eco" {{ in_array('eco', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Energy Saving</option>
-						<option value="dry" {{ in_array('dry', $trait->pivot->config->get('modesSupported')) ? 'selected':''}}>Dry Mode</option>
+						<option value="off" {{ in_array('off', $supportedThermostatModes) ? 'selected':''}}>Off</option>
+						<option value="heat" {{ in_array('heat', $supportedThermostatModes) ? 'selected':''}}>Heating</option>
+						<option value="cool" {{ in_array('cool', $supportedThermostatModes) ? 'selected':''}}>Cooling</option>
+						<option value="on" {{ in_array('on', $supportedThermostatModes) ? 'selected':''}}>On</option>
+						<option value="auto" {{ in_array('auto', $supportedThermostatModes) ? 'selected':''}}>Automatic</option>
+						<option value="fan-only" {{ in_array('fan-only', $supportedThermostatModes) ? 'selected':''}}>Fan-only</option>
+						<option value="purifier" {{ in_array('purifier', $supportedThermostatModes) ? 'selected':''}}>Purifying</option>
+						<option value="eco" {{ in_array('eco', $supportedThermostatModes) ? 'selected':''}}>Energy Saving</option>
+						<option value="dry" {{ in_array('dry', $supportedThermostatModes) ? 'selected':''}}>Dry Mode</option>
 					</select>
 					<label for="modes[]">Supported Thermostat Modes</label>
 				</div>
