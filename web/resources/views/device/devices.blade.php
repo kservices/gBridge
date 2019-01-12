@@ -56,6 +56,20 @@
 								</div>
 							</div>
 
+							@if($device->twofa_type)
+							<div class="row">
+								<div class="col s12">
+									<p>
+										@if($device->twofa_type == 'ack')
+										Google security confirmation is enabled.
+										@elseif($device->twofa_type == 'pin')
+										Google pin code security is enabled.
+										@endif
+									<p>
+								</div>
+							</div>
+							@endif
+
 							<div class="row">
 								<div class="col s12">
 									<b>Features and MQTT-Topics:</b>

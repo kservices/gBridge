@@ -21,7 +21,7 @@
 			</div>
 			<div class="row">
 				<div class="input-field col s12 m6">
-					<select class="validate" name="type" required>
+					<select class="validate" id="type" name="type" required>
 						@foreach($devicetypes as $devicetype)
 						<option value="{{ $devicetype->devicetype_id }}" {{ ($devicetype->devicetype_id === $device->devicetype_id) ? ' selected':'' }}>{{ $devicetype->name }}</option>
 						@endforeach
@@ -33,12 +33,28 @@
                         //prepare supported trait list
                         $traitIds = $device->traits->pluck('traittype_id')->toArray();
                     ?>
-					<select class="validate" name="traits[]" required multiple>
+					<select class="validate" id="traits[]" name="traits[]" required multiple>
 						@foreach($traittypes as $traittype)
 						<option value="{{ $traittype->traittype_id }}" {{ in_array($traittype->traittype_id, $traitIds) ? ' selected':'' }}>{{ $traittype->name }}</option>
 						@endforeach
 					</select>
 					<label for="traits[]">Traits</label>
+				</div>
+			</div>
+			<div class="row">
+				<div class="input-field col s12 m6">
+					<select class="validate" id="twofa_type" name="twofa_type" required>
+						<option value="none" @if(is_null($device->twofa_type)) selected @endif>None</option>
+						<option value="ack" @if($device->twofa_type == 'ack') selected @endif>Acknowledgement</option>
+						<option value="pin" @if($device->twofa_type == 'pin') selected @endif>PIN code</option>
+					</select>
+					<label for="twofa_type">Google Confirmation Type</label>
+				</div>
+				<div class="input-field col s12 m6">
+					<div class="input-field col s12">
+						<input type="text" class="validate" id="twofa_pin" name="twofa_pin" @if(!is_null($device->twofa_pin)) value="{{ $device->twofa_pin }}" @endif>
+						<label for="twofa_pin">Google Confirmation Pin</label>
+					</div>
 				</div>
 			</div>
 			<input name="_method" type="hidden" value="PUT">
@@ -81,7 +97,7 @@
 					$supportedThermostatModes = $trait->pivot->config->get('modesSupported');
 				}
 				@endphp
-				
+
 				<div class="input-field col s11 offset-s1">
 					<br>
 					<select id="modes[]" name="modes[]" required multiple>
@@ -96,6 +112,34 @@
 						<option value="dry" {{ in_array('dry', $supportedThermostatModes) ? 'selected':''}}>Dry Mode</option>
 					</select>
 					<label for="modes[]">Supported Thermostat Modes</label>
+				</div>
+				@endif
+
+				{{-- Special settings for FanSpeed --}}
+				@if($trait->shortname == 'FanSpeed')
+				<div class="col s11 offset-s1">
+					<textarea id="fanSpeeds" name="fanSpeeds" class="materialize-textarea">{!! htmlspecialchars(implode("\n", $trait->getAvailableFanSpeedsAsString())) !!}</textarea>
+					<label for="fanSpeeds">Fan Speeds</label>
+				</div>
+				@endif
+
+				{{-- Special settings for CameraStream --}}
+				@if($trait->shortname == 'CameraStream')
+				<div class="input-field col s11 offset-s1">
+					@php
+					$currentFormat = $trait->getCameraStreamConfig()['cameraStreamFormat'];
+					@endphp
+					<select id="streamFormat" name="streamFormat" required>
+						<option value="progressive_mp4" {{ ($currentFormat == 'progressive_mp4') ? 'selected':''}}>Progressive MP4</option>
+						<option value="hls" {{ ($currentFormat == 'hls') ? 'selected':''}}>HTTP Live Streaming (HLS)</option>
+						<option value="dash" {{ ($currentFormat == 'dash') ? 'selected':''}}>Dynamic Adaptive Streaming over HTTP (DASH)</option>
+						<option value="smooth_stream" {{ ($currentFormat == 'smooth_stream') ? 'selected':''}}>Smooth Streaming</option>
+					</select>
+					<label for="streamFormat">Camera Stream Format</label>
+				</div>
+				<div class="input-field col s11 offset-s1">
+					<input type="text" id="streamDefaultUrl" name="streamDefaultUrl" value="{{ $trait->getCameraStreamConfig()['cameraStreamDefaultUrl'] }}">
+					<label for="streamDefaultUrl">Default Stream URL (optional)</label>
 				</div>
 				@endif
 

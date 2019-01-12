@@ -146,6 +146,30 @@ redis_subscribe.on("pmessage", function (pattern, channel, message) {
             } else {
                 mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
             }
+        } else if (devicetrait === 'fanspeed') {
+            if ('FanSpeed' in deviceinfo) {
+                mqtt.publish(`gBridge/u${userid}/${deviceinfo['FanSpeed']['actionTopic']}`, message);
+            } else {
+                mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
+            }
+        } else if (devicetrait === 'startstop') {
+            if ('StartStop' in deviceinfo) {
+                mqtt.publish(`gBridge/u${userid}/${deviceinfo['StartStop']['actionTopic']}`, message);
+            } else {
+                mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
+            }
+        } else if (devicetrait === 'openclose') {
+            if ('OpenClose' in deviceinfo) {
+                mqtt.publish(`gBridge/u${userid}/${deviceinfo['OpenClose']['actionTopic']}`, message);
+            } else {
+                mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
+            }
+        } else if (devicetrait === 'camerastream') {
+            if ('CameraStream' in deviceinfo) {
+                mqtt.publish(`gBridge/u${userid}/${deviceinfo['CameraStream']['actionTopic']}`, message);
+            } else {
+                mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
+            }
         } else {
             mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
         }
@@ -344,10 +368,10 @@ mqtt.on('message', function (topic, message) {
                 return;
             }
 
-            if(humidity < 0.0){
+            if (humidity < 0.0) {
                 humidity = 0.0;
             }
-            if(humidity > 100.0){
+            if (humidity > 100.0) {
                 humidity = 100.0;
             }
 
@@ -355,6 +379,33 @@ mqtt.on('message', function (topic, message) {
         } else if (devicetrait === "scene") {
             //no special handling for scenes required
             message = 1;
+        } else if (devicetrait === "fanspeed") {
+            message = String(message).trim();
+        } else if (devicetrait === "startstop") {
+            message = String(message).toLowerCase();
+            if((message == "0") || (message == "false") || (message == "stop")) {
+                message = 0;
+            } else {
+                message = 1;
+            }
+        } else if (devicetrait === "openclose") {
+            var open = Number.parseInt(message);
+            if (Number.isNaN(open)) {
+              console.log(
+                `MQTT client error: Wrong openclose "${message}" for user ${userid}`
+              );
+              return;
+            }
+            if (open < 0) {
+              open = 0;
+            }
+            if (open > 100) {
+              open = 100;
+            }
+        
+            message = open;
+        } else if(devicetrait === 'camerastream'){
+            message = String(message);
         } else if (devicetrait === "power") {
             //device reporting power state
             message = String(message).toLowerCase();

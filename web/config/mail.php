@@ -120,4 +120,10 @@ return [
         ],
     ],
 
+    'sparkpost' => [
+        'secret' => env('MAIL_SPARKPOST_SECRET'),
+        'options' => [
+            'endpoint' => 'https://api.eu.sparkpost.com/api/v1/transmissions',
+        ],
+    ],
 ];

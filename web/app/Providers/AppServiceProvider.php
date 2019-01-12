@@ -20,12 +20,12 @@ class AppServiceProvider extends ServiceProvider
 
         //Possibly allow to force an URL, sometimes necessary if behind a reverse proxy
         $proxy_url    = getenv('PROXY_URL');
-        $proxy_schema = getenv('PROXY_SCHEMA');
+        $proxy_scheme = getenv('PROXY_SCHEME');
         if (!empty($proxy_url)) {
             URL::forceRootUrl($proxy_url);
         }
-        if (!empty($proxy_schema)) {
-            URL::forceScheme($proxy_schema);
+        if (!empty($proxy_scheme)) {
+            URL::forceScheme($proxy_scheme);
         }
     }
 

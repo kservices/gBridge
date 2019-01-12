@@ -7,6 +7,7 @@ use App\Accesskey;
 use App\Device;
 
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -168,6 +169,8 @@ class GapiController extends Controller
         foreach($devices as $device){
             $trait_googlenames = $device->traits->pluck('gname')->toArray(); 
             $trait_googlenames = array_unique($trait_googlenames);      //Unique: Some traits (for thermostats) are specified multiple times
+            //Necessary workaround: array_unique keeps indexes. ['test', 'test', 'test', 'test2'] becomes [0 => 'test', 3 => 'test2']
+            $trait_googlenames = array_values($trait_googlenames); 
 
             $deviceBuilder = [
                 'id' => $device->device_id,
@@ -185,8 +188,8 @@ class GapiController extends Controller
                 ]
             ];
 
-            /** CUSTOM MODIFICATIONS FOR TYPE: "Scene" */
-            if($device->deviceType->shortname == 'Scene'){
+            /** CUSTOM MODIFICATIONS FOR TRAIT: "Scene" */
+            if($device->traits->where('shortname', 'Scene')->count()){
                 $deviceBuilder['willReportState'] = false;  //Scene will never report state, since they are write-only devs
                 $deviceBuilder['attributes'] = [
                     'sceneReversible' => false              //scenes are not (yet) reversible in this implementation
@@ -194,29 +197,90 @@ class GapiController extends Controller
             }
             /** END CUSTOM MODIFICATIONS */
 
-            /** CUSTOM MODIFICATIONS FOR TYPE: "Thermostat" */
-            //Check if the "TemperatureSetting" trait is specified for this device
-            $modes = $device->traits->where('shortname', 'TempSet.Mode');
-            if($modes->count()){
+            /** CUSTOM MODIFICATIONS FOR TRAIT: "Thermostat" */
+            if($device->traits->where('shortname', 'TempSet.Mode')->count()){
+                $modes = $device->traits->where('shortname', 'TempSet.Mode');
                 $modes = Collection::make(json_decode($modes->first()->pivot->config, true))->get('modesSupported');
                 if(empty($modes)){
                     $modes = ['on', 'off'];
                 }
-            }else{
-                $modes = ['on', 'off'];
-            }
 
-            if($device->deviceType->shortname == 'Thermostat'){
                 $deviceBuilder['attributes'] = [
-                    'thermostatTemperatureUnit' => 'C',              //only degrees C are supported as mode
+                    'thermostatTemperatureUnit' => 'C',              //only degrees C are supported as unit
                     'availableThermostatModes' => implode(',', $modes)
+                ];
+            }
+            /** END CUSTOM MODIFICATIONS */
+
+            /** CUSTOM MODIFICATIONS FOR TRAIT "FanSpeed" */
+
+            /**
+             * Representation:
+             * {"availableFanSpeeds":{"S1":{"names":["Geschwindigkeit1","Langsam"]},"S2":{"names":["Geschwindigkeit2","Mittel"]},"S3":{"names":["Geschwindigkeit3","Schnell"]}}}
+             */
+
+            if($device->traits->where('shortname', 'FanSpeed')->count()){
+                $traitconf = Collection::make(json_decode($device->traits->where('shortname', 'FanSpeed')->first()->pivot->config, true))->get('availableFanSpeeds');
+                $availableFanSpeeds = [];
+                if($traitconf){
+                    foreach($traitconf as $speedName => $speedConf){
+                        $currentSpeedData = [
+                            'speed_name' => $speedName,
+                            'speed_values' => []
+                        ];
+
+                        $speedNames = [];
+                        if(isset($speedConf['names'])){
+                            $speedNames = array_values($speedConf['names']);
+                        }else{
+                            $speedNames = ['Speed ' . $speedName];
+                        }
+
+                        foreach(['da','nl','en','fr','de','hi','it','ja','ko','no','es','sv'] as $lang){
+                            //Names are currently valid for all languages. User probably just uses one
+                            $currentSpeedData['speed_values'][] = [
+                                'lang' => $lang,
+                                'speed_synonym' => $speedNames
+                            ];
+                        }
+
+                        $availableFanSpeeds[] = $currentSpeedData;
+                    }
+                }
+
+                $deviceBuilder['attributes'] = [
+                    'availableFanSpeeds' => [
+                        'ordered' => true,
+                        'speeds' => $availableFanSpeeds
+                    ],
+                    'reversible' => false           //Reversing is not yet supported
+                ];
+            }
+            /** END CUSTOM MODIFICATIONS */
+
+            /** CUSTOM MODIFICATIONS FOR TRAIT: "StartStop" */
+            if($device->traits->where('shortname', 'StartStop')->count()){
+                $deviceBuilder['attributes'] = [
+                    'pausable' => false              //Pausing is not yet support, as well as zones
+                ];
+            }
+            /** END CUSTOM MODIFICATIONS */
+
+            /** CUSTOM MODIFICATIONS FOR TRAIT: "CameraStream" */
+            if($device->traits->where('shortname', 'CameraStream')->count()){
+                $trait = $device->traits->where('shortname', 'CameraStream')->first();
+                $deviceBuilder['willReportState'] = false;
+                $deviceBuilder['attributes'] = [
+                    'cameraStreamSupportedProtocols' => [ $trait->getCameraStreamConfig()['cameraStreamFormat'] ],
+                    'cameraStreamNeedAuthToken' => false,
+                    'cameraStreamNeedDrmEncryption' => false
                 ];
             }
             /** END CUSTOM MODIFICATIONS */
 
             $response['payload']['devices'][] = $deviceBuilder;
         }
-        //error_log(json_encode($response));
+        //Log::info(json_encode($response));
         return response()->json($response);
     }
 
@@ -320,6 +384,38 @@ class GapiController extends Controller
                     if($traitconf->get('humiditySupported')){
                         $response['payload']['devices'][$deviceId]['thermostatHumidityAmbient'] = $value;
                     }
+                }elseif($traitname == 'fanspeed'){
+                    if(is_null($value)){
+                        $availableFanSpeeds = Collection::make(json_decode($trait->pivot->config, true))->get('availableFanSpeeds');
+
+                        if($availableFanSpeeds && count($availableFanSpeeds)){
+                            $value = array_keys($availableFanSpeeds)[0];
+                        }else{
+                            $value = 'S1';
+                        }
+                    }
+                    
+                    $response['payload']['devices'][$deviceId]['currentFanSpeedSetting'] = $value;
+                }elseif($traitname == 'startstop'){
+                    if(is_null($value)){
+                        $value = false;
+                    }
+                    if($value){
+                        $value = true;
+                    }else{
+                        $value = false;
+                    }
+
+                    $response['payload']['devices'][$deviceId]['isRunning'] = $value;
+                    $response['payload']['devices'][$deviceId]['isPaused'] = false;         //Pausing not yet supported
+                }elseif($traitname == 'openclose'){
+                    if(is_null($value)){
+                        $value = 0;
+                    }else{
+                        $value = intval($value);
+                    }
+
+                    $response['payload']['devices'][$deviceId]['openPercent'] = $value;
                 }elseif($traitname == 'scene'){
                     //no value is required for scene, only "online" information
                 }else{
@@ -347,6 +443,11 @@ class GapiController extends Controller
 
         $handledDeviceIds = [];         //array of all device ids that are handled
         $successfulDeviceIds = [];      //array of all device ids that are handled successfully (e.g. are not offline and everything went well)
+        $offlineDeviceIds = [];         //array of all device ids that are offline
+        $twofaPinDeviceIds = [];        //all devices that require two fa pin code
+        $twofaWrongPinDeviceIds = [];   //all devices that require two fa pin code, but wrong pin was given
+        $twofaAckDeviceIds = [];        //all devices that require two fa confirmation messages
+        $cameraStreamDeviceIds = [];    //all ids of devices that have the camera stream trait
 
         foreach($input['payload']['commands'] as $command){
             $deviceIds = array_map(function($device){return $device['id'];}, $command['devices']);
@@ -373,21 +474,71 @@ class GapiController extends Controller
                 }elseif($exec['command'] === 'action.devices.commands.ThermostatSetMode'){
                     $trait = 'tempset.mode';
                     $value = $exec['params']['thermostatMode'];
+                }elseif($exec['command'] === 'action.devices.commands.SetFanSpeed'){
+                    $trait = 'fanspeed';
+                    $value = $exec['params']['fanSpeed'];
+                }elseif($exec['command'] === 'action.devices.commands.StartStop'){
+                    $trait = 'startstop';
+                    $value = $exec['params']['start'] ? 'start':'stop';
+                }elseif($exec['command'] === 'action.devices.commands.OpenClose'){
+                    $trait = 'openclose';
+                    $value = $exec['params']['openPercent'];
+                }elseif($exec['command'] === 'action.devices.commands.GetCameraStream'){
+                    $trait = 'camerastream';
+                    $value = ($exec['params']['StreamToChromecast'] == true) ? 'chromecast':'generic';
                 }else{
                     //unknown execute-command
+                    Log::error('Unknown Google execute-command: ' . $exec['command']);
                     continue;
                 }
 
                 foreach($deviceIds as $deviceid){
+                    $device = Device::find($deviceid);
+                    if(!$device){
+                        Log::error('Google exec for unknown deviceid: ' . $deviceid);
+                        continue;
+                    }
+
+                    if($device->twofa_type){
+                        //Two factor confirmation is necessary for that device
+                        if($device->twofa_type == 'ack'){
+                            //User just needs to confirm that he wants to do that action
+                            if(!(isset($exec['challenge']) && isset($exec['challenge']['ack']) && $exec['challenge']['ack'])){
+                                //Ack was not yet given
+                                $twofaAckDeviceIds[] = $deviceid;
+                                continue;
+                            }
+                        }
+                        if($device->twofa_type == 'pin'){
+                            //User needs to give a pin code
+                            if(!(isset($exec['challenge']) && isset($exec['challenge']['pin']) && $exec['challenge']['pin'])){
+                                //Ack was not yet given
+                                $twofaPinDeviceIds[] = $deviceid;
+                                continue;
+                            }
+
+                            if($exec['challenge']['pin'] != $device->twofa_pin){
+                                $twofaWrongPinDeviceIds[] = $deviceid;
+                                continue;
+                            }
+                        }
+                    }
+
                     //publish the new state to Redis
                     Redis::publish("gbridge:u$user->user_id:d$deviceid:$trait", $value);
 
+                    //Camera streaming ignores power state here
+                    if($trait == 'camerastream'){
+                        $cameraStreamDeviceIds[] = $deviceid;
+                        continue;
+                    }
+
                     //do not add to successfull devices if marked offline
                     $powerstate = Redis::hget("gbridge:u$user->user_id:d$deviceid", 'power');
-                    if(is_null($powerstate)){
+                    if(is_null($powerstate) || ($powerstate != '0')){
                         $successfulDeviceIds[] = $deviceid;
-                    }elseif($powerstate != '0'){
-                        $successfulDeviceIds[] = $deviceid;
+                    }else{
+                        $offlineDeviceIds[] = $deviceid;
                     }
                 }
             }
@@ -395,6 +546,7 @@ class GapiController extends Controller
 
         $handledDeviceIds = array_unique($handledDeviceIds);
         $successfulDeviceIds = array_unique($successfulDeviceIds);
+        $offlineDeviceIds = array_unique($offlineDeviceIds);
 
         $response = [
             'requestId' => $requestid,
@@ -405,17 +557,77 @@ class GapiController extends Controller
 
         if(count($successfulDeviceIds) > 0){
             $response['payload']['commands'][] = [
-                'ids' => $successfulDeviceIds,
+                'ids' => array_values($successfulDeviceIds),
                 'status' => 'SUCCESS'
             ];
         }
-        if(count(array_diff($handledDeviceIds, $successfulDeviceIds)) > 0){
+        if(count($offlineDeviceIds) > 0){
             $response['payload']['commands'][] = [
-                'ids' => array_values(array_diff($handledDeviceIds, $successfulDeviceIds)),
+                'ids' => array_values($offlineDeviceIds),
                 'status' => 'OFFLINE'
             ];
         }
-       
+        if(count($twofaAckDeviceIds) > 0){
+            $response['payload']['commands'][] = [
+                'ids' => array_values($twofaAckDeviceIds),
+                'status' => 'ERROR',
+                'errorCode' => 'challengeNeeded',
+                'challengeNeeded' => [
+                    'type' => 'ackNeeded'
+                ]
+            ];
+        }
+        if(count($twofaPinDeviceIds) > 0){
+            $response['payload']['commands'][] = [
+                'ids' => array_values($twofaPinDeviceIds),
+                'status' => 'ERROR',
+                'errorCode' => 'challengeNeeded',
+                'challengeNeeded' => [
+                    'type' => 'pinNeeded'
+                ]
+            ];
+        }
+        if(count($twofaWrongPinDeviceIds) > 0){
+            $response['payload']['commands'][] = [
+                'ids' => array_values($twofaWrongPinDeviceIds),
+                'status' => 'ERROR',
+                'errorCode' => 'challengeNeeded',
+                'challengeNeeded' => [
+                    'type' => 'challengeFailedPinNeeded'
+                ]
+            ];
+        }
+
+        foreach($cameraStreamDeviceIds as $cameraStreamDeviceId){
+            $device = Device::find($cameraStreamDeviceId);
+            if(!$device){
+                continue;
+            }
+            $url = Redis::hget("gbridge:u$user->user_id:d$device->device_id", 'camerastream');
+            if(is_null($url)){
+                //Not set by user via MQTT (-> not in cache), check for defaults
+                $trait = $device->traits->where('shortname', 'CameraStream')->first();
+                if(is_null($trait)){
+                    //Somehow can't find a CameraStream trait for this device
+                    $url = '';
+                }else{
+                    $url = $trait->getCameraStreamConfig()['cameraStreamDefaultUrl'];
+                    if(is_null($url)){
+                        //Also no default is set.
+                        $url = '';
+                    }
+                }
+            }
+            $response['payload']['commands'][] = [
+                'ids' => [ $cameraStreamDeviceId ],
+                'status' => 'SUCCESS',
+                'states' => [
+                    'cameraStreamAccessUrl' => $url
+                ]
+            ];
+        }
+
+        //Log::info($response);
         return response()->json($response);
     }
 
