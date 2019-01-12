@@ -16,14 +16,14 @@
 
 		<nav class="nav-extended blue">
 			<div class="nav-wrapper">
-				<a href="{{ route('device.index') }}" class="brand-logo" style="padding: 7px 20px 7px 20px;">gBridge</a>
+				<a href="{{ route('device.index') }}" class="brand-logo" style="padding: 7px 20px 7px 20px;">gBridge.io</a>
 				<a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
 				<ul id="nav-mobile" class="right hide-on-med-and-down">
 					<li class="{{ Request::is('device*') ? 'active':'' }}"><a href="{{ route('device.index') }}">Devices</a></li>
 					<li class="{{ Request::is('accesskey*') ? 'active':'' }}"><a href="{{ route('accesskey.index') }}">Account Linking</a></li>
 					@if(env('KSERVICES_HOSTED', false))
 					<li><a href="/subscription/overview">Subscription Options</a></li>
-					<li><a target="_blank" href="https://about.gbridge.kappelt.net/contact">Contact</a></li>
+					<li><a target="_blank" href="https://about.gbridge.io/contact">Contact</a></li>
 					@endif
 					<li class="{{ Request::is('profile*') ? 'active':'' }}"><a class="dropdown-trigger" href="#" data-target="user-dropdown">Hi {{ Auth::user()->name }}!<i class="material-icons right">arrow_drop_down</i></a></li>
 				</ul>
@@ -35,7 +35,7 @@
 				<li class="{{ Request::is('accesskey*') ? 'active':'' }}"><a href="{{ route('accesskey.index') }}">Account Linking</a></li>
 				@if(env('KSERVICES_HOSTED', false))
 				<li><a href="/subscription/overview">Subscription Options</a></li>
-				<li><a target="_blank" href="https://about.gbridge.kappelt.net/contact">Contact</a></li>
+				<li><a target="_blank" href="https://about.gbridge.io/contact">Contact</a></li>
 				@endif
 				<li class="{{ Request::is('profile*') ? 'active':'' }}"><a href="{{ route('profile.index') }}">My Account</a></li>
 				<li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a></li>

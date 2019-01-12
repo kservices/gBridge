@@ -35,6 +35,6 @@ class ResetPasswordMail extends Mailable
             'user' => $this->user,
             'token' => $this->token,
         ])
-        ->subject('Kappelt gBridge: Reset Password');
+        ->subject('gBridge.io: Reset Password');
     }
 }

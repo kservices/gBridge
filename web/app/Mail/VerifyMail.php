@@ -33,6 +33,6 @@ class VerifyMail extends Mailable
         return $this->view('emails.verifyUser', [
             'user' => $this->user,
         ])
-        ->subject('Welcome to Kappelt gBridge!');
+        ->subject('Welcome to gBridge.io!');
     }
 }

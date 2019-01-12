@@ -10,6 +10,7 @@
   "author": "Peter Kappelt",
   "license": "MIT",
   "dependencies": {
+    "async-redis": "^1.1.4",
     "axios": "^0.18.0",
     "jsonwebtoken": "^8.3.0",
     "mqtt": "^2.18.1",

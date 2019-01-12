@@ -56,22 +56,24 @@
 					<img src="{{ asset('img/kappelt-logo.png') }}" alt="Kappelt Logo" class="responsive-img" style="max-width: 100%;">
 				</div>
 				<div class="col m4 s6">
-					<h5 class="white-text">Kappelt gBridge</h5>
+					<h5 class="white-text">gBridge.io</h5>
 				</div>
 				<div class="col m6 s12">
 					<h5 class="white-text">Links</h5>
 					<ul>
+						@if(env('KSERVICES_HOSTED', false))
                         <li>
-                            <a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/toc">Terms and Conditions/ Allgemeine Geschäftsbedingungen</a>
+                            <a class="grey-text text-lighten-3" href="https://about.gbridge.io/toc">Terms and Conditions/ Allgemeine Geschäftsbedingungen</a>
                         </li>
                         <li>
-                            <a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/privacy">Privacy Policy/ Datenschutzerklärung</a>
+                            <a class="grey-text text-lighten-3" href="https://about.gbridge.io/privacy">Privacy Policy/ Datenschutzerklärung</a>
                         </li>
                         <li>
-                            <a class="grey-text text-lighten-3" href="https://about.gbridge.kappelt.net/imprint">Imprint/ Impressum</a>
+                            <a class="grey-text text-lighten-3" href="https://about.gbridge.io/imprint">Imprint/ Impressum</a>
 						</li>
+						@endif
 						<li>
-                            <a class="grey-text text-lighten-3" href="https://doc.gbridge.kappelt.net/html/">Documentation and Support</a>
+                            <a class="grey-text text-lighten-3" href="https://doc.gbridge.io/">Documentation and Support</a>
                         </li>
                         <li>
                             <a class="grey-text text-lighten-3" href="https://github.com/kservices/gBridge">gBridge on Github</a>
@@ -80,15 +82,15 @@
 				</div>
 				@if(!env('KSERVICES_HOSTED', false))
 				<div class="col s12">
-					<a class="white-text" href="https://about.gbridge.kappelt.net"><b>Want to support my work and save time?</b> Consider using gBridge as an inexpensive service hosted by me.</a>
+					<a class="white-text" href="https://about.gbridge.io"><b>Want to support my work and save time?</b> Consider using gBridge as an inexpensive service hosted by me.</a>
 				</div>
 				@endif
 			</div>
 		</div>
 		<div class="blue darken-1 footer-copyright">
 			<div class="container">
-				©{{ date('Y') }} Kappelt kServices
-				<a class="grey-text text-lighten-4 right" href="https://about.gbridge.kappelt.net">https://about.gbridge.kappelt.net</a>
+				<a class="grey-text text-lighten-4" href="https://kappelt.net">©{{ date('Y') }} Kappelt kServices</a>
+				<a class="grey-text text-lighten-4 right" href="https://about.gbridge.io">https://about.gbridge.io</a>
 			</div>
 		</div>
 	</footer>

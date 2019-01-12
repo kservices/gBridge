@@ -10,7 +10,7 @@ const util = require("util");
 /**
  * Redis client
  */
-const redislib = require("redis");
+const redislib = require("async-redis");
 var redis_subscribe = redislib.createClient(config.redis);
 var redis = redislib.createClient(config.redis);
 
@@ -46,7 +46,7 @@ function newAccessToken() {
     .post(
       "https://accounts.google.com/o/oauth2/token",
       "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=" +
-        token,
+      token,
       {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -54,7 +54,7 @@ function newAccessToken() {
         }
       }
     )
-    .then(function(response) {
+    .then(function (response) {
       if (!("access_token" in response.data)) {
         console.error(
           '[NewAccessToken] Key "access_token" was not in response data'
@@ -65,7 +65,7 @@ function newAccessToken() {
       console.log("[NewAccessToken] Successfully generated new access token!");
       //console.log(accesstoken);
     })
-    .catch(function(error) {
+    .catch(function (error) {
       console.log("[NewAccessToken] error: " + error);
     });
 }
@@ -77,216 +77,245 @@ setInterval(newAccessToken, (config.accesskey_renew_interval - 2) * 500);
 /**
  * Report state
  */
-function reportState(userid, requestid) {
-  redis.get(`gbridge:u${userid}:devices`, function(err, response) {
-    if (err) {
-      console.error(
-        "Redis client error while fetching device for user " +
-          userid +
-          ": " +
-          err
-      );
-      return;
+async function reportState(userid, requestid) {
+  var response;
+  try {
+    response = await redis.get(`gbridge:u${userid}:devices`);
+  } catch (e) {
+    console.error(
+      "Redis client error while fetching device for user " + userid + ": " + err
+    );
+    return;
+  }
+
+  if (response == null) {
+    console.error(
+      "Redis client error while fetching devices for user " +
+      userid +
+      ": device list empty"
+    );
+    return;
+  }
+
+  response = JSON.parse(response);
+
+  var rsData = {
+    agent_user_id: userid,
+    payload: { devices: { states: {} } }
+  };
+
+  if (requestid != null) {
+    rsData["requestId"] = requestid;
+  }
+
+  var deviceids = Object.keys(response);
+  for (var i = 0; i < deviceids.length; i++) {
+    var deviceid = deviceids[i];
+    var traits = response[deviceid];
+    var data;
+    rsData["payload"]["devices"]["states"][deviceid] = {};
+
+    try {
+      data = await redis.hgetall(`gbridge:u${userid}:d${deviceid}`);
+      if (data == null) {
+        throw "Returned data is null";
+      }
+    } catch (e) {
+      //default values if not yet set, do not throw error
+      if ("OnOff" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid]["on"] = false;
+      }
+      if ("Brightness" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid]["brightness"] = 0;
+      }
+      if ("TempSet.Mode" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid]["thermostatMode"] =
+          "off";
+      }
+      if ("TempSet.Setpoint" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatTemperatureSetpoint"
+        ] = 0.0;
+      }
+      if ("TempSet.Ambient" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatTemperatureAmbient"
+        ] = 0.0;
+      }
+      if ("TempSet.Humidity" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatHumidityAmbient"
+        ] = 0.0;
+      }
+      if ("FanSpeed" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "currentFanSpeedSetting"
+        ] = "S1";
+      }
+      if ("StartStop" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid]["isRunning"] = false;
+        rsData["payload"]["devices"]["states"][deviceid]["isPaused"] = false;
+      }
+      if ("OpenClose" in traits) {
+        rsData["payload"]["devices"]["states"][deviceid]["openPercent"] = 0;
+      }
+      //"Scene"-Trait and "CameraStream" do not need report-state
+
+      //Check if no states are defined for this device, then completely remove it from the record
+      //This happens if this device has no states that need to be reported (e.g. Scenes)
+      if (
+        !Object.keys(rsData["payload"]["devices"]["states"][deviceid]).length
+      ) {
+        delete rsData["payload"]["devices"]["states"][deviceid];
+      }
+      continue;
     }
-    if (response == null) {
-      console.error(
-        "Redis client error while fetching devices for user " +
-          userid +
-          ": device list empty"
-      );
-      return;
+
+    if ("OnOff" in traits) {
+      if ("onoff" in data) {
+        rsData["payload"]["devices"]["states"][deviceid]["on"] =
+          data["onoff"] != "0" ? true : false;
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid]["on"] = false;
+      }
+    }
+    if ("Brightness" in traits) {
+      if ("brightness" in data) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "brightness"
+        ] = parseInt(data["brightness"]);
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid]["brightness"] = 0;
+      }
+    }
+    if ("TempSet.Mode" in traits) {
+      if ("tempset.mode" in data) {
+        rsData["payload"]["devices"]["states"][deviceid]["thermostatMode"] =
+          data["tempset.mode"];
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid]["thermostatMode"] =
+          "off";
+      }
+    }
+    if ("TempSet.Setpoint" in traits) {
+      if ("tempset.setpoint" in data) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatTemperatureSetpoint"
+        ] = Number.parseFloat(data["tempset.setpoint"]);
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatTemperatureSetpoint"
+        ] = 0.0;
+      }
+    }
+    if ("TempSet.Ambient" in traits) {
+      if ("tempset.ambient" in data) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatTemperatureAmbient"
+        ] = Number.parseFloat(data["tempset.ambient"]);
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatTemperatureAmbient"
+        ] = 0.0;
+      }
+    }
+    if ("TempSet.Humidity" in traits) {
+      if ("tempset.humidity" in data) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatHumidityAmbient"
+        ] = Number.parseFloat(data["tempset.humidity"]);
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "thermostatHumidityAmbient"
+        ] = 0.0;
+      }
+    }
+    if ("FanSpeed" in traits) {
+      if ("fanspeed" in data) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "currentFanSpeedSetting"
+        ] = data["fanspeed"];
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "currentFanSpeedSetting"
+        ] = "S1";
+      }
+    }
+    if ("StartStop" in traits) {
+      if ("startstop" in data) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "isRunning"
+        ] = (data["startstop"] != "0") ? true : false;
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "isRunning"
+        ] = "false";
+      }
+    }
+    if ("OpenClose" in traits) {
+      if ("openclose" in data) {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "openPercent"
+        ] = parseInt(data["openclose"]);
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid][
+          "openPercent"
+        ] = 0;
+      }
+    }
+    //"Scene"-Trait and "CameraStream" does not need report-state
+
+    if ("power" in data) {
+      rsData["payload"]["devices"]["states"][deviceid]["online"] =
+        data["power"] != "0" ? true : false;
     }
 
-    response = JSON.parse(response);
-
-    rsData = {
-      agent_user_id: userid,
-      payload: { devices: { states: {} } }
-    };
-
-    if (requestid != null) {
-      rsData["requestId"] = requestid;
+    //Check if no states are defined for this device, then completely remove it from the record
+    //This happens if this device has no states that need to be reported (e.g. Scenes)
+    if (!Object.keys(rsData["payload"]["devices"]["states"][deviceid]).length) {
+      delete rsData["payload"]["devices"]["states"][deviceid];
     }
+  }
 
-    Promise.all(
-      Object.keys(response).map(function(deviceid) {
-        let traits = response[deviceid];
-
-        return new Promise(function(resolve, reject) {
-          redis.hgetall(`gbridge:u${userid}:d${deviceid}`, function(err, data) {
-            rsData["payload"]["devices"]["states"][deviceid] = {};
-
-            if (err || !data) {
-              //default values if not yet set, do not throw error
-              if ("OnOff" in traits) {
-                rsData["payload"]["devices"]["states"][deviceid]["on"] = false;
-              }
-              if ("Brightness" in traits) {
-                rsData["payload"]["devices"]["states"][deviceid][
-                  "brightness"
-                ] = 0;
-              }
-              if ("TempSet.Mode" in traits) {
-                rsData["payload"]["devices"]["states"][deviceid][
-                  "thermostatMode"
-                ] = "off";
-              }
-              if ("TempSet.Setpoint" in traits) {
-                rsData["payload"]["devices"]["states"][deviceid][
-                  "thermostatTemperatureSetpoint"
-                ] = 0.0;
-              }
-              if ("TempSet.Ambient" in traits) {
-                rsData["payload"]["devices"]["states"][deviceid][
-                  "thermostatTemperatureAmbient"
-                ] = 0.0;
-              }
-              if ("TempSet.Humidity" in traits) {
-                rsData["payload"]["devices"]["states"][deviceid][
-                  "thermostatHumidityAmbient"
-                ] = 0.0;
-              }
-              //"Scene"-Trait does not need report-state
-
-              //Check if no states are defined for this device, then completely remove it from the record
-              //This happens if this device has no states that need to be reported (e.g. Scenes)
-              if(!Object.keys(rsData["payload"]["devices"]["states"][deviceid]).length){
-                delete rsData["payload"]["devices"]["states"][deviceid];
-              }
-              
-              resolve();
-              return;
-            }
-
-            if (data) {
-              if ("OnOff" in traits) {
-                if ("onoff" in data) {
-                  rsData["payload"]["devices"]["states"][deviceid]["on"] =
-                    data["onoff"] != "0" ? true : false;
-                } else {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "on"
-                  ] = false;
-                }
-              }
-              if ("Brightness" in traits) {
-                if ("brightness" in data) {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "brightness"
-                  ] = parseInt(data["brightness"]);
-                } else {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "brightness"
-                  ] = 0;
-                }
-              }
-              if ("TempSet.Mode" in traits) {
-                if ("tempset.mode" in data) {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatMode"
-                  ] = data["tempset.mode"];
-                } else {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatMode"
-                  ] = "off";
-                }
-              }
-              if ("TempSet.Setpoint" in traits) {
-                if ("tempset.setpoint" in data) {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatTemperatureSetpoint"
-                  ] = Number.parseFloat(data["tempset.setpoint"]);
-                } else {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatTemperatureSetpoint"
-                  ] = 0.0;
-                }
-              }
-              if ("TempSet.Ambient" in traits) {
-                if ("tempset.ambient" in data) {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatTemperatureAmbient"
-                  ] = Number.parseFloat(data["tempset.ambient"]);
-                } else {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatTemperatureAmbient"
-                  ] = 0.0;
-                }
-              }
-              if ("TempSet.Humidity" in traits) {
-                if ("tempset.humidity" in data) {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatHumidityAmbient"
-                  ] = Number.parseFloat(data["tempset.humidity"]);
-                } else {
-                  rsData["payload"]["devices"]["states"][deviceid][
-                    "thermostatHumidityAmbient"
-                  ] = 0.0;
-                }
-              }
-              //"Scene"-Trait does not need report-state
-
-              if ("power" in data) {
-                rsData["payload"]["devices"]["states"][deviceid]["online"] =
-                  data["power"] != "0" ? true : false;
-              }
-
-              //Check if no states are defined for this device, then completely remove it from the record
-              //This happens if this device has no states that need to be reported (e.g. Scenes)
-              if(!Object.keys(rsData["payload"]["devices"]["states"][deviceid]).length){
-                delete rsData["payload"]["devices"]["states"][deviceid];
-              }
-            }
-            resolve();
-          });
-        });
-      })
+  //console.log(JSON.stringify(rsData));
+  axios
+    .post(
+      "https://homegraph.googleapis.com/v1/devices:reportStateAndNotification",
+      rsData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + accesstoken,
+          "X-GFE-SSL": "yes"
+        }
+      }
     )
-      .then(function() {
-        //console.log(JSON.stringify(rsData));
-        axios
-          .post(
-            "https://homegraph.googleapis.com/v1/devices:reportStateAndNotification",
-            rsData,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + accesstoken,
-                "X-GFE-SSL": "yes"
-              }
-            }
-          )
-          .then(function(response) {
-            //console.log('[Report State]  Response: ' + console.log(util.inspect(response, false, null)));
-            //Response was OK :)
-          })
-          .catch(function(error) {
-            console.log("[Report State] HTTP error: " + error);
-          });
-      })
-      .catch(function(err) {
-        console.log("Error while fetching report-state trait data: " + err);
-      });
-  });
+    .then(function (response) {
+      //console.log('[Report State]  Response: ' + console.log(util.inspect(response, false, null)));
+      //Response was OK :)
+    })
+    .catch(function (error) {
+      console.log("[Report State] HTTP error: " + error);
+    });
 }
 
 /**
  * Redis client functions
  */
-redis_subscribe.on("connect", function() {
+redis_subscribe.on("connect", function () {
   console.log("Redis client (subscribe) connected");
 });
-redis_subscribe.on("error", function(err) {
+redis_subscribe.on("error", function (err) {
   console.log("Redis client (subscribe) error: " + err);
 });
-redis.on("connect", function() {
+redis.on("connect", function () {
   console.log("Redis client connected");
 });
-redis.on("error", function(err) {
+redis.on("error", function (err) {
   console.log("Redis client error: " + err);
 });
 
-redis_subscribe.on("pmessage", function(pattern, channel, message) {
+redis_subscribe.on("pmessage", async function (pattern, channel, message) {
   //only proactively notify on sync
   if (message != "SYNC") {
     return;
@@ -311,35 +340,36 @@ redis_subscribe.on("pmessage", function(pattern, channel, message) {
   }
 
   var userid = matches[1];
-  redis.hget(`gbridge:u${userid}:d0`, "grequestid", function(err, response) {
-    if (err) {
-      console.error("Redis client error while fetching request id: " + err);
-      return;
-    }
-    if (response == null) {
-      console.error(
-        "Redis client error while fetching request id: undefined request id"
-      );
-      return;
-    }
-    reportState(userid, response);
-  });
+  var response;
+  try {
+    response = await redis.hget(`gbridge:u${userid}:d0`, "grequestid");
+  } catch (e) {
+    console.error("Redis client error while fetching request id: " + err);
+    return;
+  }
+  if (response == null) {
+    console.error(
+      "Redis client error while fetching request id: undefined request id"
+    );
+    return;
+  }
+  await reportState(userid, response);
 });
 redis_subscribe.psubscribe("gbridge:u*:d*:grequest");
 
 /**
  * MQTT-Client functions
  */
-mqtt.on("connect", function() {
+mqtt.on("connect", function () {
   console.log("MQTT client connected");
 });
-mqtt.on("error", function(error) {
+mqtt.on("error", function (error) {
   console.log("MQTT client error: " + error);
 });
-mqtt.on("offline", function() {
+mqtt.on("offline", function () {
   console.log("MQTT client offline!");
 });
-mqtt.on("reconnect", function() {
+mqtt.on("reconnect", function () {
   console.log("MQTT client reconnected!");
 });
 
@@ -386,51 +416,46 @@ function guessUserIdFromMqttTopic(topic) {
 
 /**
  * Get info about a user's devices, including the traits and the topics.
- * The callback takes to params:
- *  - err: Human readable error message if there's a problem, null if not
- *  - data: An associative array containing the information
+ * It returns an associative error containing the information or throws an error
  */
-function getDevicesOfUser(userid, callback) {
-  redis.get(`gbridge:u${userid}:devices`, function(err, response) {
-    if (err) {
-      callback(
-        "Redis client error while fetching device for user " +
-          userid +
-          ": " +
-          err,
-        null
-      );
-      return;
-    }
-    if (response == null) {
-      callback(
-        "Redis client error while fetching devices for user " +
-          userid +
-          ": device list empty",
-        null
-      );
-      return;
-    }
+async function getDevicesOfUser(userid) {
+  var response;
+  try {
+    response = await redis.get(`gbridge:u${userid}:devices`);
+  } catch (e) {
+    console.error(
+      "Redis client error while fetching device for user " + userid + ": " + e
+    );
+    throw e;
+  }
 
-    try {
-      info = JSON.parse(response);
-    } catch (e) {
-      callback("JSON parsing error for user " + userid + ": " + e, null);
-      return;
-    }
+  if (response == null) {
+    throw "Redis client error while fetching devices for user " +
+    userid +
+    ": device list empty";
+    return;
+  }
 
-    callback(null, info);
-  });
+  var info;
+
+  try {
+    info = JSON.parse(response);
+  } catch (e) {
+    console.error("JSON parsing error for user " + userid + ": " + e, null);
+    throw e;
+  }
+
+  return info;
 }
 
-mqtt.on("message", function(topic, message) {
+mqtt.on("message", async function (topic, message) {
   message = message.toString();
 
   topicinfo = guessUserIdFromMqttTopic(topic);
   if (topicinfo["error-message"] != null) {
     console.error(
       `Could not determine user in topic "${topic}": ${
-        topicinfo["error-message"]
+      topicinfo["error-message"]
       }`
     );
     return;
@@ -444,208 +469,216 @@ mqtt.on("message", function(topic, message) {
     return;
   }
 
-  getDevicesOfUser(userid, function(err, devices) {
-    //Check for error, abort if necessary
-    if (err) {
-      console.error("Error in mapping status topic: " + err);
-      return;
-    }
+  var devices;
+  try {
+    devices = await getDevicesOfUser(userid);
+  } catch (e) {
+    console.error("Error in mapping status topic: " + e);
+    return;
+  }
 
-    let deviceid = null;
-    let devicetrait = null;
+  let deviceid = null;
+  let devicetrait = null;
 
-    //look for the device/ trait that matches the user part of the topic
-    for (var currentDeviceId in devices) {
-      for (var currentTrait in devices[currentDeviceId]) {
-        //This script has published to the topic, since it is an action topic. Just quietly return
-        if (
-          devices[currentDeviceId][currentTrait]["actionTopic"] ===
-          topicuserpart
-        ) {
-          return;
-        }
+  //look for the device/ trait that matches the user part of the topic
+  for (var currentDeviceId in devices) {
+    for (var currentTrait in devices[currentDeviceId]) {
+      //This script has published to the topic, since it is an action topic. Just quietly return
+      if (
+        devices[currentDeviceId][currentTrait]["actionTopic"] === topicuserpart
+      ) {
+        return;
+      }
 
-        //The topic was the actual status topic
-        if (
-          devices[currentDeviceId][currentTrait]["statusTopic"] ===
-          topicuserpart
-        ) {
-          deviceid = currentDeviceId;
-          devicetrait = currentTrait.toLowerCase();
-        }
+      //The topic was the actual status topic
+      if (
+        devices[currentDeviceId][currentTrait]["statusTopic"] === topicuserpart
+      ) {
+        deviceid = currentDeviceId;
+        devicetrait = currentTrait.toLowerCase();
       }
     }
+  }
 
-    //The topic wasn't found for the user
-    //special case: Power-Topics, are "gBrige/u<user-id>/d<device-id>/power"
-    if (!deviceid) {
-      var powerMatch = /^(?:d)([0-9]+)(?:\/power)/;
-      if (powerMatch.test(topicuserpart)) {
-        var matches = powerMatch.exec(topicuserpart);
-        if (matches != null && matches.length == 2) {
-          //It is a standard "Power-Topic" that can't be changed by the user
-          deviceid = matches[1];
-          devicetrait = "power";
-        }
+  //The topic wasn't found for the user
+  //special case: Power-Topics, are "gBrige/u<user-id>/d<device-id>/power"
+  if (!deviceid) {
+    var powerMatch = /^(?:d)([0-9]+)(?:\/power)/;
+    if (powerMatch.test(topicuserpart)) {
+      var matches = powerMatch.exec(topicuserpart);
+      if (matches != null && matches.length == 2) {
+        //It is a standard "Power-Topic" that can't be changed by the user
+        deviceid = matches[1];
+        devicetrait = "power";
       }
     }
+  }
 
-    //Topic could still not be matched
-    if (!deviceid) {
-      console.error(
-        `Could not match topic ${topicuserpart} for user ${userid}`
-      );
-      return;
-    }
+  //Topic could still not be matched
+  if (!deviceid) {
+    console.error(`Could not match topic ${topicuserpart} for user ${userid}`);
+    return;
+  }
 
-    if (devicetrait === "onoff") {
-      message = String(message).toLowerCase();
-      if (message == "0" || message == "false" || message == "off") {
-        message = 0;
-      } else {
-        message = 1;
-      }
-    } else if (devicetrait === "brightness") {
-      var brightness = Number.parseInt(message);
-      if (Number.isNaN(brightness)) {
-        console.log(
-          `MQTT client error: Wrong brightness "${message}" for user ${userid}`
-        );
-        return;
-      }
-      if (brightness < 0) {
-        brightness = 0;
-      }
-      if (brightness > 100) {
-        brightness = 100;
-      }
-
-      message = brightness;
-    } else if (devicetrait === "scene") {
-      //no special handling for scenes required
-      message = 1;
-    } else if (devicetrait === "tempset.mode") {
-      var requestedMode = String(message)
-        .toLowerCase()
-        .trim();
-      var allModes = [
-        "off",
-        "heat",
-        "cool",
-        "on",
-        "auto",
-        "fan-only",
-        "purifier",
-        "eco",
-        "dry"
-      ];
-
-      if (allModes.indexOf(requestedMode) < 0) {
-        console.log(
-          `MQTT client error: Wrong thermostat mode "${message}" for user ${userid}`
-        );
-        return;
-      }
-
-      message = requestedMode;
-    } else if (devicetrait === "tempset.setpoint") {
-      var temperature = Number.parseFloat(message);
-      if (Number.isNaN(temperature)) {
-        console.log(
-          `MQTT client error: Wrong temperature (set) "${message}" for user ${userid}`
-        );
-        return;
-      }
-
-      message = temperature;
-    } else if (devicetrait === "tempset.ambient") {
-      var temperature = Number.parseFloat(message);
-      if (Number.isNaN(temperature)) {
-        console.log(
-          `MQTT client error: Wrong temperature (amb) "${message}" for user ${userid}`
-        );
-        return;
-      }
-
-      message = temperature;
-    } else if (devicetrait === "tempset.humidity") {
-      var humidity = Number.parseFloat(message);
-      if (Number.isNaN(humidity)) {
-        console.log(
-          `MQTT client error: Wrong humidity "${message}" for user ${userid}`
-        );
-        return;
-      }
-
-      if (humidity < 0.0) {
-        humidity = 0.0;
-      }
-      if (humidity > 100.0) {
-        humidity = 100.0;
-      }
-
-      message = humidity;
-    } else if (devicetrait === "power") {
-      //device reporting power state
-      message = String(message).toLowerCase();
-      if (message == "0" || message == "false" || message == "off") {
-        message = 0;
-      } else {
-        message = 1;
-      }
+  if (devicetrait === "onoff") {
+    message = String(message).toLowerCase();
+    if (message == "0" || message == "false" || message == "off") {
+      message = 0;
     } else {
+      message = 1;
+    }
+  } else if (devicetrait === "brightness") {
+    var brightness = Number.parseInt(message);
+    if (Number.isNaN(brightness)) {
       console.log(
-        `MQTT client error: Unsupported trait "${devicetrait}" for user ${userid}`
+        `MQTT client error: Wrong brightness "${message}" for user ${userid}`
+      );
+      return;
+    }
+    if (brightness < 0) {
+      brightness = 0;
+    }
+    if (brightness > 100) {
+      brightness = 100;
+    }
+
+    message = brightness;
+  } else if (devicetrait === "scene") {
+    //no special handling for scenes required
+    message = 1;
+  } else if (devicetrait === "tempset.mode") {
+    var requestedMode = String(message)
+      .toLowerCase()
+      .trim();
+    var allModes = [
+      "off",
+      "heat",
+      "cool",
+      "on",
+      "auto",
+      "fan-only",
+      "purifier",
+      "eco",
+      "dry"
+    ];
+
+    if (allModes.indexOf(requestedMode) < 0) {
+      console.log(
+        `MQTT client error: Wrong thermostat mode "${message}" for user ${userid}`
       );
       return;
     }
 
-    redis.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
+    message = requestedMode;
+  } else if (devicetrait === "tempset.setpoint") {
+    var temperature = Number.parseFloat(message);
+    if (Number.isNaN(temperature)) {
+      console.log(
+        `MQTT client error: Wrong temperature (set) "${message}" for user ${userid}`
+      );
+      return;
+    }
 
-    redis.hget(`gbridge:u${userid}:d0`, "grequesttype", function(
-      err,
-      response
-    ) {
-      if (err) {
-        console.error(
-          "Redis client error while fetching last request type: " + err
-        );
-        return;
-      }
-      if (response == null) {
-        console.error(
-          "Redis client error while fetching last request type: undefined request type"
-        );
-        return;
-      }
+    message = temperature;
+  } else if (devicetrait === "tempset.ambient") {
+    var temperature = Number.parseFloat(message);
+    if (Number.isNaN(temperature)) {
+      console.log(
+        `MQTT client error: Wrong temperature (amb) "${message}" for user ${userid}`
+      );
+      return;
+    }
 
-      if (response == "EXECUTE") {
-        //get last requestid if if the previous request was EXECUTE
-        redis.hget(`gbridge:u${userid}:d0`, "grequestid", function(
-          err,
-          response
-        ) {
-          if (err) {
-            console.error(
-              "Redis client error while fetching request id: " + err
-            );
-            return;
-          }
-          if (response == null) {
-            console.error(
-              "Redis client error while fetching request id: undefined request id"
-            );
-            return;
-          }
-          //console.log("Good set");
-          reportState(userid, response);
-        });
-      } else {
-        //console.log("Bad set");
-        reportState(userid, null);
-      }
-    });
-  });
+    message = temperature;
+  } else if (devicetrait === "tempset.humidity") {
+    var humidity = Number.parseFloat(message);
+    if (Number.isNaN(humidity)) {
+      console.log(
+        `MQTT client error: Wrong humidity "${message}" for user ${userid}`
+      );
+      return;
+    }
+
+    if (humidity < 0.0) {
+      humidity = 0.0;
+    }
+    if (humidity > 100.0) {
+      humidity = 100.0;
+    }
+
+    message = humidity;
+  } else if (devicetrait === "fanspeed") {
+    message = String(message).trim();
+  } else if (devicetrait === "startstop") {
+    message = String(message).toLowerCase();
+    if ((message == "0") || (message == "false") || (message == "stop")) {
+      message = 0;
+    } else {
+      message = 1;
+    }
+  } else if (devicetrait === "openclose") {
+    var open = Number.parseInt(message);
+    if (Number.isNaN(open)) {
+      console.log(
+        `MQTT client error: Wrong openclose "${message}" for user ${userid}`
+      );
+      return;
+    }
+    if (open < 0) {
+      open = 0;
+    }
+    if (open > 100) {
+      open = 100;
+    }
+
+    message = open;
+  } else if(devicetrait === 'camerastream'){
+    message = String(message);
+  } else if (devicetrait === "power") {
+    //device reporting power state
+    message = String(message).toLowerCase();
+    if (message == "0" || message == "false" || message == "off") {
+      message = 0;
+    } else {
+      message = 1;
+    }
+  } else {
+    console.log(
+      `MQTT client error: Unsupported trait "${devicetrait}" for user ${userid}`
+    );
+    return;
+  }
+
+  await redis.hset(`gbridge:u${userid}:d${deviceid}`, devicetrait, message);
+
+  var requesttype;
+  try {
+    requesttype = await redis.hget(`gbridge:u${userid}:d0`, "grequesttype");
+  } catch (e) {
+    console.error("Redis client error while fetching last request type: " + e);
+    return;
+  }
+
+  if (requesttype == null) {
+    console.error(
+      "Redis client error while fetching last request type: undefined request type"
+    );
+    return;
+  }
+
+  if (requesttype == "EXECUTE") {
+    //get last requestid if if the previous request was EXECUTE
+    var grequestid;
+    try {
+      grequestid = await redis.hget(`gbridge:u${userid}:d0`, "grequestid");
+    } catch (e) {
+      console.error("Redis client error while fetching request id: " + e);
+      return;
+    }
+    await reportState(userid, grequestid);
+  } else {
+    await reportState(userid, null);
+  }
 });
 //Subscribe to all topic that may fit
 mqtt.subscribe("gBridge/+/#");

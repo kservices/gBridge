@@ -15,7 +15,7 @@ class DeviceService
         $device = new Device;
         $device->name = $request->input('name');
         $device->devicetype_id = $request->input('type');
-        $device->user_id = $user -> user_id;
+        $device->user_id = $user->user_id;
         $device->save();
 
         $requestTraits = $request->input('traits');
@@ -50,6 +50,13 @@ class DeviceService
                     'modesSupported' => ['off', 'heat', 'on', 'auto']
                 ]);
             }
+
+            //special handling for trait FanSpeed: Define default speeds
+            if ($traitType->shortname == 'FanSpeed'){
+                $traits[$traitTypeId]['config'] = json_encode([
+                    'availableFanSpeeds' => ['S1' => ['names' => ['Slow']],'S2' => ['names' => ['Medium']],'S3' => ['names' => ['Fast']]]
+                ]);
+            }
         }
         $device->traits()->sync($traits);
 
@@ -61,6 +68,16 @@ class DeviceService
         $device = $user->devices()->find($id);
         $device->name = $request->input('name');
         $device->devicetype_id = $request->input('type');
+        if(is_null($request->input('twofa_type')) || ($request->input('twofa_type') == 'none')){
+            $device->twofa_type = null;
+        }else{
+            $device->twofa_type = $request->input('twofa_type');
+            if($request->input('twofa_type') == 'pin'){
+                $device->twofa_pin = $request->input('twofa_pin');
+            }else{
+                $device->twofa_pin = null;
+            }
+        }
         $device->user_id = $user->user_id;
 
         $device->save();

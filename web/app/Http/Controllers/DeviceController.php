@@ -169,6 +169,8 @@ class DeviceController extends Controller
             'type' => 'bail|required|numeric|exists:device_type,devicetype_id',
             'traits' => 'bail|required|array',
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
+            'twofa_type' => 'bail|nullable|in:none,ack,pin',
+            'twofa_pin' => 'bail|required_if:twofa_type,pin|max:16',
         ]);
         $this -> deviceService -> update($request, $id, Auth::user());
 
@@ -209,10 +211,21 @@ class DeviceController extends Controller
             $validatorConf['modes.*'] = 'bail|required|in:off,heat,cool,on,auto,fan-only,purifier,eco,dry';
         }
 
+        //Special handling for trait FanSpeed -> requiring speed settings
+        if($traittype->shortname == 'FanSpeed'){
+            $validatorConf['fanSpeeds'] = 'bail|required|min:1';
+        }
+
+        //Special handling for trait CameraStream -> requiring media type and possible default uri
+        if($traittype->shortname == 'CameraStream'){
+            $validatorConf['streamFormat'] = 'bail|required|in:hls,progressive_mp4,dash,smooth_stream';
+            $validatorConf['streamDefaultUrl'] = 'nullable|max:250';
+        }
+
         $this->validate($request, $validatorConf, [
             'required' => 'Please specify the required settings!',
             'regex' => 'The topics may only contain alphanumeric chracters, slashes (/), underscores (_) and dashes (-)!',
-            'in' => 'You\'ve specified an invalid thermostat mode!'
+            'in' => 'You\'ve specified an invalid mode/ value/ format!'
         ]);
 
         //Special handling (config parse) for trait TempSet.Humidity
@@ -229,12 +242,24 @@ class DeviceController extends Controller
             ]);
         }
 
+        //Special handling (config parse) for trait FanSpeed
+        if($traittype->shortname == 'FanSpeed'){
+            if(!$traittype->setAvailableFanSpeedsFromString(explode("\n", $request->input('fanSpeeds')))){
+                return redirect()->back()->with('error', 'Malformed fan speed data');
+            }
+        }
+
+        //Special handling (config parse) for trait CameraStraem
+        if($traittype->shortname == 'CameraStream'){
+            $traittype->setCameraStreamConfig($request->input('streamFormat'), $request->input('streamDefaultUrl'));
+        }
+
         //Sync the trait config for this device
         $traittype->pivot->mqttActionTopic = $request->input('action');
         $traittype->pivot->mqttStatusTopic = $request->input('status');
         $traittype->pivot->save();
         
-        $this->deviceService -> userInfoToCache($user);
+        $this->deviceService->userInfoToCache($user);
 
         //if this trait contains a custom config, it is quite likely, that Google needs to synchronize this conf
         if(!empty($traittype->pivot->config)){
