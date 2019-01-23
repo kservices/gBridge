@@ -295,7 +295,7 @@ async function reportState(userid, requestid) {
       //Response was OK :)
     })
     .catch(function (error) {
-      console.log("[Report State] HTTP error: " + error);
+      console.log(`[Report State] HTTP error (user ${userid}): ` + error);
     });
 }
 
