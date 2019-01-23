@@ -54,3 +54,10 @@ Route::get('profile/verify/{verify_token}', 'UserProfileController@verify')->nam
 Route::get('gapi/auth', 'GapiController@auth')->name('gapi.auth');
 Route::post('gapi/auth', 'GapiController@checkauth')->name('gapi.checkauth');
 Route::any('gapi', 'GapiController@apicall')->name('gapi.apicall');
+
+//Disable user registration
+if(env('DISABLE_REGISTRATION', false)){
+    Route::any('register', function(){
+        abort(404);
+    });
+}
