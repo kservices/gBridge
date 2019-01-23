@@ -19,7 +19,7 @@ Auth::routes();
 
 if(env('KSERVICES_HOSTED', false)){
     Route::get('/', function () {
-        return redirect('https://about.gbridge.kappelt.net');
+        return redirect('https://about.gbridge.io');
     });
 }else{
     Route::get('/', function () {
