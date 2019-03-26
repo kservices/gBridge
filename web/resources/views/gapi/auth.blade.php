@@ -35,8 +35,8 @@
                         <b class="red-text">{{ $errors->first('email') }}</b>
                         @endif
                         <div class="input-field">
-                            <input type="email" class="validate" id="email" name="email" value="{{ old('email') }}" required autofocus>
-                            <label for="email">Email</label>
+                            <input type="text" class="validate" id="email" name="email" value="{{ old('email') }}" required autofocus>
+                            <label for="email">Email/ Username</label>
                         </div>
 
                         @if ($errors->has('password'))

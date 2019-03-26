@@ -170,6 +170,35 @@ redis_subscribe.on("pmessage", function (pattern, channel, message) {
             } else {
                 mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
             }
+        } else if (devicetrait === 'colorsetting') {
+            //The message is formatted as "[rgb/temp]:IntegerColorNumber:RequestedColorName"
+            let [ colorType, colorNumber, requestedColorName ] = message.split(':');
+     
+            if(colorType === 'rgb'){
+                //rgb color value as textual representation (hex string)
+                let rgbString = Number(colorNumber).toString(16).padStart(6, '0').toUpperCase();
+
+                if ('ColorSettingRGB' in deviceinfo) {
+                    mqtt.publish(`gBridge/u${userid}/${deviceinfo['ColorSettingRGB']['actionTopic']}`, rgbString);
+                } else if('ColorSettingJSON' in deviceinfo) {
+                    let jsonData = {
+                        red: (colorNumber & 0xFF0000) >> 16,
+                        green: (colorNumber & 0x00FF00) >> 8,
+                        blue: (colorNumber & 0x0000FF),
+                        hex: rgbString,
+                        requested: requestedColorName
+                    }; 
+                    mqtt.publish(`gBridge/u${userid}/${deviceinfo['ColorSettingJSON']['actionTopic']}`, JSON.stringify(jsonData));
+                } else {
+                    mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}rgb`, message);
+                }
+            } else if(colorType === 'temp') {
+                if ('ColorSettingTemp' in deviceinfo) {
+                    mqtt.publish(`gBridge/u${userid}/${deviceinfo['ColorSettingTemp']['actionTopic']}`, Number(colorNumber).toString());
+                } else {
+                    mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}temp`, message);
+                }
+            }
         } else {
             mqtt.publish(`gBridge/u${userid}/d${deviceid}/${devicetrait}`, message);
         }
@@ -406,6 +435,51 @@ mqtt.on('message', function (topic, message) {
             message = open;
         } else if(devicetrait === 'camerastream'){
             message = String(message);
+        } else if ((devicetrait === 'colorsettingrgb') || (devicetrait === 'colorsettingjson')) {
+            //guess the color from the data. The user may specify it using different techniques
+
+            let color = 0;
+            
+            if (RegExp('[0-9a-f]{6}').test(String(message).toLowerCase())) {
+                //check #1: RGB string with 6 digits, 0 - F
+                color = parseInt(String(message), 16);
+            } else {
+                //check #2: JSON formatted string
+                try {
+                    jsonColor = JSON.parse(String(message));
+                    
+                    if ('hex' in jsonColor) {
+                        color = parseInt(jsonColor['hex']);
+                    }
+                    if (
+                        ('red' in jsonColor) &&
+                        ('green' in jsonColor) &&
+                        ('blue' in jsonColor)
+                    ) {
+                        color = ((parseInt(jsonColor['red']) & 0xFF) << 16) |
+                            ((parseInt(jsonColor['green']) & 0xFF) << 8) |
+                            (parseInt(jsonColor['blue']) & 0xFF);
+                    }
+                } catch (e) { }
+            }
+
+            if (color < 0) {
+                color = 0;
+            }
+
+            message = 'rgb:' + Number(color).toString();
+            devicetrait = 'colorsetting';
+        } else if(devicetrait === 'colorsettingtemp'){
+            temperature = Number(message);
+            if(temperature < 1000){
+                temperature = 0;
+            }
+            if(temperature > 12000){
+                temperature = 0;
+            }
+
+            message = 'temp:' + temperature.toString();
+            devicetrait = 'colorsetting';
         } else if (devicetrait === "power") {
             //device reporting power state
             message = String(message).toLowerCase();

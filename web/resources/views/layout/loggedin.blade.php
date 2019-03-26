@@ -6,6 +6,7 @@
 		{{-- the user dropdown menu --}}
 		<ul id="user-dropdown" class="dropdown-content">
 			<li class="{{ Request::is('profile*') ? 'active':'' }}"><a href="{{ route('profile.index') }}">My Account</a></li>
+			<li class="{{ Request::is('apikey*') ? 'active':'' }}"><a href="{{ route('apikey.index') }}">API Keys</a></li>
 			<li class="divider"></li>
 			<li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a></li>
 		</ul>
@@ -25,7 +26,7 @@
 					<li><a href="/subscription/overview">Subscription Options</a></li>
 					<li><a target="_blank" href="https://about.gbridge.io/contact">Contact</a></li>
 					@endif
-					<li class="{{ Request::is('profile*') ? 'active':'' }}"><a class="dropdown-trigger" href="#" data-target="user-dropdown">Hi {{ Auth::user()->name }}!<i class="material-icons right">arrow_drop_down</i></a></li>
+					<li class="{{ (Request::is('profile*') || Request::is('apikey*')) ? 'active':'' }}"><a class="dropdown-trigger" href="#" data-target="user-dropdown">Hi {{ Auth::user()->name }}!<i class="material-icons right">arrow_drop_down</i></a></li>
 				</ul>
 			</div>
 			
@@ -38,6 +39,7 @@
 				<li><a target="_blank" href="https://about.gbridge.io/contact">Contact</a></li>
 				@endif
 				<li class="{{ Request::is('profile*') ? 'active':'' }}"><a href="{{ route('profile.index') }}">My Account</a></li>
+				<li class="{{ Request::is('apikey*') ? 'active':'' }}"><a href="{{ route('apikey.index') }}">API Keys</a></li>
 				<li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a></li>
 			</ul>
 		</nav>

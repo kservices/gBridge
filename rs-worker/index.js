@@ -159,6 +159,20 @@ async function reportState(userid, requestid) {
       if ("OpenClose" in traits) {
         rsData["payload"]["devices"]["states"][deviceid]["openPercent"] = 0;
       }
+
+      if (
+        ("ColorSettingRGB" in traits) ||
+        ("ColorSettingJSON" in traits)
+      ) {
+        rsData["payload"]["devices"]["states"][deviceid]["color"] = {
+          "spectrumRGB": 0
+        }
+      }else if("ColorSettingTemp" in traits){
+        rsData["payload"]["devices"]["states"][deviceid]["color"] = {
+          "temperatureK": 1000
+        }
+      }
+
       //"Scene"-Trait and "CameraStream" do not need report-state
 
       //Check if no states are defined for this device, then completely remove it from the record
@@ -261,6 +275,23 @@ async function reportState(userid, requestid) {
         rsData["payload"]["devices"]["states"][deviceid][
           "openPercent"
         ] = 0;
+      }
+    }
+    if (("ColorSettingJSON" in traits) || ("ColorSettingRGB" in traits) || ("ColorSettingTemp" in traits)) {
+      rsData["payload"]["devices"]["states"][deviceid]["color"] = {};
+
+      if ("colorsetting" in data) {
+        let [ colorType, colorNumber ] = data["colorsetting"].split(":");
+
+        if(colorType === 'rgb'){
+          rsData["payload"]["devices"]["states"][deviceid]["color"]["spectrumRGB"] = parseInt(colorNumber);
+        }else if(colorType === 'temp'){
+          rsData["payload"]["devices"]["states"][deviceid]["color"]["temperatureK"] = parseInt(colorNumber);
+        }else{
+          rsData["payload"]["devices"]["states"][deviceid]["color"]["spectrumRGB"] = 0;
+        }
+      } else {
+        rsData["payload"]["devices"]["states"][deviceid]["color"]["spectrumRGB"] = 0;
       }
     }
     //"Scene"-Trait and "CameraStream" does not need report-state
@@ -634,6 +665,51 @@ mqtt.on("message", async function (topic, message) {
     message = open;
   } else if(devicetrait === 'camerastream'){
     message = String(message);
+  } else if ((devicetrait === 'colorsettingrgb') || (devicetrait === 'colorsettingjson')) {
+    //guess the color from the data. The user may specify it using different techniques
+
+    let color = 0;
+
+    if (RegExp('[0-9a-f]{6}').test(String(message).toLowerCase())) {
+      //check #1: RGB string with 6 digits, 0 - F
+      color = parseInt(String(message), 16);
+    } else {
+      //check #2: JSON formatted string
+      try {
+        jsonColor = JSON.parse(String(message));
+
+        if ('hex' in jsonColor) {
+          color = parseInt(jsonColor['hex']);
+        }
+        if (
+          ('red' in jsonColor) &&
+          ('green' in jsonColor) &&
+          ('blue' in jsonColor)
+        ) {
+          color = ((parseInt(jsonColor['red']) & 0xFF) << 16) |
+            ((parseInt(jsonColor['green']) & 0xFF) << 8) |
+            (parseInt(jsonColor['blue']) & 0xFF);
+        }
+      } catch (e) { }
+    }
+
+    if (color < 0) {
+      color = 0;
+    }
+
+    message = 'rgb:' + Number(color).toString();
+    devicetrait = 'colorsetting';
+  } else if (devicetrait === 'colorsettingtemp') {
+    temperature = Number(message);
+    if (temperature < 1000) {
+      temperature = 0;
+    }
+    if (temperature > 12000) {
+      temperature = 0;
+    }
+
+    message = 'temp:' + temperature.toString();
+    devicetrait = 'colorsetting';
   } else if (devicetrait === "power") {
     //device reporting power state
     message = String(message).toLowerCase();
