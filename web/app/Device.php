@@ -37,5 +37,25 @@ class Device extends Model
     public function user(){
         return $this->belongsTo('App\User', 'user_id');
     }
+
+    /**
+     * Returns this device as an object compliant with the gBridge API V2 Spec
+     */
+    public function toApiV2Object($userid){
+        $this->fresh();
+
+        $traits = $this->traits->map(function ($trait) use($userid) {
+            return $trait->toApiV2Object($userid);
+        });
+
+        return [
+            "id" => $this->device_id,
+            "name" => $this->name,
+            "type" => $this->deviceType->shortname,
+            "traits" => $traits,
+            "twofa" => $this->twofa_type,
+            "twofaPin" => $this->twofa_pin
+        ];
+    }
     
 }

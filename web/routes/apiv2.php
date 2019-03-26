@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Http\Request;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes (V2)
+| Prefix: api/v2
+|--------------------------------------------------------------------------
+*/
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'auth'
+], function ($router) {
+    Route::post('token', 'ApiV2\ApiV2AuthController@token');
+    Route::post('logout', 'ApiV2\ApiV2AuthController@logout');
+    //Route::post('refresh', 'ApiV2\ApiV2AuthController@refresh'); //->refresh disabled for the moment
+});
+
+Route::get('requestsync', 'ApiV2\ApiV2@requestSynchronization');
+
+Route::get('device', 'ApiV2\ApiV2@getDevices');
+Route::post('device', 'ApiV2\ApiV2@createDevice');
+Route::get('device/{device}', 'ApiV2\ApiV2@getDeviceById');
+Route::patch('device/{device}', 'ApiV2\ApiV2@updateDeviceById');
+
+Route::get('user', 'ApiV2\ApiV2@getUserDetails');
+Route::post('user/password', 'ApiV2\ApiV2@updateUserPassword');
+Route::post('user/mqtt/password', 'ApiV2\ApiV2@updateUserMqttPassword');
+
+?>

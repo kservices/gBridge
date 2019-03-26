@@ -39,7 +39,7 @@ class GapiController extends Controller
     {
         if(!Auth::check()){
             $this->validate($request, [
-                'email' => 'bail|required|string|email|max:255',
+                'email' => 'bail|required|string|max:255',
                 'password' => 'bail|required|string',
             ]);
         }
@@ -63,7 +63,10 @@ class GapiController extends Controller
         if(!Auth::check()){
             //User is not authenticated in this browser. Try logging
             if(!Auth::once(['email' => $request->input('email', ''), 'password' => $request->input('password', '')])){
-                return redirect()->back()->withInput()->with('error', "Your account doesn't exist or the credentials don't match our records!");
+                //Try logging in with a username then (for accounts created by resellers)
+                if(!Auth::once(['login_username' => $request->input('email', ''), 'password' => $request->input('password', '')])){
+                    return redirect()->back()->withInput()->with('error', "Your account doesn't exist or the credentials don't match our records!");
+                }
             }
         }
 
@@ -185,15 +188,14 @@ class GapiController extends Controller
                 'willReportState' => env('KSERVICES_HOSTED', false) ? true:false,
                 'deviceInfo' => [
                     'manufacturer' => 'Kappelt kServices'
-                ]
+                ],
+                'attributes' => [],
             ];
 
             /** CUSTOM MODIFICATIONS FOR TRAIT: "Scene" */
             if($device->traits->where('shortname', 'Scene')->count()){
                 $deviceBuilder['willReportState'] = false;  //Scene will never report state, since they are write-only devs
-                $deviceBuilder['attributes'] = [
-                    'sceneReversible' => false              //scenes are not (yet) reversible in this implementation
-                ];
+                $deviceBuilder['attributes']['sceneReversible'] = false;
             }
             /** END CUSTOM MODIFICATIONS */
 
@@ -205,10 +207,8 @@ class GapiController extends Controller
                     $modes = ['on', 'off'];
                 }
 
-                $deviceBuilder['attributes'] = [
-                    'thermostatTemperatureUnit' => 'C',              //only degrees C are supported as unit
-                    'availableThermostatModes' => implode(',', $modes)
-                ];
+                $deviceBuilder['attributes']['thermostatTemperatureUnit'] = 'C';    //only degrees C are supported as unit
+                $deviceBuilder['attributes']['availableThermostatModes'] = implode(',', $modes);
             }
             /** END CUSTOM MODIFICATIONS */
 
@@ -248,21 +248,17 @@ class GapiController extends Controller
                     }
                 }
 
-                $deviceBuilder['attributes'] = [
-                    'availableFanSpeeds' => [
-                        'ordered' => true,
-                        'speeds' => $availableFanSpeeds
-                    ],
-                    'reversible' => false           //Reversing is not yet supported
+                $deviceBuilder['attributes']['reversible'] = false; //Reversing is not yet supported
+                $deviceBuilder['attributes']['availableFanSpeeds'] = [
+                    'ordered' => true,
+                    'speeds' => $availableFanSpeeds
                 ];
             }
             /** END CUSTOM MODIFICATIONS */
 
             /** CUSTOM MODIFICATIONS FOR TRAIT: "StartStop" */
             if($device->traits->where('shortname', 'StartStop')->count()){
-                $deviceBuilder['attributes'] = [
-                    'pausable' => false              //Pausing is not yet support, as well as zones
-                ];
+                $deviceBuilder['attributes']['pausable'] = false; //Pausing is not yet support, as well as zones
             }
             /** END CUSTOM MODIFICATIONS */
 
@@ -270,17 +266,35 @@ class GapiController extends Controller
             if($device->traits->where('shortname', 'CameraStream')->count()){
                 $trait = $device->traits->where('shortname', 'CameraStream')->first();
                 $deviceBuilder['willReportState'] = false;
-                $deviceBuilder['attributes'] = [
-                    'cameraStreamSupportedProtocols' => [ $trait->getCameraStreamConfig()['cameraStreamFormat'] ],
-                    'cameraStreamNeedAuthToken' => false,
-                    'cameraStreamNeedDrmEncryption' => false
+                $deviceBuilder['attributes']['cameraStreamSupportedProtocols'] = [ $trait->getCameraStreamConfig()['cameraStreamFormat'] ];
+                $deviceBuilder['attributes']['cameraStreamNeedAuthToken'] = false;
+                $deviceBuilder['attributes']['cameraStreamNeedDrmEncryption'] = false;
+            }
+            /** END CUSTOM MODIFICATIONS */
+
+            /** CUSTOM MODIFICATIONS FOR TRAIT: "ColorSettingRGB"/ "ColorSettingJSON"/ "ColorSettingTemp" */
+            if($device->traits->where('shortname', 'ColorSettingRGB')->count() || $device->traits->where('shortname', 'ColorSettingJSON')->count()){
+                $deviceBuilder['attributes']['colorModel'] = 'rgb';
+                $deviceBuilder['attributes']['commandOnlyColorSetting'] = false;
+            }
+            if($device->traits->where('shortname', 'ColorSettingTemp')->count()){
+                $deviceBuilder['attributes']['colorModel'] = 'rgb';
+                $deviceBuilder['attributes']['commandOnlyColorSetting'] = false;
+                $deviceBuilder['attributes']['colorTemperatureRange'] = [
+                    'temperatureMinK' => 1000,
+                    'temperatureMaxK' => 12000,
                 ];
             }
             /** END CUSTOM MODIFICATIONS */
 
+            //Remove attributes key if no attributes are defined
+            if(empty($deviceBuilder['attributes'])){
+                unset($deviceBuilder['attributes']);
+            }
+
             $response['payload']['devices'][] = $deviceBuilder;
         }
-        //Log::info(json_encode($response));
+        //error_log(json_encode($response));
         return response()->json($response);
     }
 
@@ -328,6 +342,10 @@ class GapiController extends Controller
 
             foreach($traits as $trait){
                 $traitname = strtolower($trait->shortname);
+
+                if(($traitname === "colorsettingrgb") || ($traitname === "colorsettingjson") || ($traitname === "colorsettingtemp")){
+                    $traitname = "colorsetting";
+                }
 
                 $value = Redis::hget("gbridge:u$userid:d$deviceId", $traitname);
                 
@@ -416,6 +434,29 @@ class GapiController extends Controller
                     }
 
                     $response['payload']['devices'][$deviceId]['openPercent'] = $value;
+                }elseif($traitname == 'colorsetting'){
+                    if(is_null($value)){
+                        $value = "rgb:0";
+                    }
+
+                    list($colorType, $colorValue) = explode(':', $value);
+                    $colorValue = intval($colorValue);
+
+                    $response['payload']['devices'][$deviceId]['color'] = [];
+
+                    if($colorType === 'rgb'){
+                        $response['payload']['devices'][$deviceId]['color']['spectrumRgb'] = $colorValue;
+                    }elseif($colorType === 'temp'){
+                        $response['payload']['devices'][$deviceId]['color']['temperatureK'] = $colorValue;
+                    }
+                }elseif($traitname == 'colorsettingtemp'){
+                    $value = intval($value);
+
+                    if(!array_key_exists('color', $response['payload']['devices'][$deviceId])){
+                        $response['payload']['devices'][$deviceId]['color'] = [];
+                    }
+
+                    $response['payload']['devices'][$deviceId]['color']['spectrumRgb'] = $value;
                 }elseif($traitname == 'scene'){
                     //no value is required for scene, only "online" information
                 }else{
@@ -486,6 +527,24 @@ class GapiController extends Controller
                 }elseif($exec['command'] === 'action.devices.commands.GetCameraStream'){
                     $trait = 'camerastream';
                     $value = ($exec['params']['StreamToChromecast'] == true) ? 'chromecast':'generic';
+                }elseif($exec['command'] === 'action.devices.commands.ColorAbsolute'){
+                    $trait = 'colorsetting';
+
+                    $buildData = ["", "", ""];
+
+                    if(array_key_exists('spectrumRGB', $exec['params']['color'])){
+                        $buildData[0] = 'rgb';
+                        $buildData[1] = strval($exec['params']['color']['spectrumRGB']);
+                    }elseif(array_key_exists('temperature', $exec['params']['color'])){
+                        $buildData[0] = 'temp';
+                        $buildData[1] = strval($exec['params']['color']['temperature']);
+                    }
+
+                    if(array_key_exists('name', $exec['params']['color'])){
+                        $buildData[2] = strval($exec['params']['color']['name']);
+                    }
+
+                    $value = implode(":", $buildData);
                 }else{
                     //unknown execute-command
                     Log::error('Unknown Google execute-command: ' . $exec['command']);
@@ -627,7 +686,7 @@ class GapiController extends Controller
             ];
         }
 
-        //Log::info($response);
+        //error_log(json_encode($response));
         return response()->json($response);
     }
 
