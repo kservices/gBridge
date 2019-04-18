@@ -35,7 +35,7 @@ class ApiKeyController extends Controller
         $apikey->user()->associate(Auth::user());
         $apikey->save();
         
-        return redirect()->route('apikey.index')->with('success', 'A new API Key has been created. Store it safely! You need to note it right now since it won\'t be shown anymore after a page reload.')->with('currentApiKey', $apikey->key); 
+        return redirect()->route('apikey.index')->with('success', 'A new API Key has been created. Store it safely! You need to note it right now since it won\'t be shown anymore after a page reload.')->with('currentApiKey', $apikey->identifier . ':' . $apikey->secret_key); 
     }
 
     /**

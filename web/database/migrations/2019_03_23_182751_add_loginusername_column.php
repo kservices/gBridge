@@ -14,7 +14,7 @@ class AddLoginusernameColumn extends Migration
     public function up()
     {
         Schema::table('user', function (Blueprint $table) {
-            $table->string("login_username")->nullable(true);
+            $table->string("login_username")->nullable(true)->unique();
         });
     }
 
