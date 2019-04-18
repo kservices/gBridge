@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class ApiKey extends Model
 {
@@ -16,11 +17,19 @@ class ApiKey extends Model
      */
     protected $primaryKey = 'apikey_id';
 
+    /**
+     * Temporary storing the secret key in memory
+     */
+    public $secret_key = null;
+
     public function __construct(array $attributes = array())
     {
         parent::__construct($attributes);
 
-        $this->key = base64_encode(Str::random(128));
+        $this->secret_key = base64_encode(Str::random(128));
+        $this->key = Hash::make($this->secret_key);
+
+        $this->identifier = Str::random(16);
     }
 
     public function user(){

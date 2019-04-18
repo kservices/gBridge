@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ApiV2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 use App\ApiKey;
 
@@ -38,9 +39,31 @@ class ApiV2AuthController extends Controller
         }
 
         //authentication using an api key
-        $apikeyString = request('apikey');
-        $apikey = ApiKey::where('key', $apikeyString)->get()->first();
-        if(!$apikey){
+
+        /**
+         * The API key given by the user consists of an unsecure identifier and a secret key. They are either formatted as:
+         *  - {4 Digit Identifier}{Secret key}
+         *  - {Identifier}:{Secret key}
+         * The secret key is stored as a hash in the database
+         */
+
+        $keyIdentifier = null;
+        $keySecret = null;
+
+        if(strpos(request('apikey'), ':')){
+            //There is a double colon in the string
+            list($keyIdentifier, $keySecret) = explode(':', request('apikey'));
+        }else{
+            $keyIdentifier = substr(request('apikey'), 0, 4);
+            $keySecret = substr(request('apikey'), 4);
+        }
+
+        $apikey = ApiKey::where('identifier', $keyIdentifier)->get()->first();
+        if( is_null($keyIdentifier) ||
+            is_null($keySecret) ||
+            (!$apikey) ||
+            !Hash::check($keySecret, $apikey->key)
+            ){
             return response()->json(['error_code' => 'unauthorized'], 401);
         }
 

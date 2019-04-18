@@ -34,7 +34,7 @@
 					<div class="col s12">
 						<div class="card-panel hoverable">
 							<div class="row">
-								<span style="font-size: 1.64rem">API Key #{{ $number + 1 }} (Created at {{ $apikey->created_at }})</b></span>
+								<span style="font-size: 1.64rem">API Key (Created at {{ $apikey->created_at }})</b></span>
 
 								<div class="right">
 									{!!Form::open(['action' => ['ApiKeyController@destroy', $apikey->apikey_id], 'method' => 'POST'])!!}
@@ -43,14 +43,11 @@
 									{!!Form::close()!!}
 								</div>
                             </div>
-                            
+
                             <div class="row">
-                                <div class="col s12">
-                                    <input type="text" readonly value="&mldr;{{ substr($apikey->key, -5) }}">
-                                </div>
-                            </div>
-                            
-                            <div class="row">
+								<div class="col s12">
+									<p><b>Key Identifier: </b>{{ $apikey->identifier }}</p>
+								</div>
                                 <div class="col s12">
                                     <p><b>Key Privileges: </b></p>
                                     <ul>
