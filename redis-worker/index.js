@@ -339,7 +339,7 @@ mqtt.on('message', function (topic, message) {
 
         //Topic could still not be matched
         if (!deviceid) {
-            console.error(`Could not match topic ${topicuserpart} for user ${userid}`);
+            //console.error(`Could not match topic ${topicuserpart} for user ${userid}`);
             return;
         }
 
