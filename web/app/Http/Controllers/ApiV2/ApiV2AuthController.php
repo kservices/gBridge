@@ -38,8 +38,15 @@ class ApiV2AuthController extends Controller
             return $this->respondWithToken($token);
         }
 
-        //authentication using an api key
+        //Authentication with plain username and password -> for application frontends using the API
+        if(request('email') && request('password')){
+            if(!$token = auth('apiv2')->claims(['privilege_user' => true, 'privilege_frontend' => true])->attempt(["email" => request("email"), "password" => request("password")])){
+                return response()->json(['error_code' => 'unauthorized'], 401);
+            }
+            return $this->respondWithToken($token);
+        }
 
+        //authentication using an api key
         /**
          * The API key given by the user consists of an unsecure identifier and a secret key. They are either formatted as:
          *  - {4 Digit Identifier}{Secret key}
@@ -114,7 +121,7 @@ class ApiV2AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('apiv2')->factory()->getTTL() * 60,
-            'privilege' => 'standard' . (auth('apiv2')->payload()->get('privilege_user') ? ',user':'')
+            'privilege' => 'standard' . (auth('apiv2')->payload()->get('privilege_user') ? ',user':'') . (auth('apiv2')->payload()->get('privilege_frontend') ? ',frontend':'')
         ]);
     }
 }
