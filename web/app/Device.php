@@ -21,9 +21,8 @@ class Device extends Model
 
     /**
      * Tables that are always joined
-     * Not necessary? Don't unterstand how that works :)
      */
-    //public $with = ['deviceType', 'traits'];
+    public $with = ['deviceType'];
 
     public function deviceType(){
         return $this->belongsTo('App\DeviceType', 'devicetype_id');

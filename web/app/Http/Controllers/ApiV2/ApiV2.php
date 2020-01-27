@@ -54,6 +54,7 @@ class ApiV2 extends Controller
             return [
                 "device_id" => $device['device_id'],
                 "name" => $device['name'],
+                "type" => $device['device_type']['shortname']
             ];
         }, $devices);
 
