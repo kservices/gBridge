@@ -76,7 +76,11 @@ class ApiV2 extends Controller
             return $this->errorResponse(404, 'device_not_found', "The device you are asking for does not exist");
         }
 
-        return response()->json($device->toApiV2Object(auth('apiv2')->user()->user_id));
+        $userid = auth('apiv2')->user()->user_id;
+
+        $traitStatuses = Redis::hgetall("gbridge:u$userid:d$deviceid");
+
+        return response()->json($device->toApiV2Object($userid, $traitStatuses));
     }
 
     /**

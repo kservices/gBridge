@@ -181,12 +181,12 @@ class TraitType extends Model
     /**
      * Returns this trait as an object compliant with the gBridge API V2 Spec
      */
-    public function toApiV2Object($userid){
+    public function toApiV2Object($userid, $traitStatuses = []){
         $jsoninfo = [
             "type" => $this->shortname,
             "requiresActionTopic" => $this->needsActionTopic ? true:false,
             "requiresStatusTopic" => $this->needsStatusTopic ? true:false,
-        ];        
+        ];
 
         if($this->needsActionTopic){
             $jsoninfo["actionTopic"] = "gBridge/u$userid/" . $this->pivot->mqttActionTopic;
@@ -208,7 +208,7 @@ class TraitType extends Model
 
         if($this->shortname === "TempSet.Humidity"){
             $config = json_decode($this->pivot->config, true);
-            if(array_key_exists("humiditySupported", $config) && $config["humiditySupported"]){
+            if($config != null && array_key_exists("humiditySupported", $config) && $config["humiditySupported"]){
                 $jsoninfo["humiditySupported"] = true;
             }else{
                 $jsoninfo["humiditySupported"] = false;
@@ -233,6 +233,11 @@ class TraitType extends Model
             
             $jsoninfo["streamFormat"] = $streamConf["cameraStreamFormat"];
             $jsoninfo["streamDefaultUrl"] = $streamConf["cameraStreamDefaultUrl"];
+        }
+
+        $statusKey = strtolower($this->shortname);
+        if ($traitStatuses && array_key_exists($statusKey, $traitStatuses)) {
+            $jsoninfo['lastStatus'] = $traitStatuses[$statusKey];
         }
 
         return $jsoninfo;

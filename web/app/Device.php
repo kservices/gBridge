@@ -41,11 +41,11 @@ class Device extends Model
     /**
      * Returns this device as an object compliant with the gBridge API V2 Spec
      */
-    public function toApiV2Object($userid){
+    public function toApiV2Object($userid, $traitStatuses = []){
         $this->fresh();
 
-        $traits = $this->traits->map(function ($trait) use($userid) {
-            return $trait->toApiV2Object($userid);
+        $traits = $this->traits->map(function ($trait) use($userid, $traitStatuses) {
+            return $trait->toApiV2Object($userid, $traitStatuses);
         });
 
         return [
