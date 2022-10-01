@@ -17,6 +17,7 @@ class FrameHeadersMiddleware
     {
         $response = $next($request);
         $response->header('X-Frame-Options', 'DENY');
+
         return $response;
     }
 }

@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddSceneTraitType extends Migration
@@ -17,7 +15,7 @@ class AddSceneTraitType extends Migration
             'shortname' => 'Scene',
             'gname' => 'action.devices.traits.Scene',
             'description' => 'Triggering a scene',
-            'name' => 'Scene'
+            'name' => 'Scene',
         ]);
     }
 

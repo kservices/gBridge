@@ -11,39 +11,45 @@ class TraitType extends Model
      * Model stored in table 'trait_type'
      */
     protected $table = 'trait_type';
+
     /**
      * The primary key is here 'traittype_id' not the default 'id'
      */
     protected $primaryKey = 'traittype_id';
+
     /**
      * Timestamps are unnecessary
      */
     public $timestamps = false;
 
-    public function devices(){
+    public function devices()
+    {
         //This is a m:n relation, joined by the table trait
         return $this->belongsToMany('App\Device', 'trait', 'traittype_id', 'device_id')->withPivot('trait_id', 'config', 'mqttActionTopic', 'mqttStatusTopic');
     }
 
-    public function getAvailableFanSpeeds(){
+    public function getAvailableFanSpeeds()
+    {
         return Collection::make(json_decode($this->pivot->config, true))->get('availableFanSpeeds');
     }
 
-    public function getAvailableFanSpeedsAsString(){
+    public function getAvailableFanSpeedsAsString()
+    {
         $fanSpeeds = $this->getAvailableFanSpeeds();
 
-        if(is_null($fanSpeeds)){
+        if (is_null($fanSpeeds)) {
             return [];
         }
 
         $dataString = [];
-        foreach($fanSpeeds as $speedName => $speedConf){
-            if(is_null($speedConf['names']) || !sizeof($speedConf['names'])){
+        foreach ($fanSpeeds as $speedName => $speedConf) {
+            if (is_null($speedConf['names']) || ! count($speedConf['names'])) {
                 $dataString[] = "$speedName:Speed $speedName";
-            }else{
-                $dataString[] = "$speedName:" . implode(',', $speedConf['names']);
+            } else {
+                $dataString[] = "$speedName:".implode(',', $speedConf['names']);
             }
         }
+
         return $dataString;
     }
 
@@ -52,18 +58,19 @@ class TraitType extends Model
      * speed_value:speed_name1,speed_name2,...
      * It returns true upon successfull parsing, false if there was an error
      */
-    public function setAvailableFanSpeedsFromString($data){
-        if($this->shortname != 'FanSpeed'){
+    public function setAvailableFanSpeedsFromString($data)
+    {
+        if ($this->shortname != 'FanSpeed') {
             return false;
         }
 
         $availableFanSpeeds = [];
-        foreach($data as $line){
-            if($line == ''){
+        foreach ($data as $line) {
+            if ($line == '') {
                 continue;
             }
-            list($speed_value, $speed_names) = explode(':', $line, 2);
-            if(is_null($speed_names) || ($speed_names == '')){
+            [$speed_value, $speed_names] = explode(':', $line, 2);
+            if (is_null($speed_names) || ($speed_names == '')) {
                 return false;
             }
             $speed_names = str_replace("\r", '', $speed_names);
@@ -73,7 +80,7 @@ class TraitType extends Model
         }
 
         $this->pivot->config = json_encode([
-            'availableFanSpeeds' => $availableFanSpeeds
+            'availableFanSpeeds' => $availableFanSpeeds,
         ]);
         $this->pivot->save();
         $this->save();
@@ -89,26 +96,27 @@ class TraitType extends Model
      * ]
      * It returns true upon successfull parsing, false if there was an error
      */
-    public function setAvailableFanSpeedsFromObjectArray($data){
-        if($this->shortname != 'FanSpeed'){
+    public function setAvailableFanSpeedsFromObjectArray($data)
+    {
+        if ($this->shortname != 'FanSpeed') {
             return false;
         }
 
-        if(!is_array($data)){
+        if (! is_array($data)) {
             //the object itself has to be an array of objects
             return false;
         }
 
         $availableFanSpeeds = [];
-        foreach($data as $speedVal => $speedNames){
-            if(!is_array($speedNames)){
+        foreach ($data as $speedVal => $speedNames) {
+            if (! is_array($speedNames)) {
                 //speed names need to be an array, too
                 return false;
             }
 
             $speedNamesNormalized = [];
-            foreach($speedNames as $speedName){
-                if(!is_string($speedName)){
+            foreach ($speedNames as $speedName) {
+                if (! is_string($speedName)) {
                     return false;
                 }
                 $speedNamesNormalized[] = $speedName;
@@ -118,7 +126,7 @@ class TraitType extends Model
         }
 
         $this->pivot->config = json_encode([
-            'availableFanSpeeds' => $availableFanSpeeds
+            'availableFanSpeeds' => $availableFanSpeeds,
         ]);
         $this->pivot->save();
         $this->save();
@@ -131,18 +139,19 @@ class TraitType extends Model
      * Format is one of: "progressive_mp4", "hls", "dash", "smooth_stream"
      * Default URL is used if no different URL has been specified via MQTT. Can be null or empty
      */
-    public function setCameraStreamConfig($format, $default_url){
-        if($this->shortname != 'CameraStream'){
+    public function setCameraStreamConfig($format, $default_url)
+    {
+        if ($this->shortname != 'CameraStream') {
             return;
         }
 
-        if($default_url == ''){
+        if ($default_url == '') {
             $default_url = null;
         }
 
         $this->pivot->config = json_encode([
             'cameraStreamFormat' => $format,
-            'cameraStreamDefaultUrl' => $default_url
+            'cameraStreamDefaultUrl' => $default_url,
         ]);
         $this->pivot->save();
         $this->save();
@@ -154,24 +163,25 @@ class TraitType extends Model
      *  'cameraStreamFormat': One of "progressive_mp4", "hls", "dash", "smooth_stream"
      *  'cameraStreamDefaultUrl': Default URL to be used, or null
      */
-    public function getCameraStreamConfig(){
+    public function getCameraStreamConfig()
+    {
         $retval = [
             'cameraStreamFormat' => null,
             'cameraStreamDefaultUrl' => null,
         ];
 
-        if($this->shortname != 'CameraStream'){
+        if ($this->shortname != 'CameraStream') {
             return $retval;
         }
 
         $config = Collection::make(json_decode($this->pivot->config, true));
-        if($config->get('cameraStreamFormat')){
+        if ($config->get('cameraStreamFormat')) {
             $retval['cameraStreamFormat'] = $config->get('cameraStreamFormat');
-        }else{
+        } else {
             $retval['cameraStreamFormat'] = 'hls';
         }
 
-        if($config->get('cameraStreamDefaultUrl')){
+        if ($config->get('cameraStreamDefaultUrl')) {
             $retval['cameraStreamDefaultUrl'] = $config->get('cameraStreamDefaultUrl');
         }
 
@@ -181,58 +191,59 @@ class TraitType extends Model
     /**
      * Returns this trait as an object compliant with the gBridge API V2 Spec
      */
-    public function toApiV2Object($userid){
+    public function toApiV2Object($userid)
+    {
         $jsoninfo = [
-            "type" => $this->shortname,
-            "requiresActionTopic" => $this->needsActionTopic ? true:false,
-            "requiresStatusTopic" => $this->needsStatusTopic ? true:false,
-        ];        
+            'type' => $this->shortname,
+            'requiresActionTopic' => $this->needsActionTopic ? true : false,
+            'requiresStatusTopic' => $this->needsStatusTopic ? true : false,
+        ];
 
-        if($this->needsActionTopic){
-            $jsoninfo["actionTopic"] = "gBridge/u$userid/" . $this->pivot->mqttActionTopic;
+        if ($this->needsActionTopic) {
+            $jsoninfo['actionTopic'] = "gBridge/u$userid/".$this->pivot->mqttActionTopic;
         }
-        if($this->needsStatusTopic){
-            $jsoninfo["statusTopic"] = "gBridge/u$userid/" . $this->pivot->mqttStatusTopic;
+        if ($this->needsStatusTopic) {
+            $jsoninfo['statusTopic'] = "gBridge/u$userid/".$this->pivot->mqttStatusTopic;
         }
 
-        if($this->shortname === "TempSet.Mode"){
-            $jsoninfo["modesSupported"] = [];
+        if ($this->shortname === 'TempSet.Mode') {
+            $jsoninfo['modesSupported'] = [];
 
             $config = json_decode($this->pivot->config, true);
-            if(array_key_exists("modesSupported", $config)){
-                if(!is_null($config["modesSupported"])){
-                    $jsoninfo["modesSupported"] = $config["modesSupported"];
+            if (array_key_exists('modesSupported', $config)) {
+                if (! is_null($config['modesSupported'])) {
+                    $jsoninfo['modesSupported'] = $config['modesSupported'];
                 }
             }
         }
 
-        if($this->shortname === "TempSet.Humidity"){
+        if ($this->shortname === 'TempSet.Humidity') {
             $config = json_decode($this->pivot->config, true);
-            if(array_key_exists("humiditySupported", $config) && $config["humiditySupported"]){
-                $jsoninfo["humiditySupported"] = true;
-            }else{
-                $jsoninfo["humiditySupported"] = false;
+            if (array_key_exists('humiditySupported', $config) && $config['humiditySupported']) {
+                $jsoninfo['humiditySupported'] = true;
+            } else {
+                $jsoninfo['humiditySupported'] = false;
             }
         }
 
-        if($this->shortname === "FanSpeed"){
+        if ($this->shortname === 'FanSpeed') {
             $speeds = $this->getAvailableFanSpeeds();
 
             //necessary: remap fan speeds for numeric indexes
             $speedObj = new \stdClass();
 
-            foreach($speeds as $speedVal => $speedConfig){
-                $speedObj->{$speedVal} = $speedConfig["names"];
+            foreach ($speeds as $speedVal => $speedConfig) {
+                $speedObj->{$speedVal} = $speedConfig['names'];
             }
 
-            $jsoninfo["fanSpeeds"] = $speedObj;
+            $jsoninfo['fanSpeeds'] = $speedObj;
         }
 
-        if($this->shortname === "CameraStream"){
+        if ($this->shortname === 'CameraStream') {
             $streamConf = $this->getCameraStreamConfig();
-            
-            $jsoninfo["streamFormat"] = $streamConf["cameraStreamFormat"];
-            $jsoninfo["streamDefaultUrl"] = $streamConf["cameraStreamDefaultUrl"];
+
+            $jsoninfo['streamFormat'] = $streamConf['cameraStreamFormat'];
+            $jsoninfo['streamDefaultUrl'] = $streamConf['cameraStreamDefaultUrl'];
         }
 
         return $jsoninfo;

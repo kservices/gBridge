@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-
 use App\ApiKey;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ApiKeyController extends Controller
 {
-    public function __construct(){
+    public function __construct()
+    {
         $this->middleware('auth');
     }
 
@@ -28,28 +28,31 @@ class ApiKeyController extends Controller
         ]);
     }
 
-    private function createNewApiKey($hasPrivilegeUser){
+    private function createNewApiKey($hasPrivilegeUser)
+    {
         $apikey = new ApiKey();
-        $apikey->privilege_user = $hasPrivilegeUser ? true:false;
-        
+        $apikey->privilege_user = $hasPrivilegeUser ? true : false;
+
         $apikey->user()->associate(Auth::user());
         $apikey->save();
-        
-        return redirect()->route('apikey.index')->with('success', 'A new API Key has been created. Store it safely! You need to note it right now since it won\'t be shown anymore after a page reload.')->with('currentApiKey', $apikey->identifier . ':' . $apikey->secret_key); 
+
+        return redirect()->route('apikey.index')->with('success', 'A new API Key has been created. Store it safely! You need to note it right now since it won\'t be shown anymore after a page reload.')->with('currentApiKey', $apikey->identifier.':'.$apikey->secret_key);
     }
 
     /**
      * Create a new API key with only standard privileges
      */
-    public function createStandardKey(Request $request){
-        return $this->createNewApiKey(false);    
+    public function createStandardKey(Request $request)
+    {
+        return $this->createNewApiKey(false);
     }
 
     /**
      * Create a new API key with both standard and user management privileges
      */
-    public function createUserKey(Request $request){
-        return $this->createNewApiKey(true);    
+    public function createUserKey(Request $request)
+    {
+        return $this->createNewApiKey(true);
     }
 
     /**
@@ -61,11 +64,12 @@ class ApiKeyController extends Controller
     {
         $apikey = Auth::user()->apiKeys()->find($apikey_id);
 
-        if(!$apikey){
+        if (! $apikey) {
             return redirect()->route('apikey.index')->with('error', 'API Key not found');
         }
 
         $apikey->delete();
+
         return redirect()->route('apikey.index')->with('success', 'API Key deleted');
     }
 }

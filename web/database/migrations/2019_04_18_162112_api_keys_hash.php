@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class ApiKeysHash extends Migration
 {
@@ -43,8 +43,8 @@ class ApiKeysHash extends Migration
      */
     public function down()
     {
-        $msg = "This migration cannot be undone. Reverting this migration is going to break all API keys"; 
-        print("Error: $msg\n");
+        $msg = 'This migration cannot be undone. Reverting this migration is going to break all API keys';
+        echo "Error: $msg\n";
         Log::error($msg);
 
         Schema::table('api_key', function (Blueprint $table) {

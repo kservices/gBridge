@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Accesskey;
 use App\Device;
-
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class GapiController extends Controller
 {
@@ -37,7 +36,7 @@ class GapiController extends Controller
      */
     public function checkauth(Request $request)
     {
-        if(!Auth::check()){
+        if (! Auth::check()) {
             $this->validate($request, [
                 'email' => 'bail|required|string|max:255',
                 'password' => 'bail|required|string',
@@ -45,32 +44,32 @@ class GapiController extends Controller
         }
 
         //check parameters provided by Google
-        $googleerror_prefix = "The request by Google Home was malformed. Please try again in a few minute. If this problem persists, please contact the team of Kappelt gBridge. ";
-        
-        if($request->input('client_id', '__y') != env('GOOGLE_CLIENTID', '__z')){
-            return redirect()->back()->withInput()->with('error', $googleerror_prefix . 'Invalid Client ID has been provided!');
+        $googleerror_prefix = 'The request by Google Home was malformed. Please try again in a few minute. If this problem persists, please contact the team of Kappelt gBridge. ';
+
+        if ($request->input('client_id', '__y') != env('GOOGLE_CLIENTID', '__z')) {
+            return redirect()->back()->withInput()->with('error', $googleerror_prefix.'Invalid Client ID has been provided!');
         }
-        if($request->input('response_type', '') != 'token'){
-            return redirect()->back()->withInput()->with('error', $googleerror_prefix . 'Unkown Response Type requested!');
+        if ($request->input('response_type', '') != 'token') {
+            return redirect()->back()->withInput()->with('error', $googleerror_prefix.'Unkown Response Type requested!');
         }
-        if($request->input('redirect_uri', '__x') != ('https://oauth-redirect.googleusercontent.com/r/' . env('GOOGLE_PROJECTID', ''))){
-            return redirect()->back()->withInput()->with('error', $googleerror_prefix . 'Invalid redirect Request!');
+        if ($request->input('redirect_uri', '__x') != ('https://oauth-redirect.googleusercontent.com/r/'.env('GOOGLE_PROJECTID', ''))) {
+            return redirect()->back()->withInput()->with('error', $googleerror_prefix.'Invalid redirect Request!');
         }
-        if(!$request->input('state')){
-            return redirect()->back()->withInput()->with('error', $googleerror_prefix . 'No State given!');
+        if (! $request->input('state')) {
+            return redirect()->back()->withInput()->with('error', $googleerror_prefix.'No State given!');
         }
 
-        if(!Auth::check()){
+        if (! Auth::check()) {
             //User is not authenticated in this browser. Try logging
-            if(!Auth::once(['email' => $request->input('email', ''), 'password' => $request->input('password', '')])){
+            if (! Auth::once(['email' => $request->input('email', ''), 'password' => $request->input('password', '')])) {
                 //Try logging in with a username then (for accounts created by resellers)
-                if(!Auth::once(['login_username' => $request->input('email', ''), 'password' => $request->input('password', '')])){
+                if (! Auth::once(['login_username' => $request->input('email', ''), 'password' => $request->input('password', '')])) {
                     return redirect()->back()->withInput()->with('error', "Your account doesn't exist or the credentials don't match our records!");
                 }
             }
         }
 
-        if(isset(Auth::user()->verify_token)) {
+        if (isset(Auth::user()->verify_token)) {
             return redirect()->back()->withInput()->with('error', "You need to confirm your account. We have sent you an activation code, please check your email account. Check the spam folder for this mail, contact support under gbridge@kappelt.net if you haven't received the confirmation");
         }
 
@@ -80,7 +79,7 @@ class GapiController extends Controller
 
         $accesskey->save();
 
-        return redirect($request->input('redirect_uri') . '#access_token=' . $accesskey->google_key . '&token_type=bearer&state=' . $request->input('state'));
+        return redirect($request->input('redirect_uri').'#access_token='.$accesskey->google_key.'&token_type=bearer&state='.$request->input('state'));
     }
 
     /**
@@ -88,92 +87,100 @@ class GapiController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    function apicall(Request $laravel_request){
-
+    public function apicall(Request $laravel_request)
+    {
         $request = json_decode($laravel_request->getContent(), true);
 
         //check, whether requestId is present
-        if(!isset($request['requestId'])){
-            return $this->errorResponse("", ErrorCode::protocolError, true);
+        if (! isset($request['requestId'])) {
+            return $this->errorResponse('', ErrorCode::protocolError, true);
         }
         $requestid = $request['requestId'];
 
         $accesskey = $laravel_request->header('Authorization', '');
         $accesskey = Accesskey::where('google_key', str_replace('Bearer ', '', $accesskey))->get();
 
-        if(count($accesskey) < 1){
+        if (count($accesskey) < 1) {
             return $this->errorResponse($requestid, ErrorCode::authFailure);
         }
         $accesskey = $accesskey[0];
         $user = $accesskey->user;
 
         //See https://developers.google.com/actions/smarthome/create-app for information about the JSON request format
-        if(!isset($request['inputs'])){
+        if (! isset($request['inputs'])) {
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
         $input = $request['inputs'][0];
 
-        if(!isset($input['intent'])){
-            error_log("Intent is undefined!");
+        if (! isset($input['intent'])) {
+            error_log('Intent is undefined!');
+
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
-        Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequestid', $requestid);
+        Redis::hset('gbridge:u'.$user->user_id.':d0', 'grequestid', $requestid);
 
         //Check for users device limit
-        if($user->devices()->count() > $user->device_limit){
+        if ($user->devices()->count() > $user->device_limit) {
             return $this->errorResponse($requestid, ErrorCode::deviceTurnedOff);
         }
 
-        if($input['intent'] === 'action.devices.SYNC'){
+        if ($input['intent'] === 'action.devices.SYNC') {
             //sync-intent
-            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'SYNC');
-            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'SYNC');
+            Redis::hset('gbridge:u'.$user->user_id.':d0', 'grequesttype', 'SYNC');
+            Redis::publish('gbridge:u'.$user->user_id.':d0:grequest', 'SYNC');
+
             return $this->handleSync($user, $requestid);
-        }elseif($input['intent'] === 'action.devices.QUERY'){
+        } elseif ($input['intent'] === 'action.devices.QUERY') {
             //query-intent
-            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'QUERY');
-            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'QUERY');
+            Redis::hset('gbridge:u'.$user->user_id.':d0', 'grequesttype', 'QUERY');
+            Redis::publish('gbridge:u'.$user->user_id.':d0:grequest', 'QUERY');
+
             return $this->handleQuery($user, $requestid, $input);
-        }elseif($input['intent'] === 'action.devices.EXECUTE'){
+        } elseif ($input['intent'] === 'action.devices.EXECUTE') {
             //execute-intent
-            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'EXECUTE');
-            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'EXECUTE');
+            Redis::hset('gbridge:u'.$user->user_id.':d0', 'grequesttype', 'EXECUTE');
+            Redis::publish('gbridge:u'.$user->user_id.':d0:grequest', 'EXECUTE');
+
             return $this->handleExecute($user, $requestid, $input);
-        }elseif($input['intent'] === 'action.devices.DISCONNECT'){
-            Redis::hset('gbridge:u' . $user->user_id . ':d0', 'grequesttype', 'DISCONNECT');
-            Redis::publish('gbridge:u' . $user->user_id . ':d0:grequest', 'DISCONNECT');
+        } elseif ($input['intent'] === 'action.devices.DISCONNECT') {
+            Redis::hset('gbridge:u'.$user->user_id.':d0', 'grequesttype', 'DISCONNECT');
+            Redis::publish('gbridge:u'.$user->user_id.':d0:grequest', 'DISCONNECT');
             $accesskey->delete();
+
             return response()->json([]);
-        }else{
+        } else {
             //unknown intent
-            error_log('Unknown intent: "' . $input['intent'] . '"');
+            error_log('Unknown intent: "'.$input['intent'].'"');
+
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
     }
 
     /**
      * Handle the Sync-Intent
+     *
      * @param user User object.
      * @param requestid The request id
      */
-    private function handleSync($user, $requestid){
+    private function handleSync($user, $requestid)
+    {
         $response = [
             'requestId' => $requestid,
             'payload' => [
                 'devices' => [],
-                'agentUserId' => $user->user_id            //the agentUserId is here the user_id
-            ]
+                'agentUserId' => $user->user_id,            //the agentUserId is here the user_id
+            ],
         ];
 
         $devices = $user->devices;
-        
-        foreach($devices as $device){
-            $trait_googlenames = $device->traits->pluck('gname')->toArray(); 
+
+        foreach ($devices as $device) {
+            $trait_googlenames = $device->traits->pluck('gname')->toArray();
             $trait_googlenames = array_unique($trait_googlenames);      //Unique: Some traits (for thermostats) are specified multiple times
             //Necessary workaround: array_unique keeps indexes. ['test', 'test', 'test', 'test2'] becomes [0 => 'test', 3 => 'test2']
-            $trait_googlenames = array_values($trait_googlenames); 
+            $trait_googlenames = array_values($trait_googlenames);
 
             $deviceBuilder = [
                 'id' => $device->device_id,
@@ -181,29 +188,29 @@ class GapiController extends Controller
                 'traits' => $trait_googlenames,
                 'name' => [
                     'defaultNames' => ['Kappelt Virtual Device'],
-                    'name' => $device->name
+                    'name' => $device->name,
                 ],
                 //when hosted by us we have to implement report state.
                 //I do not recommend that in a self-hosted environment since it is just useless effort for this application
-                'willReportState' => env('KSERVICES_HOSTED', false) ? true:false,
+                'willReportState' => env('KSERVICES_HOSTED', false) ? true : false,
                 'deviceInfo' => [
-                    'manufacturer' => 'Kappelt kServices'
+                    'manufacturer' => 'Kappelt kServices',
                 ],
                 'attributes' => [],
             ];
 
             /** CUSTOM MODIFICATIONS FOR TRAIT: "Scene" */
-            if($device->traits->where('shortname', 'Scene')->count()){
+            if ($device->traits->where('shortname', 'Scene')->count()) {
                 $deviceBuilder['willReportState'] = false;  //Scene will never report state, since they are write-only devs
                 $deviceBuilder['attributes']['sceneReversible'] = false;
             }
             /** END CUSTOM MODIFICATIONS */
 
             /** CUSTOM MODIFICATIONS FOR TRAIT: "Thermostat" */
-            if($device->traits->where('shortname', 'TempSet.Mode')->count()){
+            if ($device->traits->where('shortname', 'TempSet.Mode')->count()) {
                 $modes = $device->traits->where('shortname', 'TempSet.Mode');
                 $modes = Collection::make(json_decode($modes->first()->pivot->config, true))->get('modesSupported');
-                if(empty($modes)){
+                if (empty($modes)) {
                     $modes = ['on', 'off'];
                 }
 
@@ -218,29 +225,28 @@ class GapiController extends Controller
              * Representation:
              * {"availableFanSpeeds":{"S1":{"names":["Geschwindigkeit1","Langsam"]},"S2":{"names":["Geschwindigkeit2","Mittel"]},"S3":{"names":["Geschwindigkeit3","Schnell"]}}}
              */
-
-            if($device->traits->where('shortname', 'FanSpeed')->count()){
+            if ($device->traits->where('shortname', 'FanSpeed')->count()) {
                 $traitconf = Collection::make(json_decode($device->traits->where('shortname', 'FanSpeed')->first()->pivot->config, true))->get('availableFanSpeeds');
                 $availableFanSpeeds = [];
-                if($traitconf){
-                    foreach($traitconf as $speedName => $speedConf){
+                if ($traitconf) {
+                    foreach ($traitconf as $speedName => $speedConf) {
                         $currentSpeedData = [
                             'speed_name' => $speedName,
-                            'speed_values' => []
+                            'speed_values' => [],
                         ];
 
                         $speedNames = [];
-                        if(isset($speedConf['names'])){
+                        if (isset($speedConf['names'])) {
                             $speedNames = array_values($speedConf['names']);
-                        }else{
-                            $speedNames = ['Speed ' . $speedName];
+                        } else {
+                            $speedNames = ['Speed '.$speedName];
                         }
 
-                        foreach(['da','nl','en','fr','de','hi','it','ja','ko','no','es','sv'] as $lang){
+                        foreach (['da', 'nl', 'en', 'fr', 'de', 'hi', 'it', 'ja', 'ko', 'no', 'es', 'sv'] as $lang) {
                             //Names are currently valid for all languages. User probably just uses one
                             $currentSpeedData['speed_values'][] = [
                                 'lang' => $lang,
-                                'speed_synonym' => $speedNames
+                                'speed_synonym' => $speedNames,
                             ];
                         }
 
@@ -251,33 +257,33 @@ class GapiController extends Controller
                 $deviceBuilder['attributes']['reversible'] = false; //Reversing is not yet supported
                 $deviceBuilder['attributes']['availableFanSpeeds'] = [
                     'ordered' => true,
-                    'speeds' => $availableFanSpeeds
+                    'speeds' => $availableFanSpeeds,
                 ];
             }
             /** END CUSTOM MODIFICATIONS */
 
             /** CUSTOM MODIFICATIONS FOR TRAIT: "StartStop" */
-            if($device->traits->where('shortname', 'StartStop')->count()){
+            if ($device->traits->where('shortname', 'StartStop')->count()) {
                 $deviceBuilder['attributes']['pausable'] = false; //Pausing is not yet support, as well as zones
             }
             /** END CUSTOM MODIFICATIONS */
 
             /** CUSTOM MODIFICATIONS FOR TRAIT: "CameraStream" */
-            if($device->traits->where('shortname', 'CameraStream')->count()){
+            if ($device->traits->where('shortname', 'CameraStream')->count()) {
                 $trait = $device->traits->where('shortname', 'CameraStream')->first();
                 $deviceBuilder['willReportState'] = false;
-                $deviceBuilder['attributes']['cameraStreamSupportedProtocols'] = [ $trait->getCameraStreamConfig()['cameraStreamFormat'] ];
+                $deviceBuilder['attributes']['cameraStreamSupportedProtocols'] = [$trait->getCameraStreamConfig()['cameraStreamFormat']];
                 $deviceBuilder['attributes']['cameraStreamNeedAuthToken'] = false;
                 $deviceBuilder['attributes']['cameraStreamNeedDrmEncryption'] = false;
             }
             /** END CUSTOM MODIFICATIONS */
 
             /** CUSTOM MODIFICATIONS FOR TRAIT: "ColorSettingRGB"/ "ColorSettingJSON"/ "ColorSettingTemp" */
-            if($device->traits->where('shortname', 'ColorSettingRGB')->count() || $device->traits->where('shortname', 'ColorSettingJSON')->count()){
+            if ($device->traits->where('shortname', 'ColorSettingRGB')->count() || $device->traits->where('shortname', 'ColorSettingJSON')->count()) {
                 $deviceBuilder['attributes']['colorModel'] = 'rgb';
                 $deviceBuilder['attributes']['commandOnlyColorSetting'] = false;
             }
-            if($device->traits->where('shortname', 'ColorSettingTemp')->count()){
+            if ($device->traits->where('shortname', 'ColorSettingTemp')->count()) {
                 $deviceBuilder['attributes']['colorModel'] = 'rgb';
                 $deviceBuilder['attributes']['commandOnlyColorSetting'] = false;
                 $deviceBuilder['attributes']['colorTemperatureRange'] = [
@@ -288,7 +294,7 @@ class GapiController extends Controller
             /** END CUSTOM MODIFICATIONS */
 
             //Remove attributes key if no attributes are defined
-            if(empty($deviceBuilder['attributes'])){
+            if (empty($deviceBuilder['attributes'])) {
                 unset($deviceBuilder['attributes']);
             }
 
@@ -300,171 +306,171 @@ class GapiController extends Controller
 
     /**
      * Handle the Query-Intent
+     *
      * @param user The user object
      * @param requestid The request id
      * @param input the data that shall be handled
      */
-    function handleQuery($user, $requestid, $input){
+    public function handleQuery($user, $requestid, $input)
+    {
         $response = [
             'requestId' => $requestid,
             'payload' => [
-                'devices' => []
-            ]
+                'devices' => [],
+            ],
         ];
 
         $userid = $user->user_id;
 
-        if(!isset($input['payload']['devices'])){
+        if (! isset($input['payload']['devices'])) {
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
-        foreach($input['payload']['devices'] as $device){
+        foreach ($input['payload']['devices'] as $device) {
             $deviceId = $device['id'];
             $device = Device::where('device_id', $deviceId)->get();
             $traits = [];
-            if(count($device) > 0){
+            if (count($device) > 0) {
                 $traits = $device[0]->traits;
             }
 
             $response['payload']['devices'][$deviceId] = [];
-            if(count($traits) > 0){
+            if (count($traits) > 0) {
                 $response['payload']['devices'][$deviceId]['online'] = true;
-            }else{
+            } else {
                 $response['payload']['devices'][$deviceId]['online'] = false;
             }
 
             $powerstate = Redis::hget("gbridge:u$userid:d$deviceId", 'power');
-            if(!is_null($powerstate)){
-                if($powerstate == '0'){
+            if (! is_null($powerstate)) {
+                if ($powerstate == '0') {
                     $response['payload']['devices'][$deviceId]['online'] = false;
                 }
             }
 
-            foreach($traits as $trait){
+            foreach ($traits as $trait) {
                 $traitname = strtolower($trait->shortname);
 
-                if(($traitname === "colorsettingrgb") || ($traitname === "colorsettingjson") || ($traitname === "colorsettingtemp")){
-                    $traitname = "colorsetting";
+                if (($traitname === 'colorsettingrgb') || ($traitname === 'colorsettingjson') || ($traitname === 'colorsettingtemp')) {
+                    $traitname = 'colorsetting';
                 }
 
                 $value = Redis::hget("gbridge:u$userid:d$deviceId", $traitname);
-                
+
                 //Special handling/ conversion for certain traits.
                 //Setting default values if not set by user before
-                if($traitname == 'onoff'){
-                    if(is_null($value)){
+                if ($traitname == 'onoff') {
+                    if (is_null($value)) {
                         $value = false;
-                    }else{
-                        $value = $value ? true:false;
+                    } else {
+                        $value = $value ? true : false;
                     }
                     $traitname = 'on';
 
                     $response['payload']['devices'][$deviceId][$traitname] = $value;
-                }elseif($traitname == 'brightness'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'brightness') {
+                    if (is_null($value)) {
                         $value = 0;
-                    }else{
+                    } else {
                         $value = intval($value);
                     }
 
                     $response['payload']['devices'][$deviceId][$traitname] = $value;
-                }elseif($traitname == 'tempset.mode'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'tempset.mode') {
+                    if (is_null($value)) {
                         $value = 'off';
                     }
 
                     $response['payload']['devices'][$deviceId]['thermostatMode'] = $value;
-                }elseif($traitname == 'tempset.setpoint'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'tempset.setpoint') {
+                    if (is_null($value)) {
                         $value = 0.0;
-                    }else{
+                    } else {
                         $value = floatval($value);
                     }
-                    
+
                     $response['payload']['devices'][$deviceId]['thermostatTemperatureSetpoint'] = $value;
-                }elseif($traitname == 'tempset.ambient'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'tempset.ambient') {
+                    if (is_null($value)) {
                         $value = 0.0;
-                    }else{
+                    } else {
                         $value = floatval($value);
                     }
-                    
+
                     $response['payload']['devices'][$deviceId]['thermostatTemperatureAmbient'] = $value;
-                }elseif($traitname == 'tempset.humidity'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'tempset.humidity') {
+                    if (is_null($value)) {
                         $value = 20.1;
-                    }else{
+                    } else {
                         $value = floatval($value);
                     }
-                    
+
                     $traitconf = Collection::make(json_decode($trait->pivot->config, true));
 
-                    if($traitconf->get('humiditySupported')){
+                    if ($traitconf->get('humiditySupported')) {
                         $response['payload']['devices'][$deviceId]['thermostatHumidityAmbient'] = $value;
                     }
-                }elseif($traitname == 'fanspeed'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'fanspeed') {
+                    if (is_null($value)) {
                         $availableFanSpeeds = Collection::make(json_decode($trait->pivot->config, true))->get('availableFanSpeeds');
 
-                        if($availableFanSpeeds && count($availableFanSpeeds)){
+                        if ($availableFanSpeeds && count($availableFanSpeeds)) {
                             $value = array_keys($availableFanSpeeds)[0];
-                        }else{
+                        } else {
                             $value = 'S1';
                         }
                     }
-                    
+
                     $response['payload']['devices'][$deviceId]['currentFanSpeedSetting'] = $value;
-                }elseif($traitname == 'startstop'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'startstop') {
+                    if (is_null($value)) {
                         $value = false;
                     }
-                    if($value){
+                    if ($value) {
                         $value = true;
-                    }else{
+                    } else {
                         $value = false;
                     }
 
                     $response['payload']['devices'][$deviceId]['isRunning'] = $value;
                     $response['payload']['devices'][$deviceId]['isPaused'] = false;         //Pausing not yet supported
-                }elseif($traitname == 'openclose'){
-                    if(is_null($value)){
+                } elseif ($traitname == 'openclose') {
+                    if (is_null($value)) {
                         $value = 0;
-                    }else{
+                    } else {
                         $value = intval($value);
                     }
 
                     $response['payload']['devices'][$deviceId]['openPercent'] = $value;
-                }elseif($traitname == 'colorsetting'){
-                    if(is_null($value)){
-                        $value = "rgb:0";
+                } elseif ($traitname == 'colorsetting') {
+                    if (is_null($value)) {
+                        $value = 'rgb:0';
                     }
 
-                    list($colorType, $colorValue) = explode(':', $value);
+                    [$colorType, $colorValue] = explode(':', $value);
                     $colorValue = intval($colorValue);
 
                     $response['payload']['devices'][$deviceId]['color'] = [];
 
-                    if($colorType === 'rgb'){
+                    if ($colorType === 'rgb') {
                         $response['payload']['devices'][$deviceId]['color']['spectrumRgb'] = $colorValue;
-                    }elseif($colorType === 'temp'){
+                    } elseif ($colorType === 'temp') {
                         $response['payload']['devices'][$deviceId]['color']['temperatureK'] = $colorValue;
                     }
-                }elseif($traitname == 'colorsettingtemp'){
+                } elseif ($traitname == 'colorsettingtemp') {
                     $value = intval($value);
 
-                    if(!array_key_exists('color', $response['payload']['devices'][$deviceId])){
+                    if (! array_key_exists('color', $response['payload']['devices'][$deviceId])) {
                         $response['payload']['devices'][$deviceId]['color'] = [];
                     }
 
                     $response['payload']['devices'][$deviceId]['color']['spectrumRgb'] = $value;
-                }elseif($traitname == 'scene'){
+                } elseif ($traitname == 'scene') {
                     //no value is required for scene, only "online" information
-                }else{
+                } else {
                     error_log("Unknown trait:\"$traitname\" for user $userid in query");
                     $response['payload']['devices'][$deviceId]['online'] = false;
                 }
-
-                
             }
         }
         //error_log(json_encode($response));
@@ -473,12 +479,14 @@ class GapiController extends Controller
 
     /**
      * Handle the Execute-Intent
+     *
      * @param user The user object
      * @param requestid The request id
      * @param input the data that shall be handled
      */
-    function handleExecute($user, $requestid, $input){
-        if(!isset($input['payload']['commands'])){
+    public function handleExecute($user, $requestid, $input)
+    {
+        if (! isset($input['payload']['commands'])) {
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
 
@@ -490,93 +498,95 @@ class GapiController extends Controller
         $twofaAckDeviceIds = [];        //all devices that require two fa confirmation messages
         $cameraStreamDeviceIds = [];    //all ids of devices that have the camera stream trait
 
-        foreach($input['payload']['commands'] as $command){
-            $deviceIds = array_map(function($device){return $device['id'];}, $command['devices']);
+        foreach ($input['payload']['commands'] as $command) {
+            $deviceIds = array_map(function ($device) {
+            return $device['id'];
+            }, $command['devices']);
             $handledDeviceIds = array_merge($handledDeviceIds, $deviceIds);
-            foreach($command['execution'] as $exec){
-                
+            foreach ($command['execution'] as $exec) {
+
                 //This code is executed for each device block
 
-                $trait;             //trait that is requested
-                $value;             //value that this trait gets
+                //trait that is requested
+                //value that this trait gets
 
-                if($exec['command'] === 'action.devices.commands.OnOff'){
+                if ($exec['command'] === 'action.devices.commands.OnOff') {
                     $trait = 'onoff';
-                    $value = $exec['params']['on'] ? "1":"0";
-                }elseif($exec['command'] === 'action.devices.commands.BrightnessAbsolute'){
+                    $value = $exec['params']['on'] ? '1' : '0';
+                } elseif ($exec['command'] === 'action.devices.commands.BrightnessAbsolute') {
                     $trait = 'brightness';
                     $value = $exec['params']['brightness'];
-                }elseif($exec['command'] === 'action.devices.commands.ActivateScene'){
+                } elseif ($exec['command'] === 'action.devices.commands.ActivateScene') {
                     $trait = 'scene';
                     $value = 1;
-                }elseif($exec['command'] === 'action.devices.commands.ThermostatTemperatureSetpoint'){
+                } elseif ($exec['command'] === 'action.devices.commands.ThermostatTemperatureSetpoint') {
                     $trait = 'tempset.setpoint';
                     $value = $exec['params']['thermostatTemperatureSetpoint'];
-                }elseif($exec['command'] === 'action.devices.commands.ThermostatSetMode'){
+                } elseif ($exec['command'] === 'action.devices.commands.ThermostatSetMode') {
                     $trait = 'tempset.mode';
                     $value = $exec['params']['thermostatMode'];
-                }elseif($exec['command'] === 'action.devices.commands.SetFanSpeed'){
+                } elseif ($exec['command'] === 'action.devices.commands.SetFanSpeed') {
                     $trait = 'fanspeed';
                     $value = $exec['params']['fanSpeed'];
-                }elseif($exec['command'] === 'action.devices.commands.StartStop'){
+                } elseif ($exec['command'] === 'action.devices.commands.StartStop') {
                     $trait = 'startstop';
-                    $value = $exec['params']['start'] ? 'start':'stop';
-                }elseif($exec['command'] === 'action.devices.commands.OpenClose'){
+                    $value = $exec['params']['start'] ? 'start' : 'stop';
+                } elseif ($exec['command'] === 'action.devices.commands.OpenClose') {
                     $trait = 'openclose';
                     $value = $exec['params']['openPercent'];
-                }elseif($exec['command'] === 'action.devices.commands.GetCameraStream'){
+                } elseif ($exec['command'] === 'action.devices.commands.GetCameraStream') {
                     $trait = 'camerastream';
-                    $value = ($exec['params']['StreamToChromecast'] == true) ? 'chromecast':'generic';
-                }elseif($exec['command'] === 'action.devices.commands.ColorAbsolute'){
+                    $value = ($exec['params']['StreamToChromecast'] == true) ? 'chromecast' : 'generic';
+                } elseif ($exec['command'] === 'action.devices.commands.ColorAbsolute') {
                     $trait = 'colorsetting';
 
-                    $buildData = ["", "", ""];
+                    $buildData = ['', '', ''];
 
-                    if(array_key_exists('spectrumRGB', $exec['params']['color'])){
+                    if (array_key_exists('spectrumRGB', $exec['params']['color'])) {
                         $buildData[0] = 'rgb';
                         $buildData[1] = strval($exec['params']['color']['spectrumRGB']);
-                    }elseif(array_key_exists('temperature', $exec['params']['color'])){
+                    } elseif (array_key_exists('temperature', $exec['params']['color'])) {
                         $buildData[0] = 'temp';
                         $buildData[1] = strval($exec['params']['color']['temperature']);
                     }
 
-                    if(array_key_exists('name', $exec['params']['color'])){
+                    if (array_key_exists('name', $exec['params']['color'])) {
                         $buildData[2] = strval($exec['params']['color']['name']);
                     }
 
-                    $value = implode(":", $buildData);
-                }else{
+                    $value = implode(':', $buildData);
+                } else {
                     //unknown execute-command
-                    Log::error('Unknown Google execute-command: ' . $exec['command']);
+                    Log::error('Unknown Google execute-command: '.$exec['command']);
                     continue;
                 }
 
-                foreach($deviceIds as $deviceid){
+                foreach ($deviceIds as $deviceid) {
                     $device = Device::find($deviceid);
-                    if(!$device){
-                        Log::error('Google exec for unknown deviceid: ' . $deviceid);
+                    if (! $device) {
+                        Log::error('Google exec for unknown deviceid: '.$deviceid);
                         continue;
                     }
 
-                    if($device->twofa_type){
+                    if ($device->twofa_type) {
                         //Two factor confirmation is necessary for that device
-                        if($device->twofa_type == 'ack'){
+                        if ($device->twofa_type == 'ack') {
                             //User just needs to confirm that he wants to do that action
-                            if(!(isset($exec['challenge']) && isset($exec['challenge']['ack']) && $exec['challenge']['ack'])){
+                            if (! (isset($exec['challenge']) && isset($exec['challenge']['ack']) && $exec['challenge']['ack'])) {
                                 //Ack was not yet given
                                 $twofaAckDeviceIds[] = $deviceid;
                                 continue;
                             }
                         }
-                        if($device->twofa_type == 'pin'){
+                        if ($device->twofa_type == 'pin') {
                             //User needs to give a pin code
-                            if(!(isset($exec['challenge']) && isset($exec['challenge']['pin']) && $exec['challenge']['pin'])){
+                            if (! (isset($exec['challenge']) && isset($exec['challenge']['pin']) && $exec['challenge']['pin'])) {
                                 //Ack was not yet given
                                 $twofaPinDeviceIds[] = $deviceid;
                                 continue;
                             }
 
-                            if($exec['challenge']['pin'] != $device->twofa_pin){
+                            if ($exec['challenge']['pin'] != $device->twofa_pin) {
                                 $twofaWrongPinDeviceIds[] = $deviceid;
                                 continue;
                             }
@@ -587,16 +597,16 @@ class GapiController extends Controller
                     Redis::publish("gbridge:u$user->user_id:d$deviceid:$trait", $value);
 
                     //Camera streaming ignores power state here
-                    if($trait == 'camerastream'){
+                    if ($trait == 'camerastream') {
                         $cameraStreamDeviceIds[] = $deviceid;
                         continue;
                     }
 
                     //do not add to successfull devices if marked offline
                     $powerstate = Redis::hget("gbridge:u$user->user_id:d$deviceid", 'power');
-                    if(is_null($powerstate) || ($powerstate != '0')){
+                    if (is_null($powerstate) || ($powerstate != '0')) {
                         $successfulDeviceIds[] = $deviceid;
-                    }else{
+                    } else {
                         $offlineDeviceIds[] = $deviceid;
                     }
                 }
@@ -610,79 +620,79 @@ class GapiController extends Controller
         $response = [
             'requestId' => $requestid,
             'payload' => [
-                'commands' => []
-            ]
+                'commands' => [],
+            ],
         ];
 
-        if(count($successfulDeviceIds) > 0){
+        if (count($successfulDeviceIds) > 0) {
             $response['payload']['commands'][] = [
                 'ids' => array_values($successfulDeviceIds),
-                'status' => 'SUCCESS'
+                'status' => 'SUCCESS',
             ];
         }
-        if(count($offlineDeviceIds) > 0){
+        if (count($offlineDeviceIds) > 0) {
             $response['payload']['commands'][] = [
                 'ids' => array_values($offlineDeviceIds),
-                'status' => 'OFFLINE'
+                'status' => 'OFFLINE',
             ];
         }
-        if(count($twofaAckDeviceIds) > 0){
+        if (count($twofaAckDeviceIds) > 0) {
             $response['payload']['commands'][] = [
                 'ids' => array_values($twofaAckDeviceIds),
                 'status' => 'ERROR',
                 'errorCode' => 'challengeNeeded',
                 'challengeNeeded' => [
-                    'type' => 'ackNeeded'
-                ]
+                    'type' => 'ackNeeded',
+                ],
             ];
         }
-        if(count($twofaPinDeviceIds) > 0){
+        if (count($twofaPinDeviceIds) > 0) {
             $response['payload']['commands'][] = [
                 'ids' => array_values($twofaPinDeviceIds),
                 'status' => 'ERROR',
                 'errorCode' => 'challengeNeeded',
                 'challengeNeeded' => [
-                    'type' => 'pinNeeded'
-                ]
+                    'type' => 'pinNeeded',
+                ],
             ];
         }
-        if(count($twofaWrongPinDeviceIds) > 0){
+        if (count($twofaWrongPinDeviceIds) > 0) {
             $response['payload']['commands'][] = [
                 'ids' => array_values($twofaWrongPinDeviceIds),
                 'status' => 'ERROR',
                 'errorCode' => 'challengeNeeded',
                 'challengeNeeded' => [
-                    'type' => 'challengeFailedPinNeeded'
-                ]
+                    'type' => 'challengeFailedPinNeeded',
+                ],
             ];
         }
 
-        foreach($cameraStreamDeviceIds as $cameraStreamDeviceId){
+        foreach ($cameraStreamDeviceIds as $cameraStreamDeviceId) {
             $device = Device::find($cameraStreamDeviceId);
-            if(!$device){
+            if (! $device) {
                 continue;
             }
             $url = Redis::hget("gbridge:u$user->user_id:d$device->device_id", 'camerastream');
-            if(is_null($url)){
+            if (is_null($url)) {
                 //Not set by user via MQTT (-> not in cache), check for defaults
                 $trait = $device->traits->where('shortname', 'CameraStream')->first();
-                if(is_null($trait)){
+                if (is_null($trait)) {
                     //Somehow can't find a CameraStream trait for this device
                     $url = '';
-                }else{
+                } else {
                     $url = $trait->getCameraStreamConfig()['cameraStreamDefaultUrl'];
-                    if(is_null($url)){
+                    if (is_null($url)) {
                         //Also no default is set.
                         $url = '';
                     }
                 }
             }
             $response['payload']['commands'][] = [
-                'ids' => [ $cameraStreamDeviceId ],
+                'ids' => [$cameraStreamDeviceId],
                 'status' => 'SUCCESS',
                 'states' => [
-                    'cameraStreamAccessUrl' => $url
-                ]
+                    'cameraStreamAccessUrl' => $url,
+                ],
             ];
         }
 
@@ -693,12 +703,13 @@ class GapiController extends Controller
     /**
      * Send an error message back
      */
-    private function errorResponse($requestid, $errorcode){
+    private function errorResponse($requestid, $errorcode)
+    {
         $error = [
             'requestId' => $requestid,
             'payload' => [
-                'errorCode' => $errorcode   
-            ]
+                'errorCode' => $errorcode,
+            ],
         ];
 
         return response()->json($error);
@@ -706,15 +717,25 @@ class GapiController extends Controller
 }
 
 //error codes that can be returned
-abstract class ErrorCode{
-    const authExpired = "authExpired";
-    const authFailure = "authFailure";
-    const deviceOffline = "deviceOffline";
-    const timeout = "timeout";
-    const deviceTurnedOff = "deviceTurnedOff";
-    const deviceNotFound = "deviceNotFound";
-    const valueOutOfRange = "valueOutOfRange";
-    const notSupported = "notSupported";
-    const protocolError = "protocolError";
-    const unknownError = "unknownError";
+abstract class ErrorCode
+{
+    const authExpired = 'authExpired';
+
+    const authFailure = 'authFailure';
+
+    const deviceOffline = 'deviceOffline';
+
+    const timeout = 'timeout';
+
+    const deviceTurnedOff = 'deviceTurnedOff';
+
+    const deviceNotFound = 'deviceNotFound';
+
+    const valueOutOfRange = 'valueOutOfRange';
+
+    const notSupported = 'notSupported';
+
+    const protocolError = 'protocolError';
+
+    const unknownError = 'unknownError';
 }

@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddThermostatDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddThermostatDeviceType extends Migration
             'shortname' => 'Thermostat',
             'gname' => 'action.devices.types.THERMOSTAT',
             'description' => 'Thermostat device',
-            'name' => 'Thermostat'
+            'name' => 'Thermostat',
         ]);
     }
 

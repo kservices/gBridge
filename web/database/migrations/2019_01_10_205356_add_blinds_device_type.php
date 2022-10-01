@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddBlindsDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddBlindsDeviceType extends Migration
             'shortname' => 'Blinds',
             'gname' => 'action.devices.types.BLINDS',
             'description' => 'Blinds',
-            'name' => 'Blinds'
+            'name' => 'Blinds',
         ]);
     }
 

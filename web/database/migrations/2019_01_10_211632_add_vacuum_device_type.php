@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddVacuumDeviceType extends Migration
@@ -18,7 +16,7 @@ class AddVacuumDeviceType extends Migration
             'shortname' => 'Vacuum',
             'gname' => 'action.devices.types.VACUUM',
             'description' => 'Vacuum cleaner',
-            'name' => 'Vacuum'
+            'name' => 'Vacuum',
         ]);
     }
 

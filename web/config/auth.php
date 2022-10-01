@@ -48,8 +48,8 @@ return [
 
         'apiv2' => [
             'driver' => 'jwt',
-            'provider' => 'users'
-        ]
+            'provider' => 'users',
+        ],
     ],
 
     /*

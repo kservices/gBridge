@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddStartstopTraitType extends Migration
@@ -17,7 +15,7 @@ class AddStartstopTraitType extends Migration
             'shortname' => 'StartStop',
             'gname' => 'action.devices.traits.StartStop',
             'description' => 'Start or stop a generic action',
-            'name' => 'Start and Stop'
+            'name' => 'Start and Stop',
         ]);
     }
 

@@ -30,7 +30,7 @@ class DeviceService
 
         $traits = [];
         $topicPrefixFromRequest = $request->input('topicPrefix');
-        $topicPrefix = $topicPrefixFromRequest ? $topicPrefixFromRequest : 'd' . $device->device_id;
+        $topicPrefix = $topicPrefixFromRequest ? $topicPrefixFromRequest : 'd'.$device->device_id;
         //use the default MQTT topics for the traits
         foreach ($requestTraits as $traitTypeId) {
             $traitType = TraitType::find($traitTypeId);
@@ -40,21 +40,21 @@ class DeviceService
             $traitShortname = str_replace('.', '-', $traitType->shortname);
 
             $traits[$traitTypeId] = [
-                'mqttActionTopic' => $topicPrefix . '/' . strtolower($traitShortname),
-                'mqttStatusTopic' => $topicPrefix . '/' . strtolower($traitShortname) . '/set'
+                'mqttActionTopic' => $topicPrefix.'/'.strtolower($traitShortname),
+                'mqttStatusTopic' => $topicPrefix.'/'.strtolower($traitShortname).'/set',
             ];
 
             //special handling for trait TempSet.Mode: Define default supported modes
             if ($traitType->shortname == 'TempSet.Mode') {
                 $traits[$traitTypeId]['config'] = json_encode([
-                    'modesSupported' => ['off', 'heat', 'on', 'auto']
+                    'modesSupported' => ['off', 'heat', 'on', 'auto'],
                 ]);
             }
 
             //special handling for trait FanSpeed: Define default speeds
-            if ($traitType->shortname == 'FanSpeed'){
+            if ($traitType->shortname == 'FanSpeed') {
                 $traits[$traitTypeId]['config'] = json_encode([
-                    'availableFanSpeeds' => ['S1' => ['names' => ['Slow']],'S2' => ['names' => ['Medium']],'S3' => ['names' => ['Fast']]]
+                    'availableFanSpeeds' => ['S1' => ['names' => ['Slow']], 'S2' => ['names' => ['Medium']], 'S3' => ['names' => ['Fast']]],
                 ]);
             }
         }
@@ -68,13 +68,13 @@ class DeviceService
         $device = $user->devices()->find($id);
         $device->name = $request->input('name');
         $device->devicetype_id = $request->input('type');
-        if(is_null($request->input('twofa_type')) || ($request->input('twofa_type') == 'none')){
+        if (is_null($request->input('twofa_type')) || ($request->input('twofa_type') == 'none')) {
             $device->twofa_type = null;
-        }else{
+        } else {
             $device->twofa_type = $request->input('twofa_type');
-            if($request->input('twofa_type') == 'pin'){
+            if ($request->input('twofa_type') == 'pin') {
                 $device->twofa_pin = $request->input('twofa_pin');
-            }else{
+            } else {
                 $device->twofa_pin = null;
             }
         }
@@ -103,7 +103,7 @@ class DeviceService
 
                 $traits[$traitTypeId] = [
                     'mqttActionTopic' => $device->traits->where('traittype_id', $traitTypeId)->first()->pivot->mqttActionTopic,
-                    'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)->first()->pivot->mqttStatusTopic
+                    'mqttStatusTopic' => $device->traits->where('traittype_id', $traitTypeId)->first()->pivot->mqttStatusTopic,
                 ];
             } else {
                 //trait was newly added
@@ -113,37 +113,40 @@ class DeviceService
                 $traitShortname = str_replace('.', '-', $traitType->shortname);
 
                 $traits[$traitTypeId] = [
-                    'mqttActionTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname),
-                    'mqttStatusTopic' => 'd' . $device->device_id . '/' . strtolower($traitShortname) . '/set'
+                    'mqttActionTopic' => 'd'.$device->device_id.'/'.strtolower($traitShortname),
+                    'mqttStatusTopic' => 'd'.$device->device_id.'/'.strtolower($traitShortname).'/set',
                 ];
             }
         }
         $device->traits()->sync($traits);
-        $this -> userInfoToCache($user);
+        $this->userInfoToCache($user);
     }
 
     public function delete($id, User $user)
     {
         $device = $user->devices()->find($id);
-        if($device){
+        if ($device) {
             return $device->delete();
         }
-        $this -> userInfoToCache($user);
+        $this->userInfoToCache($user);
+
         return false;
     }
 
     /**
      * Store general information about the user in the redis cache for usage with other modules of gBridge
-     * @param User $user
+     *
+     * @param  User  $user
      */
-    public function userInfoToCache(User $user){
+    public function userInfoToCache(User $user)
+    {
         $deviceinfo = [];
-        foreach($user->devices as $device){
+        foreach ($user->devices as $device) {
             $deviceinfo[$device->device_id] = [];
-            foreach($device->traits as $trait){
+            foreach ($device->traits as $trait) {
                 $deviceinfo[$device->device_id][$trait->shortname] = [
                     'actionTopic' => $trait->pivot->mqttActionTopic,
-                    'statusTopic' => $trait->pivot->mqttStatusTopic
+                    'statusTopic' => $trait->pivot->mqttStatusTopic,
                 ];
             }
         }

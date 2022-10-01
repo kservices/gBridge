@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\User;
-use App\Mail\VerifyMail;
-use Illuminate\Support\Facades\Mail;
-
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
+use App\Mail\VerifyMail;
+use App\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
@@ -58,11 +57,12 @@ class RegisterController extends Controller
             'regex' => 'The password must be at least 8 characters long and must contain at least one number (0-9), letters, and at least one special char.',
             'accepted' => 'Please accept both our terms and conditions and our privacy policy in order to use this service!',
         ];
+
         return Validator::make($data, [
             'email' => 'required|string|email|max:255|unique:user',
             'password' => 'required|string|min:8|regex:/^.*(?=.{5,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#"%§&\/()=?+*~#\'\-_<>,;.:^@]).*$/',
             'accept_toc' => 'accepted',
-            'language' => 'required|integer|between:0,1'
+            'language' => 'required|integer|between:0,1',
         ], $validator_messages);
     }
 
@@ -79,14 +79,14 @@ class RegisterController extends Controller
         $mqtt_keypart = base64_encode(hash_pbkdf2('sha256', $data['password'], $mqtt_salt, 902, 24, true));
         $mqtt_key = "PBKDF2\$sha256\$902\$$mqtt_salt\$$mqtt_keypart";
 
-        $cleanName = empty($data['name']) ? $data['email']:$data['name'];
+        $cleanName = empty($data['name']) ? $data['email'] : $data['name'];
         $user = User::create([
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
             'mqtt_password' => $mqtt_key,
             'verify_token' => str_random(32),
             'language' => $data['language'],
-            'name' => $cleanName
+            'name' => $cleanName,
         ]);
 
         Mail::to($user->email)->send(new VerifyMail($user));
@@ -97,7 +97,7 @@ class RegisterController extends Controller
     protected function registered(Request $request, $user)
     {
         $this->guard()->logout();
+
         return redirect()->route('login')->with('success', 'We sent you an activation code. Check your email and click on the link to verify.');
     }
- 
 }

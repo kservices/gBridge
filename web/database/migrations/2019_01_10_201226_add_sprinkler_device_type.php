@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddSprinklerDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddSprinklerDeviceType extends Migration
             'shortname' => 'Sprinkler',
             'gname' => 'action.devices.types.SPRINKLER',
             'description' => 'Sprinkler',
-            'name' => 'Sprinkler'
+            'name' => 'Sprinkler',
         ]);
     }
 

@@ -8,11 +8,10 @@ use App\Services\DeviceService;
 use App\TraitType;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Collection;
 
 class DeviceController extends Controller
 {
@@ -21,23 +20,25 @@ class DeviceController extends Controller
     /**
      * Send a request to the worker, in order to request Google to refresh the customer's device list
      */
-    public function googleRequestSync(){
+    public function googleRequestSync()
+    {
         $userid = Auth::user()->user_id;
-        Redis::publish("gbridge:u$userid:d0:requestsync", "0");
+        Redis::publish("gbridge:u$userid:d0:requestsync", '0');
     }
 
     /**
      * Stores general information about all user's devices in the redis cache for usage with oder modules of gBridge
      */
-    public function allUserInfoToCache(){
-        foreach(User::all() as $user){
+    public function allUserInfoToCache()
+    {
+        foreach (User::all() as $user) {
             $deviceinfo = [];
-            foreach($user->devices as $device){
+            foreach ($user->devices as $device) {
                 $deviceinfo[$device->device_id] = [];
-                foreach($device->traits as $trait){
+                foreach ($device->traits as $trait) {
                     $deviceinfo[$device->device_id][$trait->shortname] = [
                         'actionTopic' => $trait->pivot->mqttActionTopic,
-                        'statusTopic' => $trait->pivot->mqttStatusTopic
+                        'statusTopic' => $trait->pivot->mqttStatusTopic,
                     ];
                 }
             }
@@ -45,13 +46,14 @@ class DeviceController extends Controller
             Redis::set("gbridge:u$userid:devices", json_encode($deviceinfo));
         }
 
-        print("SUCCESS");
+        echo 'SUCCESS';
     }
 
     /**
      * Force Authentication
      */
-    public function __construct(DeviceService $deviceService){
+    public function __construct(DeviceService $deviceService)
+    {
         $this->middleware('auth');
         $this->deviceService = $deviceService;
     }
@@ -83,9 +85,9 @@ class DeviceController extends Controller
         $traitTypes = TraitType::all();
 
         //Special handling for trait "TemperatureSetting". Only one trait (instead of 4) is shown for the user
-        $traitTypes = $traitTypes->filter(function($trait, $key){
+        $traitTypes = $traitTypes->filter(function ($trait, $key) {
             //Only TempSet.Mode is kept, TempSet.* is removed
-            return !in_array($trait->shortname, ['TempSet.Setpoint', 'TempSet.Ambient', 'TempSet.Humidity']);
+            return ! in_array($trait->shortname, ['TempSet.Setpoint', 'TempSet.Ambient', 'TempSet.Humidity']);
         });
         $traitTypes->where('shortname', 'TempSet.Mode')->first()->name = 'Temperature Setting';
 
@@ -111,7 +113,7 @@ class DeviceController extends Controller
             'traits.*' => 'bail|required|numeric|exists:trait_type,traittype_id',
         ]);
 
-        $this -> deviceService -> create($request, Auth::user());
+        $this->deviceService->create($request, Auth::user());
 
         $this->googleRequestSync();
 
@@ -128,21 +130,21 @@ class DeviceController extends Controller
     {
         $device = Auth::user()->devices()->find($id);
 
-        if(!$device){
+        if (! $device) {
             return redirect()->route('device.index')->with('error', 'Device does not exist');
         }
 
         $traitTypes = TraitType::all();
 
         //Special handling for trait "TemperatureSetting". Only one trait (instead of 4) is shown for the user
-        $traitTypes = $traitTypes->filter(function($trait, $key){
+        $traitTypes = $traitTypes->filter(function ($trait, $key) {
             //Only TempSet.Mode is kept, TempSet.* is removed
-            return !in_array($trait->shortname, ['TempSet.Setpoint', 'TempSet.Ambient', 'TempSet.Humidity']);
+            return ! in_array($trait->shortname, ['TempSet.Setpoint', 'TempSet.Ambient', 'TempSet.Humidity']);
         });
         $traitTypes->where('shortname', 'TempSet.Mode')->first()->name = 'Temperature Setting';
 
         //Parse JSON in the pivot
-        foreach($device->traits as $trait){
+        foreach ($device->traits as $trait) {
             $conf = $trait->pivot->config;
             $trait->pivot->config = Collection::make(json_decode($conf, true));
         }
@@ -172,7 +174,7 @@ class DeviceController extends Controller
             'twofa_type' => 'bail|nullable|in:none,ack,pin',
             'twofa_pin' => 'bail|required_if:twofa_type,pin|max:16',
         ]);
-        $this -> deviceService -> update($request, $id, Auth::user());
+        $this->deviceService->update($request, $id, Auth::user());
 
         $this->googleRequestSync();
 
@@ -183,15 +185,15 @@ class DeviceController extends Controller
      * Update MQTT topics for this device.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  Device $device
-     * @param   TraitType $trait
+     * @param  Device  $device
+     * @param  TraitType  $trait
      * @return \Illuminate\Http\Response
      */
     public function updatetopic(Request $request, Device $device, TraitType $trait)
     {
         $user = Auth::user();
         $device = Auth::user()->devices()->where('device_id', $device->device_id)->first();
-        if(!$device){
+        if (! $device) {
             return redirect()->route('device.index')->with('error', 'The device to be updated does not exist.');
         }
 
@@ -202,22 +204,22 @@ class DeviceController extends Controller
             //Action topics are required for these traits: OnOff, Brightness, Scene, TempSet.Mode, TempSet.Setpoint
             'action' => 'bail|required|regex:/^[a-z0-9-_\/]+$/i',
             //Status topics are required for the traits: OnOff, Brightness, TempSet.Mode, TempSet.Setpoint, TempSet.Ambient, TempSet.Humidity
-            'status' => 'bail|required|regex:/^[a-z0-9-_\/]+$/i'
+            'status' => 'bail|required|regex:/^[a-z0-9-_\/]+$/i',
         ];
 
         //Special handling for trait TempSet.Mode
-        if($traittype->shortname == 'TempSet.Mode'){
+        if ($traittype->shortname == 'TempSet.Mode') {
             $validatorConf['modes'] = 'bail|required|array';
             $validatorConf['modes.*'] = 'bail|required|in:off,heat,cool,on,auto,fan-only,purifier,eco,dry';
         }
 
         //Special handling for trait FanSpeed -> requiring speed settings
-        if($traittype->shortname == 'FanSpeed'){
+        if ($traittype->shortname == 'FanSpeed') {
             $validatorConf['fanSpeeds'] = 'bail|required|min:1';
         }
 
         //Special handling for trait CameraStream -> requiring media type and possible default uri
-        if($traittype->shortname == 'CameraStream'){
+        if ($traittype->shortname == 'CameraStream') {
             $validatorConf['streamFormat'] = 'bail|required|in:hls,progressive_mp4,dash,smooth_stream';
             $validatorConf['streamDefaultUrl'] = 'nullable|max:250';
         }
@@ -225,32 +227,32 @@ class DeviceController extends Controller
         $this->validate($request, $validatorConf, [
             'required' => 'Please specify the required settings!',
             'regex' => 'The topics may only contain alphanumeric chracters, slashes (/), underscores (_) and dashes (-)!',
-            'in' => 'You\'ve specified an invalid mode/ value/ format!'
+            'in' => 'You\'ve specified an invalid mode/ value/ format!',
         ]);
 
         //Special handling (config parse) for trait TempSet.Humidity
-        if($traittype->shortname == 'TempSet.Humidity'){
+        if ($traittype->shortname == 'TempSet.Humidity') {
             $traittype->pivot->config = json_encode([
-                'humiditySupported' => $request->input('humiditySupported') ? true:false
+                'humiditySupported' => $request->input('humiditySupported') ? true : false,
             ]);
         }
 
         //Special handling (config parse) for trait TempSet.Mode
-        if($traittype->shortname == 'TempSet.Mode'){
+        if ($traittype->shortname == 'TempSet.Mode') {
             $traittype->pivot->config = json_encode([
-                'modesSupported' => $request->input('modes')
+                'modesSupported' => $request->input('modes'),
             ]);
         }
 
         //Special handling (config parse) for trait FanSpeed
-        if($traittype->shortname == 'FanSpeed'){
-            if(!$traittype->setAvailableFanSpeedsFromString(explode("\n", $request->input('fanSpeeds')))){
+        if ($traittype->shortname == 'FanSpeed') {
+            if (! $traittype->setAvailableFanSpeedsFromString(explode("\n", $request->input('fanSpeeds')))) {
                 return redirect()->back()->with('error', 'Malformed fan speed data');
             }
         }
 
         //Special handling (config parse) for trait CameraStraem
-        if($traittype->shortname == 'CameraStream'){
+        if ($traittype->shortname == 'CameraStream') {
             $traittype->setCameraStreamConfig($request->input('streamFormat'), $request->input('streamDefaultUrl'));
         }
 
@@ -258,11 +260,11 @@ class DeviceController extends Controller
         $traittype->pivot->mqttActionTopic = $request->input('action');
         $traittype->pivot->mqttStatusTopic = $request->input('status');
         $traittype->pivot->save();
-        
+
         $this->deviceService->userInfoToCache($user);
 
         //if this trait contains a custom config, it is quite likely, that Google needs to synchronize this conf
-        if(!empty($traittype->pivot->config)){
+        if (! empty($traittype->pivot->config)) {
             $this->googleRequestSync();
         }
 
@@ -277,7 +279,7 @@ class DeviceController extends Controller
      */
     public function destroy($id)
     {
-        $this -> deviceService -> delete($id, Auth::user());
+        $this->deviceService->delete($id, Auth::user());
 
         $this->googleRequestSync();
 
