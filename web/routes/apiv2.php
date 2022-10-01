@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ApiV2;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes (V2)
@@ -8,19 +11,19 @@
 */
 
 Route::middleware('api')->prefix('auth')->group(function ($router) {
-    Route::post('token', 'ApiV2\ApiV2AuthController@token');
-    Route::post('logout', 'ApiV2\ApiV2AuthController@logout');
-    //Route::post('refresh', 'ApiV2\ApiV2AuthController@refresh'); //->refresh disabled for the moment
+    Route::post('token', [ApiV2\ApiV2AuthController::class, 'token']);
+    Route::post('logout', [ApiV2\ApiV2AuthController::class, 'logout']);
+    //Route::post('refresh', [ApiV2\ApiV2AuthController::class, 'refresh']); //->refresh disabled for the moment
 });
 
-Route::get('requestsync', 'ApiV2\ApiV2@requestSynchronization');
+Route::get('requestsync', [ApiV2\ApiV2::class, 'requestSynchronization']);
 
-Route::get('device', 'ApiV2\ApiV2@getDevices');
-Route::post('device', 'ApiV2\ApiV2@createDevice');
-Route::get('device/{device}', 'ApiV2\ApiV2@getDeviceById');
-Route::patch('device/{device}', 'ApiV2\ApiV2@updateDeviceById');
-Route::delete('device/{device}', 'ApiV2\ApiV2@deleteDeviceById');
+Route::get('device', [ApiV2\ApiV2::class, 'getDevices']);
+Route::post('device', [ApiV2\ApiV2::class, 'createDevice']);
+Route::get('device/{device}', [ApiV2\ApiV2::class, 'getDeviceById']);
+Route::patch('device/{device}', [ApiV2\ApiV2::class, 'updateDeviceById']);
+Route::delete('device/{device}', [ApiV2\ApiV2::class, 'deleteDeviceById']);
 
-Route::get('user', 'ApiV2\ApiV2@getUserDetails');
-Route::post('user/password', 'ApiV2\ApiV2@updateUserPassword');
-Route::post('user/mqtt/password', 'ApiV2\ApiV2@updateUserMqttPassword');
+Route::get('user', [ApiV2\ApiV2::class, 'getUserDetails']);
+Route::post('user/password', [ApiV2\ApiV2::class, 'updateUserPassword']);
+Route::post('user/mqtt/password', [ApiV2\ApiV2::class, 'updateUserMqttPassword']);
