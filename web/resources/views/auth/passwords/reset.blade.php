@@ -22,7 +22,7 @@
                         <b class="red-text">{{ $errors->first('email') }}</b>
                         @endif
                         <div class="input-field">
-                            <input type="email" class="validate" id="email" name="email" value="{{ $email or old('email') }}" required autofocus>
+                            <input type="email" class="validate" id="email" name="email" value="{{ $email ?? old('email') }}" required autofocus>
                             <label for="email">Email</label>
                         </div>
 
