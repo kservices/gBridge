@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Migrations\Migration;
 
 class CreateFirstUser extends Migration
@@ -17,7 +18,7 @@ class CreateFirstUser extends Migration
         DB::table('user')->insert([
             'user_id' => 1,
             'email' => $user,
-            'password' => bcrypt('123456'),
+            'password' => Hash::make('123456'),
         ]);
     }
 

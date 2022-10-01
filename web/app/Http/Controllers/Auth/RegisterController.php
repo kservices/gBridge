@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use App\Mail\VerifyMail;
 use App\User;
@@ -82,7 +83,7 @@ class RegisterController extends Controller
         $cleanName = empty($data['name']) ? $data['email'] : $data['name'];
         $user = User::create([
             'email' => $data['email'],
-            'password' => bcrypt($data['password']),
+            'password' => Hash::make($data['password']),
             'mqtt_password' => $mqtt_key,
             'verify_token' => str_random(32),
             'language' => $data['language'],
