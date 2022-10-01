@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use App\Accesskey;
 use App\Device;
 use Illuminate\Http\Request;
@@ -74,7 +75,7 @@ class GapiController extends Controller
         }
 
         $accesskey = new Accesskey;
-        $accesskey->google_key = password_hash(str_random(32), PASSWORD_BCRYPT);
+        $accesskey->google_key = password_hash(Str::random(32), PASSWORD_BCRYPT);
         $accesskey->user_id = Auth::user()->user_id;
 
         $accesskey->save();

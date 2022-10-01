@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -122,7 +123,7 @@ class UserProfileController extends Controller
         }
 
         //Mosquitto (MQTT server) requires an password string that is unusual, but based on PBKDF2. It must be build manually.
-        $salt = str_random(16);
+        $salt = Str::random(16);
         $key = base64_encode(hash_pbkdf2('sha256', $request->input('mqtt-password'), $salt, 902, 24, true));
         $mqtt_key = "PBKDF2\$sha256\$902\$$salt\$$key";
 
