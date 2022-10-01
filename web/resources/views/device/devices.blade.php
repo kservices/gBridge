@@ -48,7 +48,7 @@
 								<span style="font-size: 1.64rem">{{ $device->deviceType->name }}: <b>{{ $device->name }}</b></span>
 
 								<div class="right">
-									{!!Form::open(['action' => ['DeviceController@destroy', $device->device_id], 'method' => 'POST'])!!}
+									{!!Form::open(['action' => ['App\Http\Controllers\DeviceController@destroy', $device->device_id], 'method' => 'POST'])!!}
 										<a class="waves-effect btn blue" href="{{ route('device.edit', $device->device_id) }}"><i class="material-icons">edit</i></a>
 										{{Form::hidden('_method', 'DELETE')}}
 										{{Form::button('<i class="material-icons">delete</i>', ['type' => 'submit', 'class' => 'waves-effect btn blue'], false)}}

@@ -38,7 +38,7 @@
 								Linking with Google on {{ $accesskey->generated_at }}
 							</td>
 							<td>
-								{!!Form::open(['action' => ['AccesskeyController@destroy', $accesskey->accesskey_id], 'method' => 'POST'])!!}
+								{!!Form::open(['action' => ['App\Http\Controllers\AccesskeyController@destroy', $accesskey->accesskey_id], 'method' => 'POST'])!!}
 									{{Form::hidden('_method', 'DELETE')}}
 									{{Form::button('<i class="material-icons">delete</i>', ['type' => 'submit', 'class' => 'waves-effect btn blue'], false)}}
 								{!!Form::close()!!}

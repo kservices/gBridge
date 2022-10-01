@@ -37,7 +37,7 @@
 								<span style="font-size: 1.64rem">API Key (Created at {{ $apikey->created_at }})</b></span>
 
 								<div class="right">
-									{!!Form::open(['action' => ['ApiKeyController@destroy', $apikey->apikey_id], 'method' => 'POST'])!!}
+									{!!Form::open(['action' => ['App\Http\Controllers\ApiKeyController@destroy', $apikey->apikey_id], 'method' => 'POST'])!!}
 										{{Form::hidden('_method', 'DELETE')}}
 										{{Form::button('<i class="material-icons">delete</i>', ['type' => 'submit', 'class' => 'waves-effect btn blue'], false)}}
 									{!!Form::close()!!}
