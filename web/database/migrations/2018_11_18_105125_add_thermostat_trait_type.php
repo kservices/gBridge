@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddThermostatTraitType extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -46,4 +46,4 @@ class AddThermostatTraitType extends Migration
         DB::table('trait_type')->where('shortname', 'TemperatureSetting.Ambient')->delete();
         DB::table('trait_type')->where('shortname', 'TemperatureSetting.Humidity')->delete();
     }
-}
+};

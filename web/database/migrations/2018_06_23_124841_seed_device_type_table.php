@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class SeedDeviceTypeTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -47,4 +47,4 @@ class SeedDeviceTypeTable extends Migration
         DB::table('device_type')->where('devicetype_id', 2)->delete();
         DB::table('device_type')->where('devicetype_id', 3)->delete();
     }
-}
+};

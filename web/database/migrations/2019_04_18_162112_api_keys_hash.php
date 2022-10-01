@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-class ApiKeysHash extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -51,4 +51,4 @@ class ApiKeysHash extends Migration
             $table->dropColumn('identifier');
         });
     }
-}
+};

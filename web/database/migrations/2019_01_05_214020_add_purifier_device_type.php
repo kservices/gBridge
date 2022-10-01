@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddPurifierDeviceType extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -28,4 +28,4 @@ class AddPurifierDeviceType extends Migration
     {
         DB::table('device_type')->where('shortname', 'Purifier')->delete();
     }
-}
+};
