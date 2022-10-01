@@ -22,14 +22,11 @@ return [
     'ses' => [
         'key' => env('SES_KEY'),
         'secret' => env('SES_SECRET'),
-        'region' => 'us-east-1',
+        'region' => env('SES_REGION', 'us-east-1'),
     ],
 
     'sparkpost' => [
-        'secret' => env('MAIL_SPARKPOST_SECRET'),
-        'options' => [
-            'endpoint' => 'https://api.eu.sparkpost.com/api/v1/transmissions',
-        ],
+        'secret' => env('SPARKPOST_SECRET'),
     ],
 
     'stripe' => [
