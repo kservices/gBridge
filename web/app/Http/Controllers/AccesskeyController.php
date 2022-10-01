@@ -5,15 +5,14 @@ namespace App\Http\Controllers;
 use App\Accesskey;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class AccesskeyController extends Controller
 {
     /**
      * Force Authentication
      */
-    public function __construct(){
+    public function __construct()
+    {
         $this->middleware('auth');
     }
 
@@ -50,7 +49,7 @@ class AccesskeyController extends Controller
      */
     //public function store(Request $request)
     //{
-        //
+    //
     //}
 
     /**
@@ -61,7 +60,7 @@ class AccesskeyController extends Controller
      */
     //public function show(Accesskey $accesskey)
     //{
-        //
+    //
     //}
 
     /**
@@ -72,7 +71,7 @@ class AccesskeyController extends Controller
      */
     //public function edit(Accesskey $accesskey)
     //{
-        //
+    //
     //}
 
     /**
@@ -84,7 +83,7 @@ class AccesskeyController extends Controller
      */
     //public function update(Request $request, Accesskey $accesskey)
     //{
-        //
+    //
     //}
 
     /**

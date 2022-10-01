@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddFanspeedTraitType extends Migration
@@ -17,7 +15,7 @@ class AddFanspeedTraitType extends Migration
             'shortname' => 'FanSpeed',
             'gname' => 'action.devices.traits.FanSpeed',
             'description' => 'Control the speed of a fan',
-            'name' => 'Fan Speed'
+            'name' => 'Fan Speed',
         ]);
     }
 

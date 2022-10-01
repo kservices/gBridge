@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Hash;
 
 class CreateFirstUser extends Migration
 {
@@ -13,13 +12,13 @@ class CreateFirstUser extends Migration
      */
     public function up()
     {
-        $user = readline("Enter your E-Mail address: ");
-        print("A new user with the mail \"$user\" and the password \"123456\" has been created.\nPlease change the password immediately!\n\n\n");
+        $user = readline('Enter your E-Mail address: ');
+        echo "A new user with the mail \"$user\" and the password \"123456\" has been created.\nPlease change the password immediately!\n\n\n";
 
         DB::table('user')->insert([
             'user_id' => 1,
             'email' => $user,
-            'password' => bcrypt('123456'),
+            'password' => Hash::make('123456'),
         ]);
     }
 

@@ -2,12 +2,11 @@
 
 namespace App;
 
-use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Support\Facades\Mail;
-
 use App\Mail\ResetPasswordMail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -17,6 +16,7 @@ class User extends Authenticatable implements JWTSubject
      * Model stored in table 'user'
      */
     protected $table = 'user';
+
     /**
      * The primary key is here 'user_id' not the default 'id'
      */
@@ -28,7 +28,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'email', 'login_username', 'password', 'mqtt_password', 'verify_token', 'name', 'language', 'device_limit'
+        'email', 'login_username', 'password', 'mqtt_password', 'verify_token', 'name', 'language', 'device_limit',
     ];
 
     /**
@@ -51,16 +51,19 @@ class User extends Authenticatable implements JWTSubject
         Mail::to($this)->send(new ResetPasswordMail($token, $this));
     }
 
-    public function devices(){
-        return $this->hasMany('App\Device', 'user_id');
+    public function devices()
+    {
+        return $this->hasMany(\App\Device::class, 'user_id');
     }
 
-    public function accesskeys(){
-        return $this->hasMany('App\Accesskey', 'user_id');
+    public function accesskeys()
+    {
+        return $this->hasMany(\App\Accesskey::class, 'user_id');
     }
 
-    public function apiKeys(){
-        return $this->hasMany('App\ApiKey', 'user_id');
+    public function apiKeys()
+    {
+        return $this->hasMany(\App\ApiKey::class, 'user_id');
     }
 
     /**

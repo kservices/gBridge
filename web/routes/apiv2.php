@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes (V2)
@@ -11,7 +9,7 @@ use Illuminate\Http\Request;
 
 Route::group([
     'middleware' => 'api',
-    'prefix' => 'auth'
+    'prefix' => 'auth',
 ], function ($router) {
     Route::post('token', 'ApiV2\ApiV2AuthController@token');
     Route::post('logout', 'ApiV2\ApiV2AuthController@logout');
@@ -29,5 +27,3 @@ Route::delete('device/{device}', 'ApiV2\ApiV2@deleteDeviceById');
 Route::get('user', 'ApiV2\ApiV2@getUserDetails');
 Route::post('user/password', 'ApiV2\ApiV2@updateUserPassword');
 Route::post('user/mqtt/password', 'ApiV2\ApiV2@updateUserMqttPassword');
-
-?>

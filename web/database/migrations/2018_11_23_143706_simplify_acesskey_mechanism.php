@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class SimplifyAcesskeyMechanism extends Migration
 {
@@ -14,7 +14,7 @@ class SimplifyAcesskeyMechanism extends Migration
     public function up()
     {
         DB::table('google_accesskey')->where('password_used', '=', false)->delete();
-        
+
         Schema::table('google_accesskey', function (Blueprint $table) {
             $table->dropColumn('password');
             $table->dropColumn('password_used');

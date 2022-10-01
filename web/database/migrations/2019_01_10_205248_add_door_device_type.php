@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddDoorDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddDoorDeviceType extends Migration
             'shortname' => 'Door',
             'gname' => 'action.devices.types.DOOR',
             'description' => 'Door',
-            'name' => 'Door'
+            'name' => 'Door',
         ]);
     }
 

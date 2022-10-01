@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddShutterDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddShutterDeviceType extends Migration
             'shortname' => 'Shutter',
             'gname' => 'action.devices.types.SHUTTER',
             'description' => 'Shutter',
-            'name' => 'Shutter'
+            'name' => 'Shutter',
         ]);
     }
 

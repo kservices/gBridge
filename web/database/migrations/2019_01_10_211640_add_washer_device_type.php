@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddWasherDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddWasherDeviceType extends Migration
             'shortname' => 'Washer',
             'gname' => 'action.devices.types.WASHER',
             'description' => 'Washing machines',
-            'name' => 'Washer'
+            'name' => 'Washer',
         ]);
     }
 

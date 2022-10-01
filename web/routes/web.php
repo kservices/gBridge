@@ -13,20 +13,18 @@
 
 use App\Device;
 
-
-
 Auth::routes();
 
-if(env('KSERVICES_HOSTED', false)){
+if (env('KSERVICES_HOSTED', false)) {
     Route::get('/', function () {
         return redirect('https://about.gbridge.io');
     });
-}else{
+} else {
     Route::get('/', function () {
         return redirect('device');
     });
 }
-Route::get('/home', function(){
+Route::get('/home', function () {
     return redirect('device');
 });
 
@@ -39,7 +37,7 @@ Route::put('/device/{device}/updatetopic/{trait}', 'DeviceController@updatetopic
 
 //Accesskey-management
 Route::resource('accesskey', 'AccesskeyController', [
-    'only' => ['index', 'destroy']                            //limited functions
+    'only' => ['index', 'destroy'],                            //limited functions
 ]);
 
 //User profile management
@@ -62,8 +60,8 @@ Route::get('apikey/create/user', 'ApiKeyController@createUserKey')->name('apikey
 Route::delete('apikey/{apikey_id}/delete', 'ApiKeyController@destroy')->name('apikey.destroy')->middleware('auth');
 
 //Disable user registration
-if(env('DISABLE_REGISTRATION', false)){
-    Route::any('register', function(){
+if (env('DISABLE_REGISTRATION', false)) {
+    Route::any('register', function () {
         abort(404);
     });
 }

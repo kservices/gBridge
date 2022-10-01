@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Validator;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Validator;
 
 class UserProfileController extends Controller
 {
@@ -43,7 +43,7 @@ class UserProfileController extends Controller
             'newpassword' => 'bail|required|min:8|confirmed|regex:/^.*(?=.{5,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#"%§&\/()=?+*~#\'\-_<>,;.:^]).*$/',
         ], $validator_messages)->validate();
 
-        if(!Hash::check($request->input('password'), Auth::user()->password)){
+        if (! Hash::check($request->input('password'), Auth::user()->password)) {
             return redirect()->route('profile.index')->with('error', 'Your current password was wrong!');
         }
 
@@ -61,9 +61,10 @@ class UserProfileController extends Controller
      * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function updatename(Request $request, User $user){
+    public function updatename(Request $request, User $user)
+    {
         $validator_messages = [
-            'required' => 'Your display name cannot be empty!'
+            'required' => 'Your display name cannot be empty!',
         ];
         $validator = Validator::make($request->all(), [
             'name' => 'bail|required',
@@ -83,7 +84,8 @@ class UserProfileController extends Controller
      * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function updatelang(Request $request, User $user){
+    public function updatelang(Request $request, User $user)
+    {
         $validator = Validator::make($request->all(), [
             'language' => 'required|integer|between:0,1',
         ])->validate();
@@ -94,8 +96,6 @@ class UserProfileController extends Controller
 
         return redirect()->route('profile.index')->with('success', 'Your prefered language has been changed!.');
     }
-
-
 
     /**
      * Update the user's mqtt server password.
@@ -117,7 +117,7 @@ class UserProfileController extends Controller
             'mqtt-password' => 'bail|required|min:8|confirmed',
         ], $validator_messages)->validate();
 
-        if(!Hash::check($request->input('account-password'), Auth::user()->password)){
+        if (! Hash::check($request->input('account-password'), Auth::user()->password)) {
             return redirect()->route('profile.index')->with('error', 'Your current password was wrong!');
         }
 
@@ -135,17 +135,19 @@ class UserProfileController extends Controller
 
     /**
      * Handle the verification-link that the user has received after registering
+     *
      * @param $verify_token Verification-Token
      */
-    public function verify($verify_token){
+    public function verify($verify_token)
+    {
         $user = User::where('verify_token', $verify_token)->first();
-        if(isset($user)){
-            $user->verify_token = NULL;
+        if (isset($user)) {
+            $user->verify_token = null;
             $user->save();
+
             return redirect()->route('login')->with('success', 'Your account has been verified, you can log in now.');
-        }else{
+        } else {
             return redirect()->route('login')->with('error', 'Your account has already been verified!');
         }
     }
-
 }

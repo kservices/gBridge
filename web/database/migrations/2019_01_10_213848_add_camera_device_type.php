@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddCameraDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddCameraDeviceType extends Migration
             'shortname' => 'Camera',
             'gname' => 'action.devices.types.CAMERA',
             'description' => 'Camera devices',
-            'name' => 'Camera'
+            'name' => 'Camera',
         ]);
     }
 

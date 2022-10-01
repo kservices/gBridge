@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddPurifierDeviceType extends Migration
@@ -17,7 +15,7 @@ class AddPurifierDeviceType extends Migration
             'shortname' => 'Purifier',
             'gname' => 'action.devices.types.AIRPURIFIER',
             'description' => 'Air purifying devices',
-            'name' => 'Air Purifier'
+            'name' => 'Air Purifier',
         ]);
     }
 

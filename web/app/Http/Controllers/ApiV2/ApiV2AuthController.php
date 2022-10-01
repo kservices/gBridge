@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers\ApiV2;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\ApiKey;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
-
-use App\ApiKey;
 
 class ApiV2AuthController extends Controller
 {
@@ -29,20 +26,22 @@ class ApiV2AuthController extends Controller
     public function token()
     {
         //Authentication with login_username and password -> only for accounts created by resellers
-        if(request('login_username') && request('password')){
+        if (request('login_username') && request('password')) {
             $credentials = request(['login_username', 'password']);
 
-            if (! $token = auth('apiv2')->claims(['privilege_user' => true])->attempt(["login_username" => request("login_username"), "password" => request("password")])) {
+            if (! $token = auth('apiv2')->claims(['privilege_user' => true])->attempt(['login_username' => request('login_username'), 'password' => request('password')])) {
                 return response()->json(['error_code' => 'unauthorized'], 401);
             }
+
             return $this->respondWithToken($token);
         }
 
         //Authentication with plain username and password -> for application frontends using the API
-        if(request('email') && request('password')){
-            if(!$token = auth('apiv2')->claims(['privilege_user' => true, 'privilege_frontend' => true])->attempt(["email" => request("email"), "password" => request("password")])){
+        if (request('email') && request('password')) {
+            if (! $token = auth('apiv2')->claims(['privilege_user' => true, 'privilege_frontend' => true])->attempt(['email' => request('email'), 'password' => request('password')])) {
                 return response()->json(['error_code' => 'unauthorized'], 401);
             }
+
             return $this->respondWithToken($token);
         }
 
@@ -53,33 +52,32 @@ class ApiV2AuthController extends Controller
          *  - {Identifier}:{Secret key}
          * The secret key is stored as a hash in the database
          */
-
         $keyIdentifier = null;
         $keySecret = null;
 
-        if(strpos(request('apikey'), ':')){
+        if (strpos(request('apikey'), ':')) {
             //There is a double colon in the string
-            list($keyIdentifier, $keySecret) = explode(':', request('apikey'));
-        }else{
+            [$keyIdentifier, $keySecret] = explode(':', request('apikey'));
+        } else {
             $keyIdentifier = substr(request('apikey'), 0, 4);
             $keySecret = substr(request('apikey'), 4);
         }
 
         $apikey = ApiKey::where('identifier', $keyIdentifier)->get()->first();
-        if( is_null($keyIdentifier) ||
+        if (is_null($keyIdentifier) ||
             is_null($keySecret) ||
-            (!$apikey) ||
-            !Hash::check($keySecret, $apikey->key)
-            ){
+            (! $apikey) ||
+            ! Hash::check($keySecret, $apikey->key)
+            ) {
             return response()->json(['error_code' => 'unauthorized'], 401);
         }
 
         $claims = [];
-        if($apikey->privilege_user){
+        if ($apikey->privilege_user) {
             $claims['privilege_user'] = true;
         }
 
-        if (!$token = auth('apiv2')->claims($claims)->login($apikey->user)) {
+        if (! $token = auth('apiv2')->claims($claims)->login($apikey->user)) {
             return response()->json(['error_code' => 'unauthorized'], 401);
         }
 
@@ -111,8 +109,7 @@ class ApiV2AuthController extends Controller
     /**
      * Get the token array structure.
      *
-     * @param  string $token
-     *
+     * @param  string  $token
      * @return \Illuminate\Http\JsonResponse
      */
     protected function respondWithToken($token)
@@ -121,7 +118,7 @@ class ApiV2AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('apiv2')->factory()->getTTL() * 60,
-            'privilege' => 'standard' . (auth('apiv2')->payload()->get('privilege_user') ? ',user':'') . (auth('apiv2')->payload()->get('privilege_frontend') ? ',frontend':'')
+            'privilege' => 'standard'.(auth('apiv2')->payload()->get('privilege_user') ? ',user' : '').(auth('apiv2')->payload()->get('privilege_frontend') ? ',frontend' : ''),
         ]);
     }
 }

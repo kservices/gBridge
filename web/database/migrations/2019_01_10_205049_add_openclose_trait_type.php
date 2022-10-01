@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddOpencloseTraitType extends Migration
@@ -17,7 +15,7 @@ class AddOpencloseTraitType extends Migration
             'shortname' => 'OpenClose',
             'gname' => 'action.devices.traits.OpenClose',
             'description' => 'Open or close devices to a certain percentage',
-            'name' => 'Open and Close'
+            'name' => 'Open and Close',
         ]);
     }
 

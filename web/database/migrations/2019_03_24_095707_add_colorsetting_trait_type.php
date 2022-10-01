@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 class AddColorsettingTraitType extends Migration
@@ -17,19 +15,19 @@ class AddColorsettingTraitType extends Migration
             'shortname' => 'ColorSettingRGB',
             'gname' => 'action.devices.traits.ColorSetting',
             'description' => 'Set a light to a specific color (RGB data formatting)',
-            'name' => 'Color Setting (RGB)'
+            'name' => 'Color Setting (RGB)',
         ]);
         DB::table('trait_type')->insert([
             'shortname' => 'ColorSettingJSON',
             'gname' => 'action.devices.traits.ColorSetting',
             'description' => 'Set a light to a specific color (JSON data encoding)',
-            'name' => 'Color Setting (JSON)'
+            'name' => 'Color Setting (JSON)',
         ]);
         DB::table('trait_type')->insert([
             'shortname' => 'ColorSettingTemp',
             'gname' => 'action.devices.traits.ColorSetting',
             'description' => 'Set a light to a specific color (Color Temperature)',
-            'name' => 'Color Setting (Temperature)'
+            'name' => 'Color Setting (Temperature)',
         ]);
     }
 

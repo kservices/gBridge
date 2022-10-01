@@ -3,8 +3,8 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class ApiKey extends Model
 {
@@ -12,6 +12,7 @@ class ApiKey extends Model
      * Model stored in table 'apikey'
      */
     protected $table = 'api_key';
+
     /**
      * The primary key is here 'apikey_id' not the default 'id'
      */
@@ -22,7 +23,7 @@ class ApiKey extends Model
      */
     public $secret_key = null;
 
-    public function __construct(array $attributes = array())
+    public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
@@ -32,7 +33,8 @@ class ApiKey extends Model
         $this->identifier = Str::random(16);
     }
 
-    public function user(){
-        return $this->belongsTo('App\User', 'user_id');
+    public function user()
+    {
+        return $this->belongsTo(\App\User::class, 'user_id');
     }
 }
