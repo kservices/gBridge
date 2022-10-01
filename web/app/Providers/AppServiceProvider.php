@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind('App\Services\DeviceService', function () {
+        $this->app->bind(\App\Services\DeviceService::class, function () {
             return new DeviceService();
         });
     }

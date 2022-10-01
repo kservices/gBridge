@@ -53,17 +53,17 @@ class User extends Authenticatable implements JWTSubject
 
     public function devices()
     {
-        return $this->hasMany('App\Device', 'user_id');
+        return $this->hasMany(\App\Device::class, 'user_id');
     }
 
     public function accesskeys()
     {
-        return $this->hasMany('App\Accesskey', 'user_id');
+        return $this->hasMany(\App\Accesskey::class, 'user_id');
     }
 
     public function apiKeys()
     {
-        return $this->hasMany('App\ApiKey', 'user_id');
+        return $this->hasMany(\App\ApiKey::class, 'user_id');
     }
 
     /**

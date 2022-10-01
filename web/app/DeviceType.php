@@ -23,6 +23,6 @@ class DeviceType extends Model
 
     public function devices()
     {
-        return $this->hasMany('App\Device', 'devicetype_id');
+        return $this->hasMany(\App\Device::class, 'devicetype_id');
     }
 }
