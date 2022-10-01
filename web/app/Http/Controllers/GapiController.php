@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 
 class GapiController extends Controller
 {
@@ -74,7 +75,7 @@ class GapiController extends Controller
         }
 
         $accesskey = new Accesskey;
-        $accesskey->google_key = password_hash(str_random(32), PASSWORD_BCRYPT);
+        $accesskey->google_key = password_hash(Str::random(32), PASSWORD_BCRYPT);
         $accesskey->user_id = Auth::user()->user_id;
 
         $accesskey->save();

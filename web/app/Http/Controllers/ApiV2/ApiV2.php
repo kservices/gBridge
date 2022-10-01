@@ -10,6 +10,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 
 class ApiV2 extends Controller
 {
@@ -705,7 +706,7 @@ class ApiV2 extends Controller
         }
 
         //MQTT server requires an password string that is unusual, but based on PBKDF2. It must be build manually.
-        $salt = str_random(16);
+        $salt = Str::random(16);
         $key = base64_encode(hash_pbkdf2('sha256', $password, $salt, 902, 24, true));
         $mqtt_key = "PBKDF2\$sha256\$902\$$salt\$$key";
 
