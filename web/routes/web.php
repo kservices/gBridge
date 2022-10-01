@@ -11,13 +11,13 @@
 |
 */
 
+use App\Device;
 use App\Http\Controllers\AccesskeyController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GapiController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Device;
 
 Auth::routes();
 
