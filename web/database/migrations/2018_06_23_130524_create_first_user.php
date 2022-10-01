@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Hash;
 
 class CreateFirstUser extends Migration
 {
