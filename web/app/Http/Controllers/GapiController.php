@@ -500,7 +500,7 @@ class GapiController extends Controller
 
         foreach ($input['payload']['commands'] as $command) {
             $deviceIds = array_map(function ($device) {
-            return $device['id'];
+                return $device['id'];
             }, $command['devices']);
             $handledDeviceIds = array_merge($handledDeviceIds, $deviceIds);
             foreach ($command['execution'] as $exec) {
