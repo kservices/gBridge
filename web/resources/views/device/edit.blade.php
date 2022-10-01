@@ -11,7 +11,7 @@
 
 	<div class="row">
 		<h2>Edit Device</h2>
-		<form class="form-horizontal" method="POST" accept-charset="UTF-8" action="{{ route('device.update', ['id' => $device->device_id]) }}">
+		<form class="form-horizontal" method="POST" accept-charset="UTF-8" action="{{ route('device.update', ['device' => $device->device_id]) }}">
 			{{ csrf_field() }}
 			<div class="row">
 				<div class="input-field col s12">
@@ -67,7 +67,7 @@
 		<h2>Edit Topics and Settings</h2>
 
 		@foreach($device->traits as $trait)
-		<form class="form-horizontal" method="POST" accept-charset="UTF-8" action="{{ route('device.updatetopic', ['device' => $device, 'traittype' => $trait]) }}">
+		<form class="form-horizontal" method="POST" accept-charset="UTF-8" action="{{ route('device.updatetopic', ['device' => $device, 'trait' => $trait]) }}">
 			{{ csrf_field() }} 
 			<div class="row">
 				<div class="col s12">
