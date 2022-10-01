@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Accesskey;
-use App\Device;
+use App\Models\Accesskey;
+use App\Models\Device;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

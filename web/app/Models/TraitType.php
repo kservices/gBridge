@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -25,7 +25,7 @@ class TraitType extends Model
     public function devices()
     {
         //This is a m:n relation, joined by the table trait
-        return $this->belongsToMany(\App\Device::class, 'trait', 'traittype_id', 'device_id')->withPivot('trait_id', 'config', 'mqttActionTopic', 'mqttStatusTopic');
+        return $this->belongsToMany(\App\Models\Device::class, 'trait', 'traittype_id', 'device_id')->withPivot('trait_id', 'config', 'mqttActionTopic', 'mqttStatusTopic');
     }
 
     public function getAvailableFanSpeeds()

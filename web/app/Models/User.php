@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\Mail\ResetPasswordMail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,17 +55,17 @@ class User extends Authenticatable implements JWTSubject
 
     public function devices()
     {
-        return $this->hasMany(\App\Device::class, 'user_id');
+        return $this->hasMany(\App\Models\Device::class, 'user_id');
     }
 
     public function accesskeys()
     {
-        return $this->hasMany(\App\Accesskey::class, 'user_id');
+        return $this->hasMany(\App\Models\Accesskey::class, 'user_id');
     }
 
     public function apiKeys()
     {
-        return $this->hasMany(\App\ApiKey::class, 'user_id');
+        return $this->hasMany(\App\Models\ApiKey::class, 'user_id');
     }
 
     /**

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Device;
-use App\TraitType;
-use App\User;
+use App\Models\Device;
+use App\Models\TraitType;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 

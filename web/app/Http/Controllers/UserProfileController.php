@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +28,7 @@ class UserProfileController extends Controller
      * Update the user's password.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\User  $user
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function updatepwd(Request $request, User $user)
@@ -59,7 +59,7 @@ class UserProfileController extends Controller
      * Update the user's display name.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\User  $user
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function updatename(Request $request, User $user)
@@ -82,7 +82,7 @@ class UserProfileController extends Controller
      * Update the user's prefered language.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\User  $user
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function updatelang(Request $request, User $user)
@@ -102,7 +102,7 @@ class UserProfileController extends Controller
      * Update the user's mqtt server password.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\User  $user
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function updatemqtt(Request $request, User $user)

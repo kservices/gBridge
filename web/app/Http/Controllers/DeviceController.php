@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Device;
-use App\DeviceType;
+use App\Models\Device;
+use App\Models\DeviceType;
 use App\Services\DeviceService;
-use App\TraitType;
-use App\User;
+use App\Models\TraitType;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,6 +23,6 @@ class DeviceType extends Model
 
     public function devices()
     {
-        return $this->hasMany(\App\Device::class, 'devicetype_id');
+        return $this->hasMany(\App\Models\Device::class, 'devicetype_id');
     }
 }

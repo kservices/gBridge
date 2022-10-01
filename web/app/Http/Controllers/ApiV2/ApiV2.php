@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\ApiV2;
 
-use App\Device;
-use App\DeviceType;
+use App\Models\Device;
+use App\Models\DeviceType;
 use App\Http\Controllers\Controller;
-use App\TraitType;
-use App\User;
+use App\Models\TraitType;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;

@@ -11,7 +11,7 @@
 |
 */
 
-use App\Device;
+use App\Models\Device;
 use App\Http\Controllers\AccesskeyController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\DeviceController;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\ApiV2;
 
-use App\ApiKey;
+use App\Models\ApiKey;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 

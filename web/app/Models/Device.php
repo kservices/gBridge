@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,18 +29,18 @@ class Device extends Model
 
     public function deviceType()
     {
-        return $this->belongsTo(\App\DeviceType::class, 'devicetype_id');
+        return $this->belongsTo(\App\Models\DeviceType::class, 'devicetype_id');
     }
 
     public function traits()
     {
         //This is a m:n relation, joined by the table trait
-        return $this->belongsToMany(\App\TraitType::class, 'trait', 'device_id', 'traittype_id')->withPivot('trait_id', 'config', 'mqttActionTopic', 'mqttStatusTopic');
+        return $this->belongsToMany(\App\Models\TraitType::class, 'trait', 'device_id', 'traittype_id')->withPivot('trait_id', 'config', 'mqttActionTopic', 'mqttStatusTopic');
     }
 
     public function user()
     {
-        return $this->belongsTo(\App\User::class, 'user_id');
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
     /**
