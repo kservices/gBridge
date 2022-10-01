@@ -7,10 +7,7 @@
 |--------------------------------------------------------------------------
 */
 
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'auth',
-], function ($router) {
+Route::middleware('api')->prefix('auth')->group(function ($router) {
     Route::post('token', 'ApiV2\ApiV2AuthController@token');
     Route::post('logout', 'ApiV2\ApiV2AuthController@logout');
     //Route::post('refresh', 'ApiV2\ApiV2AuthController@refresh'); //->refresh disabled for the moment

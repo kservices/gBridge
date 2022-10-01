@@ -29,16 +29,12 @@ Route::get('/home', function () {
 });
 
 //Device-Management panel
-Route::resource('device', 'DeviceController', [
-    'only' => ['store', 'index', 'create', 'update', 'destroy', 'edit'],        //no show-method
-]);
+Route::resource('device', 'DeviceController')->only('store', 'index', 'create', 'update', 'destroy', 'edit');
 Route::put('/device/{device}/updatetopic/{trait}', 'DeviceController@updatetopic')->name('device.updatetopic')->middleware('auth');
 //Route::get('/temp-syncdev', 'DeviceController@allUserInfoToCache')->middleware('auth');
 
 //Accesskey-management
-Route::resource('accesskey', 'AccesskeyController', [
-    'only' => ['index', 'destroy'],                            //limited functions
-]);
+Route::resource('accesskey', 'AccesskeyController')->only('index', 'destroy');
 
 //User profile management
 Route::get('profile', 'UserProfileController@index')->name('profile.index')->middleware('auth');
