@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\ApiV2;
 
-use Illuminate\Support\Str;
 use App\Device;
 use App\DeviceType;
 use App\Http\Controllers\Controller;
@@ -11,6 +10,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 
 class ApiV2 extends Controller
 {
