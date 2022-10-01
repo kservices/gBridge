@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddStartstopTraitType extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -28,4 +28,4 @@ class AddStartstopTraitType extends Migration
     {
         DB::table('trait_type')->where('shortname', 'StartStop')->delete();
     }
-}
+};

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Hash;
 
-class CreateFirstUser extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -31,4 +31,4 @@ class CreateFirstUser extends Migration
     {
         DB::table('user')->where('user_id', 1)->delete();
     }
-}
+};

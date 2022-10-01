@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddColorsettingTraitType extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -42,4 +42,4 @@ class AddColorsettingTraitType extends Migration
         DB::table('trait_type')->where('shortname', 'ColorSettingJSON')->delete();
         DB::table('trait_type')->where('shortname', 'ColorSettingTemp')->delete();
     }
-}
+};

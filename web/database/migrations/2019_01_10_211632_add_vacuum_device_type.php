@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddVacuumDeviceType extends Migration
+return new class extends Migration
 {
     /**
     /**
@@ -29,4 +29,4 @@ class AddVacuumDeviceType extends Migration
     {
         DB::table('device_type')->where('shortname', 'Vacuum')->delete();
     }
-}
+};

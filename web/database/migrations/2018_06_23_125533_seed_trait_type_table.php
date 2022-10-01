@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class SeedTraitTypeTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -39,4 +39,4 @@ class SeedTraitTypeTable extends Migration
         DB::table('trait_type')->where('traittype_id', 1)->delete();
         DB::table('trait_type')->where('traittype_id', 2)->delete();
     }
-}
+};

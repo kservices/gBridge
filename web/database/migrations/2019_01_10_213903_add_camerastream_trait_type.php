@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddCamerastreamTraitType extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -28,4 +28,4 @@ class AddCamerastreamTraitType extends Migration
     {
         DB::table('trait_type')->where('shortname', 'CameraStream')->delete();
     }
-}
+};

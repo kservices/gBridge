@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddOpencloseTraitType extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -28,4 +28,4 @@ class AddOpencloseTraitType extends Migration
     {
         DB::table('trait_type')->where('shortname', 'OpenClose')->delete();
     }
-}
+};

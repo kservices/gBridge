@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class AddSceneTraitType extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -28,4 +28,4 @@ class AddSceneTraitType extends Migration
     {
         DB::table('trait_type')->where('shortname', 'Scene')->delete();
     }
-}
+};
