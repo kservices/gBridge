@@ -18,6 +18,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         //Possibly allow to force an URL, sometimes necessary if behind a reverse proxy
         $proxy_url = getenv('PROXY_URL');
         $proxy_scheme = getenv('PROXY_SCHEME');
