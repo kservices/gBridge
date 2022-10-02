@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\ApiV2;
 
-use App\Models\ApiKey;
 use App\Http\Controllers\Controller;
+use App\Models\ApiKey;
 use Illuminate\Support\Facades\Hash;
 
 class ApiV2AuthController extends Controller
