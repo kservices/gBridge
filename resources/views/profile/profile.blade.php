@@ -7,11 +7,9 @@
 
 		<h3>Hi {{ $user->name }}!</h3>
 
-		@if(env('KSERVICES_HOSTED'))
 		<div class="row">
 			<b>Your current device limit: {{Auth::user()->device_limit >= 10000 ? 'Unlimited':Auth::user()->device_limit}} devices</b>
 		</div>
-		@endif
 		
 		<div class="row">
 			<div class="col s12 m6">

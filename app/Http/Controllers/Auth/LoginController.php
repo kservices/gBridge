@@ -50,9 +50,9 @@ class LoginController extends Controller
             $user->first_login = false;
             $user->save();
 
-            if (env('KSERVICES_HOSTED', false)) {
-                return redirect()->to('/subscription/firststart');
-            }
+          
+            return redirect()->to('/subscription/firststart');
+            
         }
 
         return redirect()->intended($this->redirectPath());

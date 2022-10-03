@@ -5,13 +5,13 @@
 	<div class="container">
 		@include('common.messages')
 
-		@if((Auth::user()->device_limit <= env('KSERVICES_HOSTED_FREELIMIT')) && env('KSERVICES_HOSTED', false))
+		@if((Auth::user()->device_limit <= env('APP_FREE_LIMIT')))
 		<div class="row">
 			<div class="col s12">
 				<div class="card-panel green white-text">
-					Since you are using the free gBridge plan, you may only create up to {{env('KSERVICES_HOSTED_FREELIMIT')}} devices.<br>
+					Since you are using the free Bridge plan, you may only create up to {{env('APP_FREE_LIMIT')}} devices.<br>
 					You are currently using {{Auth::user()->devices()->count()}} devices.<br>
-					<a class="grey-text text-lighten-4" href="https://gbridge.kappelt.net/subscription/overview" target="_blank">Need more devices and want to support our work? Consider upgrading to gBridge standard. You only need to pay what you want! Click here to show subscription options.</a>
+					<a class="grey-text text-lighten-4" href="#">Need more devices and want to support our work? Consider upgrading to Bridge standard. You only need to pay what you want! Click here to show subscription options.</a>
 				</div>
 			</div>
 		</div>
@@ -100,7 +100,7 @@
 			<div class="card-panel green white-text">
 				No devices created yet.<br>
 				Let's add one by pressing the Button above!<br>
-				Need help? Visit <a class="grey-text text-lighten-2" href="https://doc.gbridge.kappelt.net/html/firstSteps/gettingStarted.html" target="_blank">https://doc.gbridge.kappelt.net</a> for documentation and a quickstart guide.
+				Need help? Visit <a class="grey-text text-lighten-2" href="#l" >#</a> for documentation and a quickstart guide.
 			</div>
 		@endif
 	</div>

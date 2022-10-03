@@ -11,7 +11,7 @@
 
     <div class="card-panel green white-text">
         <b>Nice to see you again!</b><br>
-        Google is requiring access to your gBridge account. @if(Auth::check())Please confirm the linking. @else Please enter your account's credentials. @endif
+        Google is requiring access to your account. @if(Auth::check())Please confirm the linking. @else Please enter your account's credentials. @endif
     </div>
 
     <div class="row">

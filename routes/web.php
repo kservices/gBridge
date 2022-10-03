@@ -21,15 +21,11 @@ use Illuminate\Support\Facades\Route;
 
 Auth::routes();
 
-if (env('KSERVICES_HOSTED', false)) {
-    Route::get('/', function () {
-        return redirect('https://about.gbridge.io');
-    });
-} else {
-    Route::get('/', function () {
-        return redirect('device');
-    });
-}
+
+Route::get('/', function () {
+    return redirect('device');
+});
+
 Route::get('/home', function () {
     return redirect('device');
 });
@@ -61,10 +57,3 @@ Route::get('apikey', [ApiKeyController::class, 'index'])->name('apikey.index')->
 Route::get('apikey/create/standard', [ApiKeyController::class, 'createStandardKey'])->name('apikey.createStandard')->middleware('auth');
 Route::get('apikey/create/user', [ApiKeyController::class, 'createUserKey'])->name('apikey.createUser')->middleware('auth');
 Route::delete('apikey/{apikey_id}/delete', [ApiKeyController::class, 'destroy'])->name('apikey.destroy')->middleware('auth');
-
-//Disable user registration
-if (env('DISABLE_REGISTRATION', false)) {
-    Route::any('register', function () {
-        abort(404);
-    });
-}

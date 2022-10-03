@@ -9,5 +9,5 @@ You are receiving this email because we received a password reset request for yo
 @endsection
 
 @section('mail_reason')
-You are receiving this mail because you've requested to reset your password for Kappelt gBridge.
+You are receiving this mail because you've requested to reset your password for Bridge.
 @endsection

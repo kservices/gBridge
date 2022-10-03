@@ -287,14 +287,14 @@ class GapiController extends Controller
                 'type' => $device->deviceType->gname,
                 'traits' => $trait_googlenames,
                 'name' => [
-                    'defaultNames' => ['Kappelt Virtual Device'],
+                    'defaultNames' => ['Pecwill Virtual Device'],
                     'name' => $device->name,
                 ],
                 //when hosted by us we have to implement report state.
                 //I do not recommend that in a self-hosted environment since it is just useless effort for this application
-                'willReportState' => env('KSERVICES_HOSTED', false) ? true : false,
+                'willReportState' => true,
                 'deviceInfo' => [
-                    'manufacturer' => 'Kappelt kServices',
+                    'manufacturer' => 'Pecwill Technologies',
                 ],
                 'attributes' => [],
             ];

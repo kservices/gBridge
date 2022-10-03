@@ -7,17 +7,11 @@
 
 		<h2>Google Account Linking</h2>
 		
-		@if(\Carbon\Carbon::create(2018, 11, 24, 15, 0, 0)->gt(Auth::user()->created_at))
-		<div class="card-panel green white-text">
-			<i class="material-icons center">info</i><br>
-			From now on, you don't need to generate accesskeys anymore. Just enter your account's password when linking in the Google Home app.
-		</div>
-		@endif
 
 		<div class="card-panel blue white-text">
 			<i class="material-icons center">info</i><br>
-			This page shows all linkings between gBridge and your Google Home system.<br>
-			You can delete a linking here, the belonging Google account will be unable to communicate with gBridge. Un-link and relink your gBridge-Account in the Google Home App then.
+			This page shows all linking between Bridge and your Google Home system.<br>
+			You can delete a linking here, the belonging Google account will be unable to communicate with Bridge. Un-link and relink your Bridge-Account in the Google Home App then.
 		</div>
 
 		@if (count($accesskeys) > 0)
@@ -50,8 +44,8 @@
 		@else
 			{{-- See https://github.com/Dogfalo/materialize/issues/2340 for dialogs --}}
 			<div class="card-panel green white-text">
-				You haven't linked gBridge with Google yet.<br>
-				Use the Google Home app, choose to add new smart home and search for "Kappelt gBridge"
+				You haven't linked Bridge with Google yet.<br>
+				Use the Google Home app, choose to add new smart home and search for "Bridge"
 			</div>
 		@endif
 	</div>

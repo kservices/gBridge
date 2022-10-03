@@ -3,7 +3,7 @@
 		<form class="col s12">
 			<div class="card red">
 				<div class="card-content white-text">
-					<span class="card-title">An error occured</span>
+					<span class="card-title">An error occurred</span>
 					<ul>
 						@foreach ($errors->all() as $error)
 							<li>{{ $error }}</li>
@@ -33,7 +33,7 @@
 		<form class="col s12">
 			<div class="card red">
 				<div class="card-content white-text">
-					<span class="card-title">An error occured</span>
+					<span class="card-title">An error occurred</span>
 					{{ session('error') }}
 				</div>
 			</div>

@@ -62,9 +62,8 @@
 			@endforeach
 		@else
 			<div class="card-panel green white-text">
-				You haven't created any keys for gBridge's API yet.<br>
+				You haven't created any keys for Bridge's API yet.<br>
 				Let's create one by pressing one of the buttons above!<br>
-				Need help? Visit <a class="grey-text text-lighten-2" href="https://doc.gbridge.io/html/developers/apiV2.html" target="_blank">https://doc.gbridge.io</a> for the API documentation.
 			</div>
 		@endif
 	</div>
