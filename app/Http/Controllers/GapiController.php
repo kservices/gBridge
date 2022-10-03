@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Carbon\CarbonImmutable;
 
 class GapiController extends Controller
 {
@@ -47,10 +50,10 @@ class GapiController extends Controller
         //check parameters provided by Google
         $googleerror_prefix = 'The request by Google Home was malformed. Please try again in a few minute. If this problem persists, please contact the team of Kappelt gBridge. ';
 
-        if ($request->input('client_id', '__y') != env('GOOGLE_CLIENTID', '__z')) {
+        if ($request->input('client_id', '__y') != env('GOOGLE_CLIENT_ID', '__z')) {
             return redirect()->back()->withInput()->with('error', $googleerror_prefix.'Invalid Client ID has been provided!');
         }
-        if ($request->input('response_type', '') != 'token') {
+        if ($request->input('response_type', '') != 'code') {
             return redirect()->back()->withInput()->with('error', $googleerror_prefix.'Unkown Response Type requested!');
         }
         if ($request->input('redirect_uri', '__x') != ('https://oauth-redirect.googleusercontent.com/r/'.env('GOOGLE_PROJECTID', ''))) {
@@ -74,14 +77,110 @@ class GapiController extends Controller
             return redirect()->back()->withInput()->with('error', "You need to confirm your account. We have sent you an activation code, please check your email account. Check the spam folder for this mail, contact support under gbridge@kappelt.net if you haven't received the confirmation");
         }
 
-        $accesskey = new Accesskey;
-        $accesskey->google_key = password_hash(Str::random(32), PASSWORD_BCRYPT);
-        $accesskey->user_id = Auth::user()->user_id;
 
-        $accesskey->save();
 
-        return redirect($request->input('redirect_uri').'#access_token='.$accesskey->google_key.'&token_type=bearer&state='.$request->input('state'));
+        $issuedAt   = CarbonImmutable::now();
+        $expire     = $issuedAt->addMinute(6)->getTimestamp();      // Add 60 seconds
+        $serverName = "ochui.dev";
+
+
+        // dd(now());
+
+        $data = [
+            'iat' =>  $issuedAt->getTimestamp(),        // Issued at: time when the token was generated
+            'iss'  => $serverName,                       // Issuer
+            // 'nbf'  => $expire,         // Not before
+            'exp'  => $expire,                           // Expire
+            'user_id' => Auth::user()->user_id,                     // User name
+        ];
+
+
+        // dd($data);
+
+        $access_code = JWT::encode($data, env('JWT_SECRET'), 'HS512');
+        
+
+        return redirect($request->input('redirect_uri').'?code='.$access_code.'&state='.$request->input('state'));
     }
+
+
+
+    /**
+     * 
+     * Handle code exchange :TODO Use laravel Passport
+     * @return  \Illuminate\Http\Response
+     */
+
+     public function OauthToken(Request $request)
+     {
+        //check parameters provided by Google
+        $googleerror_prefix = ' ';
+
+        if ($request->input('client_id', '__y') != env('GOOGLE_CLIENT_ID', '__z')) {
+            return response()->json([
+                'error' => 'Invalid grant',
+                'message' => $googleerror_prefix.'Invalid Client ID has been provided!'
+            ], 400);
+        }
+
+        if ($request->input('client_secret', '__y') != env('GOOGLE_CLIENT_SECRET', '__z')) {
+            return response()->json([
+                'error' => 'Invalid grant',
+                'message' => $googleerror_prefix.'Client Authentication failed'
+            ], 400);
+        }
+
+        if (!in_array($request->input('grant_type', ''), ['authorization_code', 'refresh_token'])) {
+
+            return response()->json([
+                'error' => 'Invalid grant',
+                'message' => $googleerror_prefix.'Unknown Response Type requested!'
+            ], 400);
+
+        }
+
+        if ($request->input('redirect_uri', '__x') != ('https://oauth-redirect.googleusercontent.com/r/'.env('GOOGLE_PROJECTID', ''))) {
+
+            return response()->json([
+                'error' => 'Invalid grant',
+                'message' => $googleerror_prefix.'Invalid redirect Request!'
+            ], 400);
+        }
+
+        if (! $request->input('code')) {
+
+            return response()->json([
+                'error' => 'Invalid grant',
+                'message' => $googleerror_prefix.'Invalid access code'
+            ], 400);
+        }
+
+
+        try {
+
+            $decoded = JWT::decode($request->input('code'), new Key(env('JWT_SECRET'), 'HS512'));
+            $accesskey = new Accesskey;
+            $accesskey->google_key = password_hash(Str::random(32), PASSWORD_BCRYPT);
+            $accesskey->user_id = $decoded->user_id;
+
+            $accesskey->save();
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Invalid grant',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
+
+        return response()->json([
+            "token_type" => "Bearer",
+            "access_token" => $accesskey->google_key,
+            "refresh_token" => $accesskey->google_key,
+            "expires_in" => CarbonImmutable::now()->addYear()->getTimestamp()
+        ]);
+
+     }
 
     /**
      * Handle an apicall by google

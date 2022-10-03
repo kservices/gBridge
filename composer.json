@@ -12,13 +12,14 @@
     "require": {
         "php": "^8.0",
         "doctrine/dbal": "^2.13",
+        "firebase/php-jwt": "^6.3",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.33",
         "laravel/tinker": "^2.7",
+        "laravel/ui": "^3.3",
         "laravelcollective/html": "^6.3",
         "predis/predis": "^1.1",
-        "tymon/jwt-auth": "dev-develop",
-        "laravel/ui": "^3.3"
+        "tymon/jwt-auth": "dev-develop"
     },
     "require-dev": {
         "mockery/mockery": "^1.4.4",

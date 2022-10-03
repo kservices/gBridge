@@ -53,6 +53,7 @@ Route::get('profile/verify/{verify_token}', [UserProfileController::class, 'veri
 //Google Actions api
 Route::get('gapi/auth', [GapiController::class, 'auth'])->name('gapi.auth');
 Route::post('gapi/auth', [GapiController::class, 'checkauth'])->name('gapi.checkauth');
+Route::post('gapi/token', [GapiController::class, 'OauthToken'])->name('gapi.token');
 Route::any('gapi', [GapiController::class, 'apicall'])->name('gapi.apicall');
 
 //API v2 key management

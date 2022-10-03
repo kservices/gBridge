@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(\Illuminate\Http\Request $request)
     {
         Schema::defaultStringLength(191);
 
@@ -29,6 +29,12 @@ class AppServiceProvider extends ServiceProvider
         if (! empty($proxy_url)) {
             URL::forceRootUrl($proxy_url);
         }
+
+        if (!empty( env('NGROK_URL') ) && $request->server->has('HTTP_X_ORIGINAL_HOST')) {
+            URL::forceScheme('https');
+            $this->app['url']->forceRootUrl(env('NGROK_URL'));
+        }
+
         if (! empty($proxy_scheme)) {
             URL::forceScheme($proxy_scheme);
         }
