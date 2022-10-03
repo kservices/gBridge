@@ -117,6 +117,7 @@ class GapiController extends Controller
         $googleerror_prefix = ' ';
 
         if ($request->input('client_id', '__y') != env('GOOGLE_CLIENT_ID', '__z')) {
+            Log::info('Invalid Client ID has been provided!');
             return response()->json([
                 'error' => 'Invalid grant',
                 'message' => $googleerror_prefix.'Invalid Client ID has been provided!'
@@ -124,6 +125,7 @@ class GapiController extends Controller
         }
 
         if ($request->input('client_secret', '__y') != env('GOOGLE_CLIENT_SECRET', '__z')) {
+            Log::info('Client Secret is invalid!');
             return response()->json([
                 'error' => 'Invalid grant',
                 'message' => $googleerror_prefix.'Client Authentication failed'
@@ -131,7 +133,7 @@ class GapiController extends Controller
         }
 
         if (!in_array($request->input('grant_type', ''), ['authorization_code', 'refresh_token'])) {
-
+            Log::info('Invalid grant type!');
             return response()->json([
                 'error' => 'Invalid grant',
                 'message' => $googleerror_prefix.'Unknown Response Type requested!'
@@ -140,7 +142,7 @@ class GapiController extends Controller
         }
 
         if ($request->input('redirect_uri', '__x') != ('https://oauth-redirect.googleusercontent.com/r/'.env('GOOGLE_PROJECTID', ''))) {
-
+            Log::info('Invalid redirect Request!');
             return response()->json([
                 'error' => 'Invalid grant',
                 'message' => $googleerror_prefix.'Invalid redirect Request!'
@@ -148,7 +150,7 @@ class GapiController extends Controller
         }
 
         if (! $request->input('code')) {
-
+            Log::info('No code given!');
             return response()->json([
                 'error' => 'Invalid grant',
                 'message' => $googleerror_prefix.'Invalid access code'
@@ -166,6 +168,7 @@ class GapiController extends Controller
             $accesskey->save();
 
         } catch (\Exception $e) {
+            Log::info($e->getMessage());
             return response()->json([
                 'error' => 'Invalid grant',
                 'message' => $e->getMessage()
