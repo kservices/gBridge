@@ -19,6 +19,7 @@
         "laravel/ui": "^3.3",
         "laravelcollective/html": "^6.3",
         "predis/predis": "^1.1",
+        "sentry/sentry-laravel": "^2.14",
         "tymon/jwt-auth": "dev-develop"
     },
     "require-dev": {
