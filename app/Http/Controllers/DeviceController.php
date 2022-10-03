@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Models\DeviceType;
-use App\Services\DeviceService;
 use App\Models\TraitType;
 use App\Models\User;
+use App\Services\DeviceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

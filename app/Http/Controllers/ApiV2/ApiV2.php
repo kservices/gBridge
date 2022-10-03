@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\ApiV2;
 
+use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Models\DeviceType;
-use App\Http\Controllers\Controller;
 use App\Models\TraitType;
 use App\Models\User;
 use Illuminate\Http\Request;
