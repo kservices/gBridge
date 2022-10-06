@@ -194,7 +194,6 @@ class GapiController extends Controller
     {
         $request = json_decode($laravel_request->getContent(), true);
 
-        Log::info($request);
 
         //check, whether requestId is present
         if (! isset($request['requestId'])) {
@@ -225,7 +224,6 @@ class GapiController extends Controller
         }
 
         Redis::hset('gbridge:u'.$user->user_id.':d0', 'grequestid', $requestid);
-        Log::info('gbridge:u'.$user->user_id.':d0');
 
         //Check for users device limit
         if ($user->devices()->count() > $user->device_limit) {
@@ -258,7 +256,7 @@ class GapiController extends Controller
             return response()->json([]);
         } else {
             //unknown intent
-            error_log('Unknown intent: "'.$input['intent'].'"');
+            Log::debug('Unknown intent: "'.$input['intent'].'"');
 
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
