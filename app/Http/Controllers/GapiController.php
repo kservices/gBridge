@@ -256,7 +256,7 @@ class GapiController extends Controller
             return response()->json([]);
         } else {
             //unknown intent
-            error_log('Unknown intent: "'.$input['intent'].'"');
+            Log::debug('Unknown intent: "'.$input['intent'].'"');
 
             return $this->errorResponse($requestid, ErrorCode::protocolError);
         }
