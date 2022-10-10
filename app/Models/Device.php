@@ -35,7 +35,9 @@ class Device extends Model
     public function traits()
     {
         //This is a m:n relation, joined by the table trait
-        return $this->belongsToMany(\App\Models\TraitType::class, 'trait', 'device_id', 'traittype_id')->withPivot('trait_id', 'config', 'mqttActionTopic', 'mqttStatusTopic');
+        return $this->belongsToMany(\App\Models\TraitType::class, 'trait', 'device_id', 'traittype_id')->withPivot(
+            'trait_id', 'config', 'mqttActionTopic', 'mqttStatusTopic', 'mqttStatusPayloadType', 'mqttStatusPayloadKey'
+        );
     }
 
     public function user()

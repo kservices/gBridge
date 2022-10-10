@@ -35,10 +35,12 @@ class DeviceController extends Controller
             $deviceinfo = [];
             foreach ($user->devices as $device) {
                 $deviceinfo[$device->device_id] = [];
-                foreach ($device->traits as $trait) {
+                foreach ($device->traits as $trait) {                    
                     $deviceinfo[$device->device_id][$trait->shortname] = [
                         'actionTopic' => $trait->pivot->mqttActionTopic,
                         'statusTopic' => $trait->pivot->mqttStatusTopic,
+                        'statusPayloadType' => $trait->pivot->mqttStatusPayloadType,
+                        'statusPayloadKey' => $trait->pivot->mqttStatusPayloadKey,
                     ];
                 }
             }

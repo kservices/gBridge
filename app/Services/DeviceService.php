@@ -137,7 +137,8 @@ class DeviceService
      * Store general information about the user in the redis cache for usage with other modules of gBridge
      *
      * @param  User  $user
-     */
+     * TODO: Device cache should be updated in background
+    */
     public function userInfoToCache(User $user)
     {
         $deviceinfo = [];
@@ -147,6 +148,8 @@ class DeviceService
                 $deviceinfo[$device->device_id][$trait->shortname] = [
                     'actionTopic' => $trait->pivot->mqttActionTopic,
                     'statusTopic' => $trait->pivot->mqttStatusTopic,
+                    'statusPayloadType' => $trait->pivot->mqttStatusPayloadType,
+                    'statusPayloadKey' => $trait->pivot->mqttStatusPayloadKey,
                 ];
             }
         }

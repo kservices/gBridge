@@ -33,7 +33,7 @@ Route::get('/home', function () {
 //Device-Management panel
 Route::resource('device', DeviceController::class)->only('store', 'index', 'create', 'update', 'destroy', 'edit');
 Route::put('/device/{device}/updatetopic/{trait}', [DeviceController::class, 'updatetopic'])->name('device.updatetopic')->middleware('auth');
-//Route::get('/temp-syncdev', [DeviceController::class, 'allUserInfoToCache'])->middleware('auth');
+// Route::get('/temp-syncdev', [DeviceController::class, 'allUserInfoToCache'])->middleware('auth');
 
 //Accesskey-management
 Route::resource('accesskey', AccesskeyController::class)->only('index', 'destroy');
